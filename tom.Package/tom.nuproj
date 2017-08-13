@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="Common.props" />
+  <Import Project="tom.xml" />
+  <PropertyGroup Label="Configuration">
+    <Id>tom</Id>
+    <Title>tom</Title>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\tom\tom.csproj" />
+  </ItemGroup>
+  <Import Project="$(NuProjPath)\NuProj.targets" Condition="Exists('$(NuProjPath)\NuProj.targets')" />
+</Project>
