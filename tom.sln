@@ -29,6 +29,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common Items", "Common Item
 		unlimitedinf.ico = unlimitedinf.ico
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "tom.hello-world", "tom.hello-world\tom.hello-world.csproj", "{1D2158BC-CC3C-4F06-BE34-90BB8600AE2A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{39A9C3A7-52A9-4D55-9557-91184C6CE067}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{39A9C3A7-52A9-4D55-9557-91184C6CE067}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{39A9C3A7-52A9-4D55-9557-91184C6CE067}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1D2158BC-CC3C-4F06-BE34-90BB8600AE2A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1D2158BC-CC3C-4F06-BE34-90BB8600AE2A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1D2158BC-CC3C-4F06-BE34-90BB8600AE2A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1D2158BC-CC3C-4F06-BE34-90BB8600AE2A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
