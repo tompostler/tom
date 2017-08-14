@@ -3,8 +3,9 @@
   <Import Project="Common.props" />
   <Import Project="tom.xml" />
   <PropertyGroup Label="Configuration">
-    <Id>tom</Id>
-    <Title>tom</Title>
+    <!--Can't have names on public nuget.org that are just 'tom' :'(-->
+    <Id>Unlimitedinf.Tom</Id>
+    <Title>Unlimitedinf.Tom</Title>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\tom\tom.csproj" />

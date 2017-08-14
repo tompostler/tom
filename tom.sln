@@ -17,8 +17,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tom.Package", "tom.Package"
 		tom.Package\Common.props = tom.Package\Common.props
 		tom.Package\packages.config = tom.Package\packages.config
 		tom.Package\Remove-AlreadyPublished.ps1 = tom.Package\Remove-AlreadyPublished.ps1
-		tom.Package\tom.nuproj = tom.Package\tom.nuproj
 		tom.Package\tom.xml = tom.Package\tom.xml
+		tom.Package\Unlimitedinf.Tom.nuproj = tom.Package\Unlimitedinf.Tom.nuproj
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common Items", "Common Items", "{BAB5B95C-3036-4EA9-BF96-94F07B9989B7}"
