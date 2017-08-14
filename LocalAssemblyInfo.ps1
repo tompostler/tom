@@ -75,6 +75,12 @@ if ($version.Contains("+")) {
 # Parse out the SemVer
 $Major, $Minor, $Patch = $version.Split('.');
 
+# If there's nothing in the Properties dir, then it won't be there...
+$dirname = "$ProjectDir\Properties";
+if (!(Test-Path $dirname)) {
+    New-Item -ItemType Directory $dirname | Out-Null
+}
+
 # The file contents
 $filename = "$ProjectDir\Properties\LocalAssemblyInfo.g.cs";
 @"
