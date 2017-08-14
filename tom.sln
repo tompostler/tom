@@ -24,10 +24,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common Items", "Common Items", "{BAB5B95C-3036-4EA9-BF96-94F07B9989B7}"
 	ProjectSection(SolutionItems) = preProject
 		CommonAssemblyInfo.cs = CommonAssemblyInfo.cs
+		LocalAssemblyInfo.ps1 = LocalAssemblyInfo.ps1
 		noglob.ruleset = noglob.ruleset
 		unlimitedinf.ico = unlimitedinf.ico
-		VersionInfo.cs = VersionInfo.cs
-		VersionInfo.ps1 = VersionInfo.ps1
 	EndProjectSection
 EndProject
 Global

@@ -104,4 +104,4 @@ UpgradeLog*.htm
 FakesAssemblies/
 
 # Custom exclusions
-/VersionInfo.cs
+*.g.cs
