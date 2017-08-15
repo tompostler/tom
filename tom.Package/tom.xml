@@ -2,10 +2,13 @@
 <Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Label="Configuration">
     
-    <LastUpdated>2017-08-14</LastUpdated>
-    <Version>0.0.3</Version>
+    <Version>0.0.4</Version>
     
     <ReleaseNotes>
+0.0.4
+
+    Add the apis module.
+
 0.0.3
 
     Add the hello-world module.

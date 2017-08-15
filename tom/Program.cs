@@ -118,7 +118,7 @@ namespace Unlimitedinf.Tom
                         line.Clear()
                             .Append("    ")
                             .Append('v')
-                            .Append(FileVersionInfo.GetVersionInfo(itom.GetType().Assembly.Location).FileVersion.PadRight(14))
+                            .Append(FileVersionInfo.GetVersionInfo(itom.GetType().Assembly.Location).FileVersion.PadRight(13))
                             .Append("  ")
                             .Append(descriptionTokens[i]);
                         versionAdded = true;
