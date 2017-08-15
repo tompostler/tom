@@ -8,12 +8,12 @@ namespace Unlimitedinf.Tom
     public interface ITom
     {
         /// <summary>
-        /// The name of the module.
+        /// The name of the module. Should not be longer than 16 characters
         /// </summary>
         string Name { get; }
 
         /// <summary>
-        /// A short description of the module to display in top-level helptext.
+        /// A short description of the module to display in top-level helptext. Try to keep it under 100 characters.
         /// </summary>
         string Description { get; }
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Unlimitedinf.Tools;
 
 namespace Unlimitedinf.Tom.HelloWorld
 {
@@ -12,7 +13,7 @@ namespace Unlimitedinf.Tom.HelloWorld
         public string Name => "hello-world";
 
         /// <inheritdoc/>
-        public string Description => "The standard Hello World program with some date awareness.";
+        public string Description => "The standard Hello World program with some date awareness using the Unlimitedinf.Tools logger.";
 
         /// <inheritdoc/>
         public bool IsAsync => false;
@@ -20,7 +21,8 @@ namespace Unlimitedinf.Tom.HelloWorld
         /// <inheritdoc/>
         public void Run(string[] args)
         {
-            Console.WriteLine($"Hello world on this fine {DateTime.Now.DayOfWeek.ToString()}!");
+            Log.ProgramName = "HELWRLD";
+            Log.Inf($"Hello world on this fine {DateTime.Now.DayOfWeek.ToString()}!");
         }
 
         /// <inheritdoc/>
