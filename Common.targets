@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <ItemGroup>
+    <!--Tools-->
+    <Reference Include="Unlimitedinf.Tools, Version=3.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Unlimitedinf.Tools.3.2.4\lib\net462\Unlimitedinf.Tools.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <!--Assembly Infos-->
+    <Compile Include="Properties\LocalAssemblyInfo.g.cs" />
+    <Compile Include="..\CommonAssemblyInfo.cs">
+      <Link>Properties\CommonAssemblyInfo.cs</Link>
+    </Compile>
+    <!--Icon-->
+    <None Include="..\unlimitedinf.ico">
+      <Link>Properties\unlimitedinf.ico</Link>
+    </None>
+    <!--Tom Project-->
+    <ProjectReference Include="..\tom\tom.csproj">
+      <Project>{39a9c3a7-52a9-4d55-9557-91184c6ce067}</Project>
+      <Name>tom</Name>
+    </ProjectReference>
+  </ItemGroup>
+  
+  <!--NuProj dependency-->
+  <Import Project=".\packages\NuProj.Common.0.11.30\build\dotnet\NuProj.Common.targets" />
+
+</Project>

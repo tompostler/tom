@@ -16,10 +16,10 @@ $pkgNuGet_Core = "NuGet.Core." + ([xml](Get-Content ".\packages.config")).packag
 $repo = [NuGet.PackageRepositoryFactory]::Default.CreateRepository("https://packages.nuget.org/api/v2");
 
 # Check if current version is already published
-if (($repo.FindPackagesById("tom") | ? {$_.Version -eq $version} | Measure-Object).Count -eq 1) {
-    Write-Error "Nuget package tom.$version already published."
+if (($repo.FindPackagesById("Unlimitedinf.Tom") | ? {$_.Version -eq $version} | Measure-Object).Count -eq 1) {
+    Write-Error "Nuget package Unlimitedinf.Tom.$version already published."
 } else {
-    Write-Host "Nuget package tom.$version not found on nuget.org";
+    Write-Host "Nuget package Unlimitedinf.Tom.$version not found on nuget.org";
 }
 
 # Restore CWD

@@ -9,13 +9,14 @@ param(
 )
 
 $version = "0.0.0";
+$urlbase = "https://unlimitedinf-apis.azurewebsites.net";
 
 # Make sure we have the env var defined
 if ($env:UnlimitedinfApiToken -ne $null -and $Increment) {
     # Send the request to inc the build version number
-    Write-Host "Updating version information at https://unlimitedinf-apis.azurewebsites.net/versioning/versions";
+    Write-Host "Updating version information at $urlbase/versioning/versions";
     Write-Host "  (This may take a few moments if the API has fallen asleep)";
-    $request = [System.Net.WebRequest]::CreateHttp("https://unlimitedinf-apis.azurewebsites.net/versioning/versions");
+    $request = [System.Net.WebRequest]::CreateHttp("$urlbase/versioning/versions");
     $request.ContentType = "application/json";
     $request.Method = "PUT";
     $request.Headers.Add("Authorization", "Token $env:UnlimitedinfApiToken");
@@ -42,10 +43,10 @@ if ($env:UnlimitedinfApiToken -ne $null -and $Increment) {
     if (-not $Increment) {
         Write-Host -ForegroundColor Yellow "Increment not requested!";
     }
-    Write-Host "Retrieving current version information from https://unlimitedinf-apis.azurewebsites.net/versioning/versions";
+	$url = "$urlbase/versioning/versions?username=unlimitedinf&versionName=tom.exe_$AssemblyName";
+    Write-Host "Retrieving current version information from $($url.SubString($urlbase.Length))";
     Write-Host "  (This may take a few moments if the API has fallen asleep)";
-    $request = [System.Net.WebRequest]::CreateHttp("https://unlimitedinf-apis.azurewebsites.net/versioning/versions?username=unlimitedinf&versionName=tom.exe_$AssemblyName");
-    $request.ContentType = "application/json";
+    $request = [System.Net.WebRequest]::CreateHttp($url);
     $request.Method = "GET";
     $response = $request.GetResponse();
 
@@ -97,7 +98,7 @@ using System.Reflection;
 [assembly: AssemblyFileVersion("{0}.{1}.{2}.{3}")]
 "@ -f $Major, $Minor, $Patch, $Prerelease, $AssemblyName > $filename;
 
-Write-Host $("Generated local assembly info: {0}.{1}.{2}.{3} in $filename" -f $Major, $Minor, $Patch, $Prerelease);
+Write-Host $("Generated local assembly info: {0}.{1}.{2}.{3} in {4}" -f $Major, $Minor, $Patch, $Prerelease, $filename);
 
 # Restore CWD
 Pop-Location

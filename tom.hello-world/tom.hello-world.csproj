@@ -1,50 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\NuProj.0.11.30\build\NuProj.props" Condition="Exists('..\packages\NuProj.0.11.30\build\NuProj.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{1D2158BC-CC3C-4F06-BE34-90BB8600AE2A}</ProjectGuid>
-    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Unlimitedinf.Tom.HelloWorld</RootNamespace>
     <AssemblyName>hello-world</AssemblyName>
-    <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <RunCodeAnalysis>true</RunCodeAnalysis>
-    <CodeAnalysisRuleSet>..\noglob.ruleset</CodeAnalysisRuleSet>
-    <DocumentationFile>bin\Debug\hello-world.xml</DocumentationFile>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <RunCodeAnalysis>true</RunCodeAnalysis>
-    <CodeAnalysisRuleSet>..\noglob.ruleset</CodeAnalysisRuleSet>
-    <DocumentationFile>bin\Release\hello-world.xml</DocumentationFile>
-  </PropertyGroup>
-  <PropertyGroup>
-    <ApplicationIcon>..\unlimitedinf.ico</ApplicationIcon>
-  </PropertyGroup>
+  <Import Project="..\Common.props"/>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -53,33 +17,14 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
-    <Reference Include="Unlimitedinf.Tools, Version=3.2.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Unlimitedinf.Tools.3.2.3\lib\net462\Unlimitedinf.Tools.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Program.cs" />
-    <Compile Include="Properties\LocalAssemblyInfo.g.cs" />
-    <Compile Include="..\CommonAssemblyInfo.cs">
-      <Link>Properties\CommonAssemblyInfo.cs</Link>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\unlimitedinf.ico">
-      <Link>Properties\unlimitedinf.ico</Link>
-    </None>
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\tom\tom.csproj">
-      <Project>{39a9c3a7-52a9-4d55-9557-91184c6ce067}</Project>
-      <Name>tom</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <PropertyGroup>
-    <PreBuildEvent>powershell "$(SolutionDir)LocalAssemblyInfo.ps1" "$(MSBuildProjectDirectory)" $(AssemblyName)</PreBuildEvent>
-  </PropertyGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="..\packages\NuProj.Common.0.11.30\build\dotnet\NuProj.Common.targets" Condition="Exists('..\packages\NuProj.Common.0.11.30\build\dotnet\NuProj.Common.targets')" />
+  <Import Project="..\Common.targets"/>
 </Project>
