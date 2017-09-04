@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26730.3
+VisualStudioVersion = 15.0.26430.13
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "tom", "tom\tom.csproj", "{39A9C3A7-52A9-4D55-9557-91184C6CE067}"
 EndProject
@@ -35,6 +35,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "tom.hello-world", "tom.hell
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "tom.apis", "tom.apis\tom.apis.csproj", "{6EA03C46-77E0-4E43-B808-2740D7D87F0A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "tom.hash", "tom.hash\tom.hash.csproj", "{5E7D331B-4517-4450-8FA2-2E25014C07D9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -53,6 +55,10 @@ Global
 		{6EA03C46-77E0-4E43-B808-2740D7D87F0A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6EA03C46-77E0-4E43-B808-2740D7D87F0A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6EA03C46-77E0-4E43-B808-2740D7D87F0A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5E7D331B-4517-4450-8FA2-2E25014C07D9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5E7D331B-4517-4450-8FA2-2E25014C07D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5E7D331B-4517-4450-8FA2-2E25014C07D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5E7D331B-4517-4450-8FA2-2E25014C07D9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
