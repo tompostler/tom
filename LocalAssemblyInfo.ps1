@@ -1,80 +1,19 @@
-﻿# Tom Postler, 2017-08-13
+﻿# Tom Postler, 2017-09-05
 # Update the LocalAssemblyInfo.g.cs for a project
 
 param(
     [Parameter(Mandatory=$true)][string]$ProjectDir,
-    [Parameter(Mandatory=$true)][string]$AssemblyName,
-    [Parameter(Mandatory=$false)][switch]$Increment,
-    [Parameter(Mandatory=$false)][string]$VersionInc = "patch"
+    [Parameter(Mandatory=$true)][string]$AssemblyName
 )
 
-$version = "0.0.0";
-$urlbase = "https://unlimitedinf-apis.azurewebsites.net";
+# Set CWD to script location
+Push-Location $PSScriptRoot
+[Environment]::CurrentDirectory = $PWD
 
-# Make sure we have the env var defined
-if ($env:UnlimitedinfApiToken -ne $null -and $Increment) {
-    # Send the request to inc the build version number
-    Write-Host "Updating version information at $urlbase/versioning/versions";
-    Write-Host "  (This may take a few moments if the API has fallen asleep)";
-    $request = [System.Net.WebRequest]::CreateHttp("$urlbase/versioning/versions");
-    $request.ContentType = "application/json";
-    $request.Method = "PUT";
-    $request.Headers.Add("Authorization", "Token $env:UnlimitedinfApiToken");
-    $reqStream = New-Object System.IO.StreamWriter $request.GetRequestStream();
-    $reqStream.Write('{"username":"unlimitedinf","name":"tom.exe_{0}","inc":"{1}"}' -f $AssemblyName,$VersionInc);
-    $reqStream.Close();
-    $response = $request.GetResponse();
-
-    # Check for failure
-    if (!($response.StatusCode -eq [System.Net.HttpStatusCode]::OK)) {
-        Write-Host "Request failed with $($response.StatusCode)";
-        exit 1;
-    }
-    Write-Host "Version information updated. Using:";
-
-    # Get the new version
-    $version = (New-Object System.IO.StreamReader $response.GetResponseStream()).ReadToEnd() | ConvertFrom-Json;
-    $version = $version.version;
-    Write-Host "  $version";
-} else {
-    if ($env:UnlimitedinfApiToken -eq $null) {
-        Write-Host -ForegroundColor Red "Envrionment variable UnlimitedinfApiToken is not found!";
-    }
-    if (-not $Increment) {
-        Write-Host -ForegroundColor Yellow "Increment not requested!";
-    }
-	$url = "$urlbase/versioning/versions?username=unlimitedinf&versionName=tom.exe_$AssemblyName";
-    Write-Host "Retrieving current version information from $($url.SubString($urlbase.Length))";
-    Write-Host "  (This may take a few moments if the API has fallen asleep)";
-    $request = [System.Net.WebRequest]::CreateHttp($url);
-    $request.Method = "GET";
-    $response = $request.GetResponse();
-
-    # Check for failure
-    if (!($response.StatusCode -eq [System.Net.HttpStatusCode]::OK)) {
-        Write-Host "Request failed with $($response.StatusCode)";
-        exit 1;
-    }
-
-    # Get the version
-    $version = (New-Object System.IO.StreamReader $response.GetResponseStream()).ReadToEnd() | ConvertFrom-Json;
-    $version = $version.version;
-    Write-Host "Version for assembly $AssemblyName was getted as $version";
-} 
-
-# Version info vars
-$Major, $Minor, $Patch, $Prerelease = @(0,0,0,0);
-
-# Remove anything that would disagree with AssemblyVersion
-if ($version.Contains("-")) {
-    $version = $version.Split("-")[0];
+$Major, $Minor, $Patch, $Prerelease, $Build = .\Get-VersionInfo.ps1 -VersionName "tom.exe_$AssemblyName"
+if ([string]::IsNullOrEmpty($Prerelease)) {
+	$Prerelease = 0;
 }
-if ($version.Contains("+")) {
-    $version = $version.Split("+")[0];
-}
-
-# Parse out the SemVer
-$Major, $Minor, $Patch = $version.Split('.');
 
 # If there's nothing in the Properties dir, then it won't be there...
 $dirname = "$ProjectDir\Properties";
