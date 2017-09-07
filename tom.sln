@@ -27,6 +27,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common Items", "Common Item
 		Common.targets = Common.targets
 		CommonAssemblyInfo.cs = CommonAssemblyInfo.cs
 		Get-VersionInfo.ps1 = Get-VersionInfo.ps1
+		Inc-VersionInfo.ps1 = Inc-VersionInfo.ps1
 		LocalAssemblyInfo.ps1 = LocalAssemblyInfo.ps1
 		noglob.ruleset = noglob.ruleset
 		unlimitedinf.ico = unlimitedinf.ico
