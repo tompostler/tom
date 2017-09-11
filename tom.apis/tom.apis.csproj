@@ -21,7 +21,7 @@
       <HintPath>..\packages\Unlimitedinf.Apis.1.2.0\tools\Unlimitedinf.Apis.Client.exe</HintPath>
     </Reference>
     <Reference Include="Unlimitedinf.Apis.Contracts, Version=1.2.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Unlimitedinf.Apis.1.2.0\lib\net46\Unlimitedinf.Apis.Contracts.dll</HintPath>
+      <HintPath>..\packages\Unlimitedinf.Apis.1.2.2\lib\net46\Unlimitedinf.Apis.Contracts.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
