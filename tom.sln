@@ -9,6 +9,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		.gitattributes = .gitattributes
 		.gitignore = .gitignore
+		Get-VersionInfo.ps1 = Get-VersionInfo.ps1
+		Inc-VersionInfo.ps1 = Inc-VersionInfo.ps1
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tom.Package", "tom.Package", "{2AFE11E4-8D4E-4EDF-98E3-F5F51D68AB50}"
@@ -25,8 +27,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common Items", "Common Item
 		Common.props = Common.props
 		Common.targets = Common.targets
 		CommonAssemblyInfo.cs = CommonAssemblyInfo.cs
-		Get-VersionInfo.ps1 = Get-VersionInfo.ps1
-		Inc-VersionInfo.ps1 = Inc-VersionInfo.ps1
 		LocalAssemblyInfo.ps1 = LocalAssemblyInfo.ps1
 		noglob.ruleset = noglob.ruleset
 		unlimitedinf.ico = unlimitedinf.ico

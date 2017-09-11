@@ -1,5 +1,5 @@
 ﻿# Tom Postler, 2017-09-07
-# Hit the apis to increment version info.
+# Hit the apis to increment version info. Also reset the count.
 
 param(
     [Parameter(Mandatory=$true)][string]$AssemblyName,
@@ -13,7 +13,9 @@ if ($env:UnlimitedinfApiToken -eq $null) {
 
 $urlbase = "https://unlimitedinf-apis.azurewebsites.net";
 $VersionName = "tom.exe_$AssemblyName";
+$CountName = "tom.exe_$($AssemblyName)_count";
 
+# Update the version
 $url = "$urlbase/versioning/versions";
 Write-Host "Updating version information at $($url.SubString($urlbase.Length))";
 Write-Host "  (This may take a few moments if the API has fallen asleep)";
@@ -36,3 +38,27 @@ if (!($response.StatusCode -eq [System.Net.HttpStatusCode]::OK)) {
 $version = (New-Object System.IO.StreamReader $response.GetResponseStream()).ReadToEnd() | ConvertFrom-Json;
 $version = $version.version;
 Write-Host "Version $VersionName was updated to $version";
+
+
+# Reset the count
+$url = "$urlbase/versioning/counts";
+Write-Host "Resetting count information at $($url.SubString($urlbase.Length))";
+$request = [System.Net.WebRequest]::CreateHttp($url);
+$request.ContentType = "application/json";
+$request.Method = "PUT";
+$request.Headers.Add("Authorization", "Token $env:UnlimitedinfApiToken");
+$reqStream = New-Object System.IO.StreamWriter $request.GetRequestStream();
+$reqStream.Write(('{{"username":"unlimitedinf","name":"{0}","type":"res"}}' -f $CountName));
+$reqStream.Close();
+$response = $request.GetResponse();
+
+# Check for failure
+if (!($response.StatusCode -eq [System.Net.HttpStatusCode]::OK)) {
+    Write-Host "Request failed with $($response.StatusCode)";
+    exit 1;
+}
+
+# Get the count
+$count = (New-Object System.IO.StreamReader $response.GetResponseStream()).ReadToEnd() | ConvertFrom-Json;
+$count = $count.count;
+Write-Host "Count $CountName was updated to $count";

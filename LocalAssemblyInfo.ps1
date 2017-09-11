@@ -10,9 +10,9 @@ param(
 Push-Location $PSScriptRoot
 [Environment]::CurrentDirectory = $PWD
 
-$Major, $Minor, $Patch, $Prerelease, $Build = .\Get-VersionInfo.ps1 -VersionName "tom.exe_$AssemblyName"
+$Major, $Minor, $Patch, $Prerelease, $Build = .\Get-VersionInfo.ps1 -AssemblyName $AssemblyName
 if ([string]::IsNullOrEmpty($Prerelease)) {
-	$Prerelease = 0;
+	$Prerelease = "0";
 }
 
 # If there's nothing in the Properties dir, then it won't be there...
