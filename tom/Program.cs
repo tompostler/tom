@@ -24,9 +24,9 @@ namespace Unlimitedinf.Tom
         /// </remarks>
         public static void Main(string[] args)
         {
-            Log.Verbosity = Log.VerbositySetting.Verbose;
             Log.ProgramName = "TOM.EXE";
             Log.PrintProgramName = true;
+            Log.PrintVerbosityLevel = false;
             if (args == null)
                 throw new ArgumentNullException(nameof(args));
 
