@@ -13,7 +13,7 @@ if ($env:UnlimitedinfApiToken -eq $null) {
 
 $urlbase = "https://unlimitedinf-apis.azurewebsites.net";
 $VersionName = "tom.exe_$AssemblyName";
-$CountName = "tom.exe_$($AssemblyName)_count";
+$CountName = "tom.exe_$($AssemblyName)";
 
 # Update the version
 $url = "$urlbase/versioning/versions";

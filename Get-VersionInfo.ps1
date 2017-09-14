@@ -7,7 +7,7 @@ param(
 
 $urlbase = "https://unlimitedinf-apis.azurewebsites.net";
 $VersionName = "tom.exe_$AssemblyName";
-$CountName = "tom.exe_$($AssemblyName)_count";
+$CountName = "tom.exe_$($AssemblyName)";
 $count = "0";
 
 # If we have the token defined, try to update the count. Swallow all errors.
