@@ -17,6 +17,9 @@
     <ProjectReference Include="..\tom.hash\tom.hash.csproj">
       <PackageDirectory>Tools</PackageDirectory>
     </ProjectReference>
+    <ProjectReference Include="..\tom.hash-rename\tom.hash-rename.csproj">
+      <PackageDirectory>Tools</PackageDirectory>
+    </ProjectReference>
     <ProjectReference Include="..\tom.hello-world\tom.hello-world.csproj">
       <PackageDirectory>Tools</PackageDirectory>
     </ProjectReference>
