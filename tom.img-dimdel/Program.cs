@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Unlimitedinf.Tools;
 
@@ -35,29 +36,32 @@ namespace Unlimitedinf.Tom.ImageDimensionDelete
             long gcBytes = 100_000_000;
             Log.Inf($"There are {fileInfos.Count} files to img-dimdir, with {(totalBytes / 1e6).ToString("0.00")}MB of data to img-dimdir.");
 
-            foreach (var fileInfo in fileInfos)
+            Parallel.ForEach(fileInfos, fileInfo =>
             {
-                seenBytes += fileInfo.Length;
+                Interlocked.Add(ref seenBytes, fileInfo.Length);
                 DoTheThing(options, fileInfo);
 
                 if (options.ShowProgress)
-                {
-                    Console.Write(seenBytes * 100 / totalBytes);
-                    Console.Write('%');
-                    Console.SetCursorPosition(0, Console.CursorTop);
-                }
+                    lock (consolelock)
+                    {
+                        Console.Write(seenBytes * 100 / totalBytes);
+                        Console.Write('%');
+                        Console.SetCursorPosition(0, Console.CursorTop);
+                    }
 
                 // Creating and chucking a bunch of images is expensive and the GC doesn't get it... So give it a kick every 100MB.
                 if (gcBytes > seenBytes)
                 {
-                    gcBytes += 100_000_000;
+                    Interlocked.Add(ref gcBytes, 100_000_000);
                     GC.Collect();
                 }
-            }
+            });
         }
 
         /// <inheritdoc/>
         public Task RunAsync(string[] args) => throw new NotImplementedException();
+
+        private static object consolelock = new object();
 
         private static void DoTheThing(Options options, FileInfo info)
         {
@@ -69,7 +73,8 @@ namespace Unlimitedinf.Tom.ImageDimensionDelete
                     var keep = options.ShouldKeepImage(image);
                     if (keep)
                         return;
-                    Log.Inf($"{info.Name}: {options.WhyNotKeepImage(image)}");
+                    lock (consolelock)
+                        Log.Inf($"{info.Name}: {options.WhyNotKeepImage(image)}");
                 }
 
                 // Move it
@@ -162,9 +167,9 @@ OPTIONS:
             /// </summary>
             public string WhyNotKeepImage(Image image)
             {
-                return $"{(this.Width > 0 && image.Width < this.Width ? $"wi {image.Width:#####} ({this.Width}) " : "")}"
-                    + $"{(this.Height > 0 && image.Height < this.Height ? $"he {image.Height:#####} ({this.Height}) " : "")}"
-                    + $"{(this.Megapixels > 0 && image.GetMegapixels() < this.Megapixels ? $"mp {image.GetMegapixels():##.##} ({this.Megapixels:##.##})" : "")}";
+                return $"{(this.Width > 0 && image.Width < this.Width ? $"wi {image.Width.ToString().PadLeft(5)} ({this.Width}) " : "")}"
+                    + $"{(this.Height > 0 && image.Height < this.Height ? $"he {image.Height.ToString().PadLeft(5)} ({this.Height}) " : "")}"
+                    + $"{(this.Megapixels > 0 && image.GetMegapixels() < this.Megapixels ? $"mp {image.GetMegapixels():0.00} ({this.Megapixels:0.00})" : "")}";
             }
         }
 
