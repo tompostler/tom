@@ -23,6 +23,9 @@
     <ProjectReference Include="..\tom.hello-world\tom.hello-world.csproj">
       <PackageDirectory>Tools</PackageDirectory>
     </ProjectReference>
+    <ProjectReference Include="..\tom.img-dimdel\tom.img-dimdel.csproj">
+      <PackageDirectory>Tools</PackageDirectory>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(NuProjPath)\NuProj.targets" Condition="Exists('$(NuProjPath)\NuProj.targets')" />
 </Project>
