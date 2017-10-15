@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.16
+VisualStudioVersion = 15.0.26430.13
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "tom", "tom\tom.csproj", "{39A9C3A7-52A9-4D55-9557-91184C6CE067}"
 EndProject
@@ -11,6 +11,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.gitignore = .gitignore
 		Get-VersionInfo.ps1 = Get-VersionInfo.ps1
 		Inc-VersionInfo.ps1 = Inc-VersionInfo.ps1
+		New-VersionInfo.ps1 = New-VersionInfo.ps1
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tom.Package", "tom.Package", "{2AFE11E4-8D4E-4EDF-98E3-F5F51D68AB50}"
