@@ -138,6 +138,7 @@ OPTIONS:
                 throw new ArgumentNullException(nameof(args));
             Log.ProgramName = "IMGBLOCKDEL";
             Log.ConfigureDefaultConsoleApp();
+            Log.PrintDateTime = false;
 
             var options = new Options();
 
@@ -166,6 +167,10 @@ OPTIONS:
                 if (dirs.Count == 0)
                     throw new ArgumentNullException("DIRS");
                 options.SourceDirs = dirs.Select(_ => new DirectoryInfo(_)).ToList();
+                Log.Ver($"ARGS: progress : {options.ShowProgress.ToString()}");
+                Log.Ver($"ARGS: conf     : {options.Confidence}");
+                Log.Ver($"ARGS: dirs     : \"{string.Join("\", \"", dirs)}");
+                Log.Ver($"ARGS: res-dirs : \"{string.Join("\", \"", options.SourceDirs.Select(_ => _.FullName))}\"");
 
                 options.ValidateOptions();
             }

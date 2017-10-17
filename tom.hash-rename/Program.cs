@@ -107,11 +107,12 @@ OPTIONS:
         {
             if (args == null)
                 throw new ArgumentNullException(nameof(args));
-            Log.Verbosity = Log.VerbositySetting.Verbose;
             Log.ProgramName = "HASHRENAME";
+            Log.ConfigureDefaultConsoleApp();
+            Log.PrintDateTime = false;
 
             Hasher.Algorithm type = Hasher.Algorithm.MD5;
-            var showProgress = false;
+            var showProgress = true;
             var options = new OptionSet
             {
                 {
@@ -121,9 +122,9 @@ OPTIONS:
                     (Hasher.Algorithm t) => type = t
                 },
                 {
-                    "progress",
-                    "Show progress. Will scan ahead for all files to be hashed. Due to the nature of outputting additional characters for status updates, this is primarily intended for human viewing.",
-                    p => showProgress = p != null
+                    "hide-progress",
+                    "Hides progress. By default, will scan ahead for all files to be hashed. Due to the nature of outputting additional characters for status updates, this is primarily intended for human viewing.",
+                    p => showProgress = false
                 }
             };
             if (args.Length == 0)

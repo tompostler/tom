@@ -177,8 +177,9 @@ OPTIONS:
         {
             if (args == null)
                 throw new ArgumentNullException(nameof(args));
-            Log.Verbosity = Log.VerbositySetting.Verbose;
             Log.ProgramName = "IMGDIMDEL";
+            Log.ConfigureDefaultConsoleApp();
+            Log.PrintDateTime = false;
 
             var options = new Options();
 
@@ -205,9 +206,9 @@ OPTIONS:
                     (string d) => options.MoveToDir = new DirectoryInfo(d)
                 },
                 {
-                    "p|progress",
-                    "Show progress. Will scan ahead for all files, but does not check if they are images in advance. Due to the nature of outputting additional characters for status updates, this is primarily intended for human viewing. Defaults to true",
-                    p => options.ShowProgress = p != null
+                    "hide-progress",
+                    "Hides progress. By deafult, will scan ahead for all files, but does not check if they are images in advance. Due to the nature of outputting additional characters for status updates, this is primarily intended for human viewing.",
+                    p => options.ShowProgress = false
                 }
             };
             if (args.Length == 0 || args[0] == "--help")
@@ -226,6 +227,14 @@ OPTIONS:
                 options.SourceDir = new DirectoryInfo(dir[0]);
                 if (options.MoveToDir == null)
                     options.MoveToDir = new DirectoryInfo(Path.Combine(options.SourceDir.FullName, "toss"));
+
+                Log.Ver($"ARGS: width    : {options.Width}");
+                Log.Ver($"ARGS: height   : {options.Height}");
+                Log.Ver($"ARGS: mpixel   : {options.Megapixels:0.00}");
+                Log.Ver($"ARGS: dstdir   : {options.MoveToDir.FullName}");
+                Log.Ver($"ARGS: progress : {options.ShowProgress}");
+                Log.Ver($"ARGS: dir      : {dir[0]}");
+                Log.Ver($"ARGS: res-dir  : {options.SourceDir.FullName}");
 
                 options.ValidateOptions();
             }
