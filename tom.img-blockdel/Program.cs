@@ -70,7 +70,7 @@ namespace Unlimitedinf.Tom.ImageBlockhashDelete
                             while (File.Exists(newname))
                                 newname = $"{files[i].Info.Directory.FullName}{Path.DirectorySeparatorChar}{files[i].Info.Name.Substring(0, files[i].Info.Name.LastIndexOf('.'))}_DUP{j++}{fileInfo.Extension}";
                             lock (consolelock)
-                                Console.WriteLine($"{newname} <- {fileInfo.FullName} (dist:{hd})");
+                                Console.WriteLine($"{newname.PadRight(newname.LastIndexOf(Path.DirectorySeparatorChar) + 32)} <- {fileInfo.FullName} (dist:{hd})");
                             fileInfo.MoveTo(newname);
                         }
                     }
@@ -136,8 +136,8 @@ OPTIONS:
         {
             if (args == null)
                 throw new ArgumentNullException(nameof(args));
-            Log.Verbosity = Log.VerbositySetting.Verbose;
             Log.ProgramName = "IMGBLOCKDEL";
+            Log.ConfigureDefaultConsoleApp();
 
             var options = new Options();
 
@@ -149,9 +149,9 @@ OPTIONS:
                     (byte c) => options.Confidence = c
                 },
                 {
-                    "p|progress",
-                    "Hides progress. By default, will scan ahead for all files, but does not check if they are images in advance. Due to the nature of outputting additional characters for status updates, this is primarily intended for human viewing. Defaults to true",
-                    p => options.ShowProgress = (p != null ? false : true)
+                    "p|hide-progress",
+                    "Hides progress. By default, will scan ahead for all files, but does not check if they are images in advance. Due to the nature of outputting additional characters for status updates, this is primarily intended for human viewing.",
+                    p => options.ShowProgress = false
                 }
             };
             if (args.Length == 0 || args[0] == "--help")
