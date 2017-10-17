@@ -76,10 +76,9 @@ namespace Unlimitedinf.Tom.HashRename
 
                 // Find a non-colliding name
                 var i = 1;
-                var name = Path.Combine(info.Directory.FullName, $"{hash}{info.Extension}");
+                var name = Path.Combine(info.Directory.FullName, $"{hash.ToLowerInvariant()}{info.Extension}");
                 while (File.Exists(name))
-                    name = Path.Combine(info.Directory.FullName, $"{hash}_DUP{i++}{info.Extension}");
-                name = name.ToLowerInvariant();
+                    name = Path.Combine(info.Directory.FullName, $"{hash.ToLowerInvariant()}_DUP{i++}{info.Extension}");
 
                 Log.Inf($"{hash}{(i == 1 ? "     " : $"_DUP{i - 1}")} <-   {path}", printProgramName: false);
                 info.MoveTo(name);
