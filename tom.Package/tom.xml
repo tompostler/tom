@@ -2,12 +2,13 @@
 <Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Label="Configuration">
     
-    <Version>1.4.0</Version>
+    <Version>1.4.1</Version>
     
     <ReleaseNotes>
-1.4.0
+1.4.1
 
   - Add img-blockdel.
+  - Refactor to explicitly hide progress. Technically a breaking change, but I don't use it so it is a minor difference.
 
 1.3.0
 
