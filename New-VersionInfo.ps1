@@ -18,7 +18,7 @@ $VCName = "tom.exe_$AssemblyName";
 
 # Create the version
 $url = "$urlbase/versioning/versions";
-Write-Host "Updating version information at $($url.SubString($urlbase.Length))";
+Write-Host "Creating version information at $($url.SubString($urlbase.Length))";
 Write-Host "  (This may take a few moments if the API has fallen asleep)";
 $request = [System.Net.WebRequest]::CreateHttp($url);
 $request.ContentType = "application/json";
@@ -30,20 +30,20 @@ $reqStream.Close();
 $response = $request.GetResponse();
 
 # Check for failure
-if (!($response.StatusCode -eq [System.Net.HttpStatusCode]::OK)) {
+if (!($response.StatusCode -eq [System.Net.HttpStatusCode]::Created)) {
     Write-Host "Request failed with $($response.StatusCode)";
     exit 1;
 }
 
 # Get the version
-$version = (New-Object System.IO.StreamReader $response.GetResponseStream()).ReadToEnd() | ConvertFrom-Json;
-$version = $version.version;
-Write-Host "Version $VCName was created at $version";
+$newversion = (New-Object System.IO.StreamReader $response.GetResponseStream()).ReadToEnd() | ConvertFrom-Json;
+$newversion = $newversion.version;
+Write-Host "Version $VCName was created at $newversion";
 
 
 # Create the count
 $url = "$urlbase/versioning/counts";
-Write-Host "Resetting count information at $($url.SubString($urlbase.Length))";
+Write-Host "Creating count information at $($url.SubString($urlbase.Length))";
 $request = [System.Net.WebRequest]::CreateHttp($url);
 $request.ContentType = "application/json";
 $request.Method = "POST";
@@ -54,12 +54,12 @@ $reqStream.Close();
 $response = $request.GetResponse();
 
 # Check for failure
-if (!($response.StatusCode -eq [System.Net.HttpStatusCode]::OK)) {
+if (!($response.StatusCode -eq [System.Net.HttpStatusCode]::Created)) {
     Write-Host "Request failed with $($response.StatusCode)";
     exit 1;
 }
 
 # Get the count
-$count = (New-Object System.IO.StreamReader $response.GetResponseStream()).ReadToEnd() | ConvertFrom-Json;
-$count = $count.count;
-Write-Host "Count $VCName was created at $count";
+$newcount = (New-Object System.IO.StreamReader $response.GetResponseStream()).ReadToEnd() | ConvertFrom-Json;
+$newcount = $newcount.count;
+Write-Host "Count $VCName was created at $newcount";
