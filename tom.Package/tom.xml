@@ -2,10 +2,10 @@
 <Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Label="Configuration">
     
-    <Version>1.4.2</Version>
+    <Version>1.4.3</Version>
     
     <ReleaseNotes>
-1.4.2
+1.4.3
 
   - Update Apis and Tools.
 

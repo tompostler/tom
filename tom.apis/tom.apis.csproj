@@ -18,10 +18,10 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
     <Reference Include="Unlimitedinf.Apis.Client">
-      <HintPath>..\packages\Unlimitedinf.Apis.1.4.1\tools\Unlimitedinf.Apis.Client.exe</HintPath>
+      <HintPath>..\packages\Unlimitedinf.Apis.2.0.0\tools\Unlimitedinf.Apis.Client.exe</HintPath>
     </Reference>
-    <Reference Include="Unlimitedinf.Apis.Contracts, Version=1.4.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Unlimitedinf.Apis.1.4.1\lib\net46\Unlimitedinf.Apis.Contracts.dll</HintPath>
+    <Reference Include="Unlimitedinf.Apis.Contracts, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Unlimitedinf.Apis.2.0.0\lib\net46\Unlimitedinf.Apis.Contracts.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
