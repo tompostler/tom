@@ -8,9 +8,6 @@
     <Title>Unlimitedinf.Tom</Title>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\tom\tom.csproj">
-      <PackageDirectory>Tools</PackageDirectory>
-    </ProjectReference>
     <ProjectReference Include="..\tom.apis\tom.apis.csproj">
       <PackageDirectory>Tools</PackageDirectory>
     </ProjectReference>
