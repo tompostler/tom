@@ -2,9 +2,13 @@
 <Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Label="Configuration">
     
-    <Version>1.4.3</Version>
+    <Version>1.4.4</Version>
     
     <ReleaseNotes>
+1.4.4
+
+  - Fixed hash-rename casing bug, and changed default hash algorithm to crc32.
+
 1.4.3
 
   - Update Apis and Tools.

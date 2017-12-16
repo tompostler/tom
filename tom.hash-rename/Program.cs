@@ -68,17 +68,20 @@ namespace Unlimitedinf.Tom.HashRename
                 var info = new FileInfo(path);
                 string hash;
                 using (var stream = info.OpenRead())
-                    hash = hasher.ComputeHashS(stream);
+                    hash = hasher.ComputeHashS(stream).ToLowerInvariant();
 
                 // Short cicuit if we're the file already
-                if (hash == info.Name.Substring(0, info.Name.Length - info.Extension.Length))
+                if (hash.Equals(info.Name.Substring(0, info.Name.Length - info.Extension.Length), StringComparison.OrdinalIgnoreCase))
                     return;
 
-                // Find a non-colliding name
+                // Find a non-colliding name, and short circuit if we're already a DUP# file (can't assume until we find it though)...
                 var i = 1;
-                var name = Path.Combine(info.Directory.FullName, $"{hash.ToLowerInvariant()}{info.Extension}");
+                var name = Path.Combine(info.Directory.FullName, $"{hash}{info.Extension}");
                 while (File.Exists(name))
-                    name = Path.Combine(info.Directory.FullName, $"{hash.ToLowerInvariant()}_DUP{i++}{info.Extension}");
+                    if (name.Equals(info.FullName, StringComparison.OrdinalIgnoreCase))
+                        return;
+                    else
+                        name = Path.Combine(info.Directory.FullName, $"{hash}_DUP{i++}{info.Extension}");
 
                 Log.Inf($"{hash}{(i == 1 ? "     " : $"_DUP{i - 1}")} <-   {path}", printProgramName: false);
                 info.MoveTo(name);
@@ -111,14 +114,14 @@ OPTIONS:
             Log.ConfigureDefaultConsoleApp();
             Log.PrintDateTime = false;
 
-            Hasher.Algorithm type = Hasher.Algorithm.MD5;
+            Hasher.Algorithm type = Hasher.Algorithm.Crc32;
             var showProgress = true;
             var options = new OptionSet
             {
                 {
                     "t|type=",
                     // Get the list of all the hash types, but hide blockhash because image-only hashing is not the goal here.
-                    $"The type of hasing to use. Default is md5. Available options: {string.Join(", ", Enum.GetNames(typeof(Hasher.Algorithm)).Select(_ => _.ToLowerInvariant()).Where(_ => !_.Equals("blockhash", StringComparison.OrdinalIgnoreCase)))}.",
+                    $"The type of hasing to use. Default is crc32. Available options: {string.Join(", ", Enum.GetNames(typeof(Hasher.Algorithm)).Select(_ => _.ToLowerInvariant()).Where(_ => !_.Equals("blockhash", StringComparison.OrdinalIgnoreCase)))}.",
                     (Hasher.Algorithm t) => type = t
                 },
                 {
