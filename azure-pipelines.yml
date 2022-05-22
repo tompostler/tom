@@ -1,7 +1,8 @@
 trigger:
 - master
 
-pool: windows-latest
+pool:
+  vmImage: windows-latest
 
 steps:
 - powershell: Write-Host 'Hello, world!'
