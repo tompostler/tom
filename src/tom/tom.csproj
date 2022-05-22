@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Unlimitedinf.Tom</RootNamespace>
+    <OutputType>Exe</OutputType>
+
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>tom</ToolCommandName>
+  </PropertyGroup>
+
+</Project>

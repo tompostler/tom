@@ -2,7 +2,32 @@ trigger:
 - master
 
 pool:
-  vmImage: windows-latest
+  vmImage: windows-2022
+
+name: '$(Date:%y).$(DayOfYear).$(Rev:r)'
 
 steps:
-- powershell: Write-Host 'Hello, world!'
+
+- task: gitversion/setup@0
+  displayName: Install GitVersion
+  inputs:
+    versionSpec: 5.8.x
+
+- task: gitversion/execute@0
+  displayName: Determine Version
+  inputs:
+    useConfigFile: true
+    configFilePath: GitVersion.yml
+
+- task: DotNetCoreCLI@2
+  displayName: Restore nuget packages
+  inputs:
+    command: restore
+    projects: src/tom.sln
+
+- task: PublishBuildArtifacts@1
+  displayName: Publish build artifacts
+  inputs:
+    pathToPublish: $(Build.ArtifactStagingDirectory)
+    artifactName: drop
+    publishLocation: Container
