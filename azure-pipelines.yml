@@ -29,9 +29,7 @@ steps:
   displayName: Pack
   inputs:
     command: custom
-    custom: src/tom/tom.csproj --configuration Debug --no-restore --output $(Build.ArtifactStagingDirectory)/output 
-    projects: src/tom/tom.csproj
-    arguments: '--no-restore --configuration Debug --output $(Build.ArtifactStagingDirectory)/output'
+    custom: pack src/tom/tom.csproj --configuration Debug --no-restore --output $(Build.ArtifactStagingDirectory)/output 
 
 - task: PublishBuildArtifacts@1
   displayName: Publish build artifacts
