@@ -20,17 +20,15 @@ steps:
     configFilePath: GitVersion.yml
 
 - task: DotNetCoreCLI@2
-  displayName: Restore nuget packages
   inputs:
     command: restore
     projects: src/tom.sln
 
 - task: DotNetCoreCLI@2
-  displayName: Pack
   inputs:
     command: custom
     custom: pack
-    arguments: src/tom/tom.csproj --configuration Debug --no-restore --output $(Build.ArtifactStagingDirectory)/output 
+    arguments: src/tom/tom.csproj --configuration Debug --no-restore --output $(Build.ArtifactStagingDirectory) 
 
 - task: PublishBuildArtifacts@1
   displayName: Publish build artifacts
@@ -38,3 +36,10 @@ steps:
     pathToPublish: $(Build.ArtifactStagingDirectory)
     artifactName: drop
     publishLocation: Container
+
+- task: DotNetCoreCLI@2
+  inputs:
+    command: push
+    nugetFeedType: external
+    externalEndpoint: f3d8b226-1860-4e09-81b1-d0a4d3ffcb6f
+    packagesToPush: $(Build.ArtifactStagingDirectory)/*.nupkg

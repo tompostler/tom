@@ -1,6 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <AssemblyName>tom</AssemblyName>
+    <PackageId>Unlimitedinf.Tom</PackageId>
     <RootNamespace>Unlimitedinf.Tom</RootNamespace>
     <OutputType>Exe</OutputType>
 
