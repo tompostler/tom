@@ -28,7 +28,8 @@ steps:
 - task: DotNetCoreCLI@2
   displayName: Pack
   inputs:
-    command: pack
+    command: custom
+    custom: src/tom/tom.csproj --configuration Debug --no-restore --output $(Build.ArtifactStagingDirectory)/output 
     projects: src/tom/tom.csproj
     arguments: '--no-restore --configuration Debug --output $(Build.ArtifactStagingDirectory)/output'
 
