@@ -1,0 +1,7 @@
+trigger:
+- master
+
+pool: windows-latest
+
+steps:
+- powershell: Write-Host 'Hello, world!'
