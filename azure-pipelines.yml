@@ -30,7 +30,7 @@ steps:
   inputs:
     command: build
     projects: src/tom/tom.csproj
-    arguments: --configuration Debug --no-restore --runtime win-x64 --self-contained true
+    arguments: --configuration Debug --no-restore --runtime win-x64 --self-contained false
 
 - task: DotNetCoreCLI@2
   displayName: Pack to staging directory
