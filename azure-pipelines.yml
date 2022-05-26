@@ -37,13 +37,7 @@ steps:
     artifactName: drop
     publishLocation: Container
 
-- task: NuGetAuthenticate@0
-  inputs:
-    nuGetServiceConnections: f3d8b226-1860-4e09-81b1-d0a4d3ffcb6f
-
 - task: NuGetCommand@2
   inputs:
-    command: push
-    nuGetFeedType: external
-    versioningScheme: byEnvVar
-    versionEnvVar: <VERSION_ENVIRONMENT_VARIABLE>
+    command: custom
+    arguments: push $(Build.ArtifactStagingDirectory)/*.nupkg -ApiKey $(NuGetApiKey) -NonInteractive -Source https://api.nuget.org/v3/index.json -SkipDuplicate
