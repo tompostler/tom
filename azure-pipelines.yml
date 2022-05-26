@@ -20,11 +20,13 @@ steps:
     configFilePath: GitVersion.yml
 
 - task: DotNetCoreCLI@2
+  displayName: Restore packages
   inputs:
     command: restore
     projects: src/tom.sln
 
 - task: DotNetCoreCLI@2
+  displayName: Build and pack to staging directory
   inputs:
     command: custom
     custom: pack
@@ -38,6 +40,8 @@ steps:
     publishLocation: Container
 
 - task: NuGetCommand@2
+  displayName: NuGet push
   inputs:
-    command: custom
-    arguments: push $(Build.ArtifactStagingDirectory)\Unlimitedinf.Tom.*.nupkg -ApiKey $(NuGetApiKey) -NonInteractive -Source https://api.nuget.org/v3/index.json -SkipDuplicate
+    command: push
+    nuGetFeedType: external
+    publishFeedCredentials: 'NuGet-unlimitedinf'
