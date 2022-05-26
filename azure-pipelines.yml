@@ -40,4 +40,4 @@ steps:
 - task: NuGetCommand@2
   inputs:
     command: custom
-    arguments: push $(Build.ArtifactStagingDirectory)/*.nupkg -ApiKey $(NuGetApiKey) -NonInteractive -Source https://api.nuget.org/v3/index.json -SkipDuplicate
+    arguments: push $(Build.ArtifactStagingDirectory)\Unlimitedinf.Tom.*.nupkg -ApiKey $(NuGetApiKey) -NonInteractive -Source https://api.nuget.org/v3/index.json -SkipDuplicate
