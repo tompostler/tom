@@ -37,9 +37,13 @@ steps:
     artifactName: drop
     publishLocation: Container
 
-- task: DotNetCoreCLI@2
+- task: NuGetAuthenticate@0
+  inputs:
+    nuGetServiceConnections: f3d8b226-1860-4e09-81b1-d0a4d3ffcb6f
+
+- task: NuGetCommand@2
   inputs:
     command: push
-    nugetFeedType: external
-    externalEndpoint: f3d8b226-1860-4e09-81b1-d0a4d3ffcb6f
-    packagesToPush: $(Build.ArtifactStagingDirectory)/*.nupkg
+    nuGetFeedType: external
+    versioningScheme: byEnvVar
+    versionEnvVar: <VERSION_ENVIRONMENT_VARIABLE>
