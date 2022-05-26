@@ -9,7 +9,6 @@
   <!-- Shared properties for all projects. -->
   <PropertyGroup>
     <TargetFrameworks>net6.0</TargetFrameworks>
-	<RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <DebugSymbols>true</DebugSymbols>
     <LangVersion>9.0</LangVersion>
     <DebugType>full</DebugType>

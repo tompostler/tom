@@ -26,18 +26,11 @@ steps:
     projects: src/tom.sln
 
 - task: DotNetCoreCLI@2
-  displayName: Build project
-  inputs:
-    command: build
-    projects: src/tom/tom.csproj
-    arguments: --configuration Debug --no-restore --runtime win-x64 --no-self-contained
-
-- task: DotNetCoreCLI@2
-  displayName: Pack to staging directory
+  displayName: Build and pack to staging directory
   inputs:
     command: custom
     custom: pack
-    arguments: src/tom/tom.csproj --configuration Debug --no-build --no-restore --output $(Build.ArtifactStagingDirectory) --runtime win-x64
+    arguments: src/tom/tom.csproj --configuration Debug --no-restore --output $(Build.ArtifactStagingDirectory)
 
 - task: PublishBuildArtifacts@1
   displayName: Publish build artifacts
