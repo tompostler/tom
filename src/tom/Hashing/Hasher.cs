@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Security.Cryptography;
-using System.Text;
 
 namespace Unlimitedinf.Tom.Hashing
 {
@@ -24,8 +23,7 @@ namespace Unlimitedinf.Tom.Hashing
         }
 
         private readonly Algorithm algorithm;
-
-        private HashAlgorithm hashAlgorithm;
+        private readonly HashAlgorithm hashAlgorithm;
 
         /// <summary>
         /// Ctor.
@@ -33,87 +31,30 @@ namespace Unlimitedinf.Tom.Hashing
         public Hasher(Algorithm algorithm)
         {
             this.algorithm = algorithm;
-            this.ResetAlgorithm();
-        }
-
-        /// <summary>
-        /// Ctor that by default discards any setup you may have done to your choice of algorithm.
-        /// </summary>
-        public Hasher(HashAlgorithm algorithm, bool preserve = false)
-        {
-            if (algorithm is MD5)
-                this.algorithm = Algorithm.MD5;
-            else if (algorithm is Crc32)
-                this.algorithm = Algorithm.Crc32;
-            else if (algorithm is SHA1)
-                this.algorithm = Algorithm.SHA1;
-            else if (algorithm is SHA256)
-                this.algorithm = Algorithm.SHA256;
-            else if (algorithm is SHA512)
-                this.algorithm = Algorithm.SHA512;
-            else if (algorithm is Blockhash)
-                this.algorithm = Algorithm.Blockhash;
-
-            if (preserve)
-                this.hashAlgorithm = algorithm;
-            else
-                this.ResetAlgorithm();
-        }
-
-        /// <summary>
-        /// Resets the base algorithm to be fresh and unaffected.
-        /// </summary>
-        private void ResetAlgorithm()
-        {
-            switch (this.algorithm)
+            this.hashAlgorithm = algorithm switch
             {
-                case Algorithm.Blockhash:
-                    this.hashAlgorithm = Blockhash.Create();
-                    break;
-                case Algorithm.Crc32:
-                    this.hashAlgorithm = Crc32.Create();
-                    break;
-                case Algorithm.MD5:
-                    this.hashAlgorithm = MD5.Create();
-                    break;
-                case Algorithm.SHA1:
-                    this.hashAlgorithm = SHA1.Create();
-                    break;
-                case Algorithm.SHA256:
-                    this.hashAlgorithm = SHA256.Create();
-                    break;
-                case Algorithm.SHA512:
-                    this.hashAlgorithm = SHA512.Create();
-                    break;
-            }
+                Algorithm.MD5 => MD5.Create(),
+                Algorithm.Crc32 => Crc32.Create(),
+                Algorithm.SHA1 => SHA1.Create(),
+                Algorithm.SHA256 => SHA256.Create(),
+                Algorithm.SHA512 => SHA512.Create(),
+                Algorithm.Blockhash => Blockhash.Create(),
+                _ => throw new NotImplementedException(),
+            };
         }
 
         /// <summary>
         /// Compute the hash from a given stream.
         /// </summary>
-        public byte[] ComputeHash(Stream inputStream)
-        {
+        public byte[] ComputeHash(Stream inputStream) =>
             // Temporary workaround warranting further investigation.
-            if (this.algorithm == Algorithm.Blockhash)
-                return Blockhash.ComputeHash(inputStream);
-            else
-                return this.hashAlgorithm.ComputeHash(inputStream);
-        }
+            this.algorithm == Algorithm.Blockhash
+            ? Blockhash.ComputeHash(inputStream)
+            : this.hashAlgorithm.ComputeHash(inputStream);
 
         /// <summary>
         /// Compute the hash from a given stream and return it as a string.
         /// </summary>
-        public string ComputeHashS(Stream inputStream)
-        {
-            return BitConverter.ToString(this.ComputeHash(inputStream)).Replace("-", "");
-        }
-
-        /// <summary>
-        /// Compute the hash from a string, assuming that string is UTF8.
-        /// </summary>
-        public string ComputeHashS(string input)
-        {
-            return this.ComputeHashS(new MemoryStream(Encoding.UTF8.GetBytes(input ?? "")));
-        }
+        public string ComputeHashS(Stream inputStream) => BitConverter.ToString(this.ComputeHash(inputStream)).Replace("-", string.Empty);
     }
 }
