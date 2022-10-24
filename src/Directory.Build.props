@@ -9,8 +9,8 @@
   <!-- Shared properties for all projects. -->
   <PropertyGroup>
     <TargetFrameworks>net6.0</TargetFrameworks>
-    <DebugSymbols>true</DebugSymbols>
     <LangVersion>9.0</LangVersion>
+    <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
   </PropertyGroup>
 
@@ -27,9 +27,8 @@
 
   <!-- Packaging Metadata -->
   <PropertyGroup>
-    <Authors>UnlimitedInf</Authors>
-	<Description>My primary exe helper that uses all the various tools I've written. Don't expect stability.</Description>
-    <Copyright>Copyright © UnlimitedInf (Tom Postler) 2022</Copyright>
+    <Authors>Tom Postler</Authors>
+	<Description>Various tools and utilities that I've needed or found useful.</Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <RepositoryUrl>https://github.com/tompostler/tom</RepositoryUrl>
   </PropertyGroup>
