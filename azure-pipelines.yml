@@ -1,10 +1,10 @@
 trigger:
 - master
 
+name: '$(Date:%y).$(DayOfYear).$(Rev:r)'
+
 pool:
   vmImage: windows-2022
-
-name: '$(Date:%y).$(DayOfYear).$(Rev:r)'
 
 steps:
 
@@ -26,11 +26,11 @@ steps:
     projects: src/tom.sln
 
 - task: DotNetCoreCLI@2
-  displayName: Build and pack to staging directory
+  displayName: Build solution
   inputs:
-    command: custom
-    custom: pack
-    arguments: src/tom/tom.csproj --configuration Debug --no-restore --output $(Build.ArtifactStagingDirectory)
+    command: build
+    projects: src/tom.sln
+    arguments: '--no-restore --configuration Debug --property:PackageOutputPath=$(Build.ArtifactStagingDirectory)'
 
 - task: PublishBuildArtifacts@1
   displayName: Publish build artifacts
@@ -38,10 +38,3 @@ steps:
     pathToPublish: $(Build.ArtifactStagingDirectory)
     artifactName: drop
     publishLocation: Container
-
-- task: NuGetCommand@2
-  displayName: NuGet push
-  inputs:
-    command: push
-    nuGetFeedType: external
-    publishFeedCredentials: 'NuGet-unlimitedinf'
