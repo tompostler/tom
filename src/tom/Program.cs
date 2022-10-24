@@ -8,9 +8,8 @@ namespace Unlimitedinf.Tom
         public static async Task<int> Main(string[] args)
         {
             RootCommand rootCommand = new("Various tools and utilities that I've needed or found useful.");
-            Option<Verbosity> verbosityOption = new("--verbosity", () => Verbosity.Warn, "Verbosity level for logging.");
-            verbosityOption.AddAlias("-v");
-            rootCommand.AddGlobalOption(verbosityOption);
+
+            rootCommand.AddCommand(Commands.Hash.Create());
 
             return await rootCommand.InvokeAsync(args);
         }
