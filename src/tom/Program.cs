@@ -10,6 +10,7 @@ namespace Unlimitedinf.Tom
             RootCommand rootCommand = new("Various tools and utilities that I've needed or found useful.");
 
             rootCommand.AddCommand(Commands.Hash.Create());
+            rootCommand.AddCommand(Commands.HashRename.Create());
 
             return await rootCommand.InvokeAsync(args);
         }

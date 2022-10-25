@@ -8,11 +8,11 @@ using Unlimitedinf.Tom.Hashing;
 
 namespace Unlimitedinf.Tom.Commands
 {
-    internal static class Hash
+    internal static class HashRename
     {
         public static Command Create()
         {
-            Command command = new("hash", "Hashes files based on the chosen hash algorithm.");
+            Command command = new("hash-rename", "Hashes files based on the chosen hash algorithm, and then renames the files to their hash.");
 
             Argument<Hasher.Algorithm> algorithmArg = new(
                 "algorithm",
@@ -26,7 +26,7 @@ namespace Unlimitedinf.Tom.Commands
                 "The file(s) or directory path(s) to hash. The default is Environment.CurrentDirectory.");
             command.AddArgument(pathsToHashArg);
 
-            Option<bool> quietOpt = new("--quiet", "Do not display any extra information beyond the file hashes.");
+            Option<bool> quietOpt = new("--quiet", "Do not display any extra information beyond the renamed files.");
             quietOpt.AddAlias("-q");
             command.AddOption(quietOpt);
 
@@ -74,12 +74,15 @@ namespace Unlimitedinf.Tom.Commands
                 Thread.Sleep(TimeSpan.FromSeconds(1));
             }
 
-            // Then actually hash all of them
+            // Then actually hash and rename all of them
             Hasher hasher = new(algorithm);
             foreach (FileInfo fileInfo in fileInfos)
             {
+                // Compute the hash and the target file name
                 using FileStream fs = fileInfo.OpenRead();
-                Console.WriteLine($"{hasher.ComputeHashS(fs).ToLower()} {fileInfo.FullName}");
+                string hash = hasher.ComputeHashS(fs).ToLower();
+                fs.Dispose();
+                string targetFileName = hash + fileInfo.Extension;
                 seenBytes += fileInfo.Length;
 
                 // Emit progress as we go
@@ -89,6 +92,23 @@ namespace Unlimitedinf.Tom.Commands
                     Console.Write('%');
                     Console.SetCursorPosition(0, Console.CursorTop);
                 }
+
+                // If the target name is equal to the current file name, then it's already the right name
+                if (string.Equals(fileInfo.Name, targetFileName, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                // Iterate through file names looking for a new one if the new one would collide
+                int i = 1;
+                while (File.Exists(Path.Combine(fileInfo.Directory.FullName, targetFileName)))
+                {
+                    targetFileName = $"{hash}_{i++:00}{fileInfo.Extension}";
+                }
+
+                // Log, and move it
+                Console.WriteLine($"{targetFileName.PadRight(hash.Length + 10)} <- {fileInfo.FullName}");
+                fileInfo.MoveTo(Path.Combine(fileInfo.Directory.FullName, targetFileName));
             }
         }
     }
