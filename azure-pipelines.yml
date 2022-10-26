@@ -32,11 +32,11 @@ steps:
     projects: src/tom.sln
     arguments: '--no-restore --configuration Debug --property:PackageOutputPath=$(Build.ArtifactStagingDirectory)'
 
-  - task: PowerShell@2
-    displayName: Create build version file
-    inputs:
-      targetType: inline
-      script: Set-Content -Path $(Build.ArtifactStagingDirectory)/version.txt -Value '$(Build.BuildVersion)';
+- task: PowerShell@2
+  displayName: Create build version file
+  inputs:
+    targetType: inline
+    script: Set-Content -Path $(Build.ArtifactStagingDirectory)/version.txt -Value '$(Build.BuildVersion)';
 
 - task: PublishBuildArtifacts@1
   displayName: Publish build artifacts
