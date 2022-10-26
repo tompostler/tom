@@ -14,10 +14,11 @@ namespace Unlimitedinf.Tom.Commands
         {
             Command command = new("hash", "Hashes files based on the chosen hash algorithm.");
 
-            Argument<Hasher.Algorithm> algorithmArg = new(
+            Argument<string> algorithmArg = new Argument<string>(
                 "algorithm",
-                () => Hasher.Algorithm.MD5,
-                "The type of hash algorithm to use. Note that blockhash will only work for images and throw exceptions for everything else.");
+                () => Hasher.Algorithm.MD5.ToString().ToLower(),
+                "The type of hash algorithm to use.")
+                .FromAmong(Enum.GetValues<Hasher.Algorithm>().Where(x => x != Hasher.Algorithm.Blockhash).Select(x => x.ToString().ToLower()).ToArray());
             command.AddArgument(algorithmArg);
 
             Argument<string[]> pathsToHashArg = new(
@@ -34,8 +35,9 @@ namespace Unlimitedinf.Tom.Commands
             return command;
         }
 
-        private static void Handle(Hasher.Algorithm algorithm, string[] pathsToHash, bool quiet)
+        private static void Handle(string algorithmStr, string[] pathsToHash, bool quiet)
         {
+            Hasher.Algorithm algorithm = Enum.Parse<Hasher.Algorithm>(algorithmStr, ignoreCase: true);
             pathsToHash = pathsToHash.Select(x => Path.GetFullPath(x)).ToArray();
             if (!quiet)
             {
