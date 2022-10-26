@@ -13,7 +13,7 @@ namespace Unlimitedinf.Tom.Commands
         public static Command Create()
         {
             Command command = new("hash-rename", "Hashes files based on the chosen hash algorithm, and then renames the files to their hash.");
-            
+
             Argument<string> algorithmArg = new Argument<string>(
                 "algorithm",
                 () => Hasher.Algorithm.MD5.ToString().ToLower(),
@@ -81,9 +81,11 @@ namespace Unlimitedinf.Tom.Commands
             foreach (FileInfo fileInfo in fileInfos)
             {
                 // Compute the hash and the target file name
-                using FileStream fs = fileInfo.OpenRead();
-                string hash = hasher.ComputeHashS(fs).ToLower();
-                fs.Dispose();
+                string hash = default;
+                using (FileStream fs = fileInfo.OpenRead())
+                {
+                    hash = hasher.ComputeHashS(fs).ToLower();
+                }
                 string targetFileName = hash + fileInfo.Extension;
                 seenBytes += fileInfo.Length;
 
