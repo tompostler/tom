@@ -7,6 +7,8 @@ namespace Unlimitedinf.Tom
     {
         public static async Task<int> Main(string[] args)
         {
+            await VersionProvider.TryReportIfUpdateIsRequiredAsync();
+
             RootCommand rootCommand = new("Various tools and utilities that I've needed or found useful.");
 
             rootCommand.AddCommand(Commands.Hash.Create());
