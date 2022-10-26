@@ -36,7 +36,7 @@ steps:
   displayName: Create build version file
   inputs:
     targetType: inline
-    script: Set-Content -Path $(Build.ArtifactStagingDirectory)/version.txt -Value '$(Build.BuildVersion)';
+    script: Set-Content -Path $(Build.ArtifactStagingDirectory)/txt -Value '$(Build.BuildVersion)';
 
 - task: PublishBuildArtifacts@1
   displayName: Publish build artifacts
