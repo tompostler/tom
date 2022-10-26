@@ -73,7 +73,7 @@ namespace Unlimitedinf.Tom
             // Need to update
             else if (!string.Equals(sourceVersion, targetVersion, StringComparison.OrdinalIgnoreCase))
             {
-                Console.Error.WriteLine("Update tom as a tool with 'dotnet tool update UnlimnitedInf.Tom --global'");
+                Console.Error.WriteLine("Update tom as a tool with 'dotnet tool update Unlimitedinf.Tom --global'");
             }
         }
     }
