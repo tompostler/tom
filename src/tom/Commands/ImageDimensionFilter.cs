@@ -144,7 +144,7 @@ namespace Unlimitedinf.Tom.Commands
                         else if (megapixels > 0 && image.GetMegapixels() < megapixels)
                         {
                             keep = false;
-                            reason = $"megapixels ({image.GetMegapixels()}) was less than requested: {megapixels}";
+                            reason = $"megapixels ({image.GetMegapixels():0.0}) was less than requested: {megapixels:0.0}";
                         }
                     }
 
