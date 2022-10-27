@@ -11,7 +11,8 @@ namespace Unlimitedinf.Tom
 
             RootCommand rootCommand = new("Various tools and utilities that I've needed or found useful.");
 
-            rootCommand.AddCommand(Commands.Blockhash.Create());
+            rootCommand.AddCommand(Commands.ImageDimensionFilter.Create());
+            rootCommand.AddCommand(Commands.ImageDuplicateBlockhash.Create());
             rootCommand.AddCommand(Commands.Hash.Create());
             rootCommand.AddCommand(Commands.HashRename.Create());
 

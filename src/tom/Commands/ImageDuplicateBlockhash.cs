@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Unlimitedinf.Tom.Commands
 {
-    internal static class Blockhash
+    internal static class ImageDuplicateBlockhash
     {
         public static Command Create()
         {
