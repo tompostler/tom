@@ -114,38 +114,45 @@ namespace Unlimitedinf.Tom.Commands
                     // Check the dimensions
                     bool keep = true;
                     string reason = default;
-                    using (var image = Image.FromFile(fileInfo.FullName))
+                    try
                     {
-                        // If width and height are defined, use those
-                        if (width > 0 && height > 0)
+                        using (var image = Image.FromFile(fileInfo.FullName))
                         {
-                            if (image.Width < width || image.Height < height)
+                            // If width and height are defined, use those
+                            if (width > 0 && height > 0)
+                            {
+                                if (image.Width < width || image.Height < height)
+                                {
+                                    keep = false;
+                                    reason = $"width ({image.Width}) or height ({image.Height}) was less than requested: {width}x{height}";
+                                }
+                            }
+
+                            // Then check just width, if defined
+                            else if (width > 0 && image.Width < width)
                             {
                                 keep = false;
-                                reason = $"width ({image.Width}) or height ({image.Height}) was less than requested: {width}x{height}";
+                                reason = $"width ({image.Width}) was less than requested: {width}";
+                            }
+
+                            // Then check just height, if defined
+                            else if (height > 0 && image.Height < height)
+                            {
+                                keep = false;
+                                reason = $"height ({image.Height}) was less than requested: {height}";
+                            }
+
+                            // Then check just megapixels, if defined
+                            else if (megapixels > 0 && image.GetMegapixels() < megapixels)
+                            {
+                                keep = false;
+                                reason = $"megapixels ({image.GetMegapixels():0.0}) was less than requested: {megapixels:0.0}";
                             }
                         }
-
-                        // Then check just width, if defined
-                        else if (width > 0 && image.Width < width)
-                        {
-                            keep = false;
-                            reason = $"width ({image.Width}) was less than requested: {width}";
-                        }
-
-                        // Then check just height, if defined
-                        else if (height > 0 && image.Height < height)
-                        {
-                            keep = false;
-                            reason = $"height ({image.Height}) was less than requested: {height}";
-                        }
-
-                        // Then check just megapixels, if defined
-                        else if (megapixels > 0 && image.GetMegapixels() < megapixels)
-                        {
-                            keep = false;
-                            reason = $"megapixels ({image.GetMegapixels():0.0}) was less than requested: {megapixels:0.0}";
-                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"{fileInfo.FullName.PadRight(maxFileNameLength)} {ex.Message}");
                     }
 
 #pragma warning restore CA1416 // Validate platform compatibility
@@ -175,7 +182,7 @@ namespace Unlimitedinf.Tom.Commands
                     }
 
                     // Creating and discarding a bunch of images is expensive and the GC doesn't keep up... So give it a kick every 100MB.
-                    if (gcBytes > seenBytes)
+                    if (gcBytes < seenBytes)
                     {
                         _ = Interlocked.Add(ref gcBytes, 100_000_000);
                         GC.Collect();

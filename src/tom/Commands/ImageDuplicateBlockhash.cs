@@ -138,7 +138,7 @@ namespace Unlimitedinf.Tom.Commands
                     }
 
                     // Creating and discarding a bunch of images is expensive and the GC doesn't keep up... So give it a kick every 100MB.
-                    if (gcBytes > seenBytes)
+                    if (gcBytes < seenBytes)
                     {
                         _ = Interlocked.Add(ref gcBytes, 100_000_000);
                         GC.Collect();
