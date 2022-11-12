@@ -114,12 +114,13 @@ namespace Unlimitedinf.Tom.Commands
                                 {
                                     targetFileName = $"{files[i].Info.Name.Substring(0, files[i].Info.Name.Length - files[i].Info.Extension.Length)}_{j++:00}{fileInfo.Extension}";
                                 }
+                                string targetFilePath = Path.Combine(fileInfo.Directory.FullName, targetFileName);
                                 lock (consoleLock)
                                 {
-                                    Console.WriteLine($"{targetFileName,-42} <- {fileInfo.FullName} (dist:{hd})");
+                                    Console.WriteLine($"{targetFilePath,-42} <- {fileInfo.FullName} (dist:{hd})");
                                 }
 
-                                fileInfo.MoveTo(Path.Combine(fileInfo.Directory.FullName, targetFileName));
+                                fileInfo.MoveTo(targetFilePath);
                             }
                         }
 

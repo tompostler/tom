@@ -111,8 +111,9 @@ namespace Unlimitedinf.Tom.Commands
                 }
 
                 // Log, and move it
-                Console.WriteLine($"{targetFileName.PadRight(hash.Length + 10)} <- {fileInfo.FullName}");
-                fileInfo.MoveTo(Path.Combine(fileInfo.Directory.FullName, targetFileName));
+                string targetFilePath = Path.Combine(fileInfo.Directory.FullName, targetFileName);
+                Console.WriteLine($"{targetFilePath,-42} <- {fileInfo.FullName}");
+                fileInfo.MoveTo(targetFilePath);
             }
         }
     }
