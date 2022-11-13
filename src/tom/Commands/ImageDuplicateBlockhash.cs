@@ -112,9 +112,9 @@ namespace Unlimitedinf.Tom.Commands
                                 string targetFileName = files[i].Info.Name;
                                 while (File.Exists(Path.Combine(fileInfo.Directory.FullName, targetFileName)))
                                 {
-                                    targetFileName = $"{files[i].Info.Name.Substring(0, files[i].Info.Name.Length - files[i].Info.Extension.Length)}_{j++:00}{fileInfo.Extension}";
+                                    targetFileName = $"{files[i].Info.Name.Substring(0, files[i].Info.Name.Length - files[i].Info.Extension.Length)}_DUPE-{j++:00}{fileInfo.Extension}";
                                 }
-                                string targetFilePath = Path.Combine(fileInfo.Directory.FullName, targetFileName);
+                                string targetFilePath = Path.Combine(files[i].Info.Directory.FullName, targetFileName);
                                 lock (consoleLock)
                                 {
                                     Console.WriteLine($"{targetFilePath,-42} <- {fileInfo.FullName} (dist:{hd})");

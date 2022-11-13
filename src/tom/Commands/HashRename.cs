@@ -107,7 +107,7 @@ namespace Unlimitedinf.Tom.Commands
                 int i = 1;
                 while (File.Exists(Path.Combine(fileInfo.Directory.FullName, targetFileName)))
                 {
-                    targetFileName = $"{hash}_{i++:00}{fileInfo.Extension}";
+                    targetFileName = $"{hash}_DUPE-{i++:00}{fileInfo.Extension}";
                 }
 
                 // Log, and move it
