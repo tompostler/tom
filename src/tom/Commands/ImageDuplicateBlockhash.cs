@@ -110,7 +110,7 @@ namespace Unlimitedinf.Tom.Commands
                             {
                                 int j = 1;
                                 string targetFileName = files[i].Info.Name;
-                                while (File.Exists(Path.Combine(fileInfo.Directory.FullName, targetFileName)))
+                                while (File.Exists(Path.Combine(files[i].Info.Directory.FullName, targetFileName)))
                                 {
                                     targetFileName = $"{files[i].Info.Name.Substring(0, files[i].Info.Name.Length - files[i].Info.Extension.Length)}_DUPE-{j++:00}{fileInfo.Extension}";
                                 }
