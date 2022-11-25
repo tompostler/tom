@@ -15,6 +15,7 @@ namespace Unlimitedinf.Tom
             rootCommand.AddCommand(Commands.ImageDuplicateBlockhash.Create());
             rootCommand.AddCommand(Commands.Hash.Create());
             rootCommand.AddCommand(Commands.HashRename.Create());
+            rootCommand.AddCommand(Commands.WebSocketServer.Create());
 
             return await rootCommand.InvokeAsync(args);
         }
