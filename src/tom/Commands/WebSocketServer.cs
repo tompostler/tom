@@ -16,6 +16,8 @@ namespace Unlimitedinf.Tom.Commands
                 "--host",
                 () => "+",
                 "The hostname to run on. By default accepts any hostname.");
+            command.AddAlias("-h");
+            command.AddOption(hostOpt);
 
             Option<int> portOpt = new(
                 "--port",
