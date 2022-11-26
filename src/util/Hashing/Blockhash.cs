@@ -15,6 +15,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
+using Unlimitedinf.Utilities.Extensions;
 
 namespace Unlimitedinf.Utilities.Hashing
 {

@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 
-namespace Unlimitedinf.Utilities
+namespace Unlimitedinf.Utilities.Extensions
 {
     /// <summary>
-    /// A place to put extensions that I have not found a better home for.
+    /// Extensions for various enumerables.
     /// </summary>
-    public static class Extensions
+    public static class EnumerableExtensions
     {
         /// <summary>
         /// Calculate the medain of an enumerable. Attempts to convert to doubles.
@@ -33,12 +32,5 @@ namespace Unlimitedinf.Utilities
                 return Convert.ToDouble(source.ElementAt(midpoint));
             }
         }
-
-        /// <summary>
-        /// Using the width and height of an image, return its megapixel count;
-        /// </summary>
-#pragma warning disable CA1416 // Validate platform compatibility
-        public static double GetMegapixels(this Image image) => image.Width * image.Height / 1e6;
-#pragma warning restore CA1416 // Validate platform compatibility
     }
 }
