@@ -16,6 +16,7 @@ namespace Unlimitedinf.Tom
             rootCommand.AddCommand(Commands.HashCommand.Create());
             rootCommand.AddCommand(Commands.HashRenameCommand.Create());
             rootCommand.AddCommand(Commands.RandomCommand.Create());
+            rootCommand.AddCommand(Commands.WebSocketClientCommand.Create());
             rootCommand.AddCommand(Commands.WebSocketServerCommand.Create());
 
             return await rootCommand.InvokeAsync(args);

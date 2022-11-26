@@ -13,11 +13,17 @@ namespace Unlimitedinf.Tom.Commands
         {
             Command command = new("wss", "Creates a web socket server to be used for p2p communication.");
 
-            Argument<DirectoryInfo> workingDirArg = new(
+            Option<DirectoryInfo> workingDirOpt = new(
                 "working-dir",
                 () => new(Environment.CurrentDirectory),
                 "The working directory to be used for serving files. Only files that are a children of this directory can be copied.");
-            command.AddArgument(workingDirArg);
+            command.AddOption(workingDirOpt);
+
+            Option<double> mbpsLimitOpt = new(
+                "--mbps",
+                () => 0,
+                "Rate-limit the sending and receiving of files to this megabits per second.");
+            command.AddOption(mbpsLimitOpt);
 
             Option<string> hostOpt = new(
                 "--host",
@@ -52,11 +58,11 @@ namespace Unlimitedinf.Tom.Commands
                 "If provided, will generate an https certificate with a nonsense subject name to be used for manual validation.");
             command.AddOption(httpsGenerateCertOpt);
 
-            command.SetHandler(HandleAsync, workingDirArg, hostOpt, portOpt, httpsPfxPathOpt, httpsCertPemPathOpt, httpsKeyPemPathOpt, httpsGenerateCertOpt);
+            command.SetHandler(HandleAsync, workingDirOpt, mbpsLimitOpt, hostOpt, portOpt, httpsPfxPathOpt, httpsCertPemPathOpt, httpsKeyPemPathOpt, httpsGenerateCertOpt);
             return command;
         }
 
-        private static Task HandleAsync(DirectoryInfo workingDir, string host, int port, FileInfo httpsPfxPath, FileInfo httpsCertPemPath, FileInfo httpsKeyPemPath, bool httpsGenerateCert)
+        private static Task HandleAsync(DirectoryInfo workingDir, double mbpsLimit, string host, int port, FileInfo httpsPfxPath, FileInfo httpsCertPemPath, FileInfo httpsKeyPemPath, bool httpsGenerateCert)
         {
             X509Certificate2 httpsCert = default;
             if (httpsPfxPath != default)
@@ -78,6 +84,7 @@ namespace Unlimitedinf.Tom.Commands
             return WebSocket.Program.MainAsync(
                 new()
                 {
+                    BytesPerSecondLimit = (long)(mbpsLimit * 1_000_000 / 8),
                     Host = host,
                     Port = port,
                     CustomHttpsCertificate = httpsCert,
