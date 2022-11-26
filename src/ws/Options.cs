@@ -1,5 +1,5 @@
-﻿using System.Security.Cryptography.X509Certificates;
-using System;
+﻿using System;
+using System.Security.Cryptography.X509Certificates;
 
 namespace Unlimitedinf.Tom.WebSocket
 {
@@ -7,7 +7,7 @@ namespace Unlimitedinf.Tom.WebSocket
     {
         public string Host { get; set; } = "+";
         public int Port { get; set; } = Random.Shared.Next(49152, 65536);
-        public X509Certificate2 HttpsCertificate { get; set; }
+        public X509Certificate2 CustomHttpsCertificate { get; set; }
         public string Token { get; internal set; }
     }
 }

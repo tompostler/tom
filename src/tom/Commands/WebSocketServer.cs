@@ -13,6 +13,12 @@ namespace Unlimitedinf.Tom.Commands
         {
             Command command = new("wss", "Creates a web socket server to be used for p2p communication.");
 
+            Argument<DirectoryInfo> workingDirArg = new(
+                "working-dir",
+                () => new(Environment.CurrentDirectory),
+                "The working directory to be used for serving files. Only files that are a children of this directory can be copied.");
+            command.AddArgument(workingDirArg);
+
             Option<string> hostOpt = new(
                 "--host",
                 () => "+",
@@ -46,11 +52,11 @@ namespace Unlimitedinf.Tom.Commands
                 "If provided, will generate an https certificate with a nonsense subject name to be used for manual validation.");
             command.AddOption(httpsGenerateCertOpt);
 
-            command.SetHandler(HandleAsync, hostOpt, portOpt, httpsPfxPathOpt, httpsCertPemPathOpt, httpsKeyPemPathOpt, httpsGenerateCertOpt);
+            command.SetHandler(HandleAsync, workingDirArg, hostOpt, portOpt, httpsPfxPathOpt, httpsCertPemPathOpt, httpsKeyPemPathOpt, httpsGenerateCertOpt);
             return command;
         }
 
-        private static Task HandleAsync(string host, int port, FileInfo httpsPfxPath, FileInfo httpsCertPemPath, FileInfo httpsKeyPemPath, bool httpsGenerateCert)
+        private static Task HandleAsync(DirectoryInfo workingDir, string host, int port, FileInfo httpsPfxPath, FileInfo httpsCertPemPath, FileInfo httpsKeyPemPath, bool httpsGenerateCert)
         {
             X509Certificate2 httpsCert = default;
             if (httpsPfxPath != default)
@@ -67,12 +73,14 @@ namespace Unlimitedinf.Tom.Commands
                 httpsCert = new CertificateRequest(subjectName, ECDsa.Create(), HashAlgorithmName.SHA256).CreateSelfSigned(DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddDays(7));
             }
 
+            Environment.CurrentDirectory = workingDir.FullName;
+
             return WebSocket.Program.MainAsync(
                 new()
                 {
                     Host = host,
                     Port = port,
-                    HttpsCertificate = httpsCert,
+                    CustomHttpsCertificate = httpsCert,
                 });
         }
     }

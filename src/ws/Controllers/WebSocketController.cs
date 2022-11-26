@@ -1,6 +1,9 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Unlimitedinf.Tom.WebSocket.Filters;
@@ -13,14 +16,38 @@ namespace Unlimitedinf.Tom.WebSocket.Controllers
     public sealed class WebSocketController : ControllerBase
     {
         private readonly Options options;
+        private readonly Status status;
 
-        public WebSocketController(Options options)
+        public WebSocketController(
+            Options options,
+            Status status)
         {
             this.options = options;
+            this.status = status;
         }
 
         [HttpGet("ping")]
         public IActionResult Ping() => this.NoContent();
+
+        [HttpGet("debug")]
+        public IActionResult Debug()
+        {
+            SortedList<string, string> environmentVariables = new();
+            IDictionary unsortedEnvironmentVariables = Environment.GetEnvironmentVariables();
+            foreach (object key in unsortedEnvironmentVariables.Keys)
+            {
+                environmentVariables.Add(key as string, unsortedEnvironmentVariables[key] as string);
+            }
+
+            return this.Ok(
+                new
+                {
+                    Environment.CurrentDirectory,
+                    this.options,
+                    this.status,
+                    environmentVariables
+                }); 
+        }
 
         [HttpPost("connect")]
         public async Task ConnectAsync(CancellationToken cancellationToken)
@@ -39,6 +66,17 @@ namespace Unlimitedinf.Tom.WebSocket.Controllers
             }
         }
 
-        private Task HandleAsync(System.Net.WebSockets.WebSocket webSocket, CancellationToken cancellationToken) => throw new NotImplementedException();
+        private async Task HandleAsync(System.Net.WebSockets.WebSocket webSocket, CancellationToken cancellationToken)
+        {
+            byte[] buffer = new byte[1024 * 4];
+            WebSocketReceiveResult receiveResult = await webSocket.ReceiveAsync(buffer, cancellationToken);
+
+            while (!receiveResult.CloseStatus.HasValue)
+            {
+                receiveResult = await webSocket.ReceiveAsync(buffer, cancellationToken);
+            }
+
+            await webSocket.CloseAsync(receiveResult.CloseStatus.Value, receiveResult.CloseStatusDescription, cancellationToken);
+        }
     }
 }

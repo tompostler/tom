@@ -18,7 +18,9 @@ namespace Unlimitedinf.Tom.WebSocket
         {
             WebApplicationBuilder builder = WebApplication.CreateBuilder();
             builder.Environment.EnvironmentName = Environments.Development;
+            
             _ = builder.Services.AddSingleton(options);
+            _ = builder.Services.AddSingleton(new Status());
 
             // Map controllers from this assembly, regardless of where we're started
             builder.Services.AddControllers().PartManager.ApplicationParts.Add(new AssemblyPart(typeof(Controllers.WebSocketController).Assembly));
@@ -26,9 +28,9 @@ namespace Unlimitedinf.Tom.WebSocket
             _ = builder.WebHost.ConfigureKestrel(
                 serverOptions =>
                 {
-                    if (options.HttpsCertificate != default)
+                    if (options.CustomHttpsCertificate != default)
                     {
-                        serverOptions.ConfigureHttpsDefaults(httpsOptions => httpsOptions.ServerCertificate = options.HttpsCertificate);
+                        serverOptions.ConfigureHttpsDefaults(httpsOptions => httpsOptions.ServerCertificate = options.CustomHttpsCertificate);
                     }
                 });
 
@@ -40,15 +42,15 @@ namespace Unlimitedinf.Tom.WebSocket
             _ = app.UseWebSockets();
             _ = app.MapControllers();
 
-            if (options.HttpsCertificate != default)
+            if (options.CustomHttpsCertificate != default)
             {
                 app.Logger.LogInformation(
                     $"Using HTTPS certificate with the following properties (echoing for manual validation on self-signed certs):\n" +
-                    $"Certificate '{options.HttpsCertificate.Thumbprint}' " +
-                    $"with subject name '{options.HttpsCertificate.Subject}' " +
-                    (options.HttpsCertificate.Subject == options.HttpsCertificate.Issuer ? string.Empty : $"issued by '{options.HttpsCertificate.Issuer}' ") +
-                    $"is valid from '{options.HttpsCertificate.NotBefore:yyyy-MM-dd HH:mm}' ({DateTime.Now.Subtract(options.HttpsCertificate.NotBefore).TotalDays:0.00}d ago) " +
-                    $"to '{options.HttpsCertificate.NotAfter:yyyy-MM-dd HH:mm}' ({options.HttpsCertificate.NotAfter.Subtract(DateTime.Now).TotalDays:0.00}d from now)."
+                    $"Certificate '{options.CustomHttpsCertificate.Thumbprint}' " +
+                    $"with subject name '{options.CustomHttpsCertificate.Subject}' " +
+                    (options.CustomHttpsCertificate.Subject == options.CustomHttpsCertificate.Issuer ? string.Empty : $"issued by '{options.CustomHttpsCertificate.Issuer}' ") +
+                    $"is valid from '{options.CustomHttpsCertificate.NotBefore:yyyy-MM-dd HH:mm}' ({DateTime.Now.Subtract(options.CustomHttpsCertificate.NotBefore).TotalDays:0.00}d ago) " +
+                    $"to '{options.CustomHttpsCertificate.NotAfter:yyyy-MM-dd HH:mm}' ({options.CustomHttpsCertificate.NotAfter.Subtract(DateTime.Now).TotalDays:0.00}d from now)."
                     );
             }
 
