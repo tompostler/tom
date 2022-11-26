@@ -2,7 +2,7 @@
 using System.IO;
 using System.Threading;
 
-namespace Unlimitedinf.Tom.IO
+namespace Unlimitedinf.Utilities.IO
 {
     /// <summary>
     /// Class for streaming data with throttling support.

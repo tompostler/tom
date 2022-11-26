@@ -8,7 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 
-namespace Unlimitedinf.Tom.Hashing
+namespace Unlimitedinf.Utilities.Hashing
 {
     /// <summary>
     /// Implements a 32-bit CRC hash algorithm compatible with Zip etc.
@@ -20,7 +20,7 @@ namespace Unlimitedinf.Tom.Hashing
     /// interface or remember that the result of one Compute call needs to be ~ (XOR) before
     /// being passed in as the seed for the next Compute call.
     /// </remarks>
-    internal sealed class Crc32 : HashAlgorithm
+    public sealed class Crc32 : HashAlgorithm
     {
         /// <summary>
         /// Default CRC32 polynomial.

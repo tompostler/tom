@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Unlimitedinf.Utilities</RootNamespace>
+    <AssemblyName>Unlimitedinf.Utilities</AssemblyName>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+
+    <Description>Supercedes Unlimitedinf.Tools for random helper and utility methods that I've found useful.</Description>
+    <DocumentationFile>$(BaseOutputPath)\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Drawing.Common" Version="6.0.0" />
+  </ItemGroup>
+
+</Project>

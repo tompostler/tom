@@ -4,7 +4,7 @@ using System.CommandLine;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using Unlimitedinf.Tom.Hashing;
+using Unlimitedinf.Utilities.Hashing;
 
 namespace Unlimitedinf.Tom.Commands
 {

@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Unlimitedinf.Utilities.Hashing;
 
 namespace Unlimitedinf.Tom.Commands
 {
@@ -91,7 +92,7 @@ namespace Unlimitedinf.Tom.Commands
                     {
                         try
                         {
-                            hash = Hashing.Blockhash.ComputeHash(fs);
+                            hash = Blockhash.ComputeHash(fs);
                         }
                         catch (ArgumentException)
                         {
@@ -105,7 +106,7 @@ namespace Unlimitedinf.Tom.Commands
                     {
                         for (int i = 0; i < files.Count; i++)
                         {
-                            int hd = Hashing.Blockhash.HammingDistance(files[i].Hash, hash);
+                            int hd = Blockhash.HammingDistance(files[i].Hash, hash);
                             if (hd < confidence)
                             {
                                 int j = 1;

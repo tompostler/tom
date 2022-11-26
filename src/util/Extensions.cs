@@ -3,9 +3,12 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 
-namespace Unlimitedinf.Tom
+namespace Unlimitedinf.Utilities
 {
-    internal static class Extensions
+    /// <summary>
+    /// A place to put extensions that I have not found a better home for.
+    /// </summary>
+    public static class Extensions
     {
         /// <summary>
         /// Calculate the medain of an enumerable. Attempts to convert to doubles.

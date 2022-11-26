@@ -20,6 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\util\util.csproj" />
     <ProjectReference Include="..\ws\ws.csproj" />
   </ItemGroup>
 

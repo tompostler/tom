@@ -16,7 +16,7 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 
-namespace Unlimitedinf.Tom.Hashing
+namespace Unlimitedinf.Utilities.Hashing
 {
     /// <summary>
     /// Perceptual image hash calculation tool based on algorithm descibed in 
@@ -28,7 +28,7 @@ namespace Unlimitedinf.Tom.Hashing
     /// pretty sure it does it twice in order to properly implement the HashAlgorithm class. Finding a better way is
     /// a TODO, but it works well enough for now.
     /// </remarks>
-    internal sealed class Blockhash : HashAlgorithm
+    public sealed class Blockhash : HashAlgorithm
     {
         [SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "Project is only built for windows.")]
         private static byte[] ImageToRGBA(Image image)

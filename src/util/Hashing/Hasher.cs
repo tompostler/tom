@@ -2,23 +2,46 @@
 using System.IO;
 using System.Security.Cryptography;
 
-namespace Unlimitedinf.Tom.Hashing
+namespace Unlimitedinf.Utilities.Hashing
 {
     /// <summary>
     /// A wrapper for common hashing functions to operate on streams or files.
     /// </summary>
-    internal sealed class Hasher
+    public sealed class Hasher
     {
         /// <summary>
         /// Helper to make it obvious which hash algorithm we're looking for.
         /// </summary>
         public enum Algorithm
         {
+            /// <summary>
+            /// <see cref="System.Security.Cryptography.MD5"/>
+            /// </summary>
             MD5,
+
+            /// <summary>
+            /// <see cref="Hashing.Crc32"/>
+            /// </summary>
             Crc32,
+
+            /// <summary>
+            /// <see cref="System.Security.Cryptography.SHA1"/>
+            /// </summary>
             SHA1,
+
+            /// <summary>
+            /// <see cref="System.Security.Cryptography.SHA256"/>
+            /// </summary>
             SHA256,
+
+            /// <summary>
+            /// <see cref="System.Security.Cryptography.SHA512"/>
+            /// </summary>
             SHA512,
+
+            /// <summary>
+            /// <see cref="Hashing.Blockhash"/>
+            /// </summary>
             Blockhash   // http://blockhash.io/
         }
 
