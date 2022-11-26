@@ -14,7 +14,7 @@ namespace Unlimitedinf.Tom.Commands
             Command command = new("wss", "Creates a web socket server to be used for p2p communication.");
 
             Option<DirectoryInfo> workingDirOpt = new(
-                "working-dir",
+                "--working-dir",
                 () => new(Environment.CurrentDirectory),
                 "The working directory to be used for serving files. Only files that are a children of this directory can be copied.");
             command.AddOption(workingDirOpt);
