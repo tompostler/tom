@@ -5,8 +5,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Runtime.CompilerServices;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -14,21 +12,13 @@ namespace Unlimitedinf.Tom.WebSocket
 {
     public static class Program
     {
-        internal static string Password { get; private set; }
-
-        public sealed class Options
-        {
-            public string Host { get; set; } = "+";
-            public int Port { get; set; } = Random.Shared.Next(49152, 65536);
-            public X509Certificate2 HttpsCertificate { get; set; }
-        }
-
         public static Task Main() => MainAsync(new());
 
         public static async Task MainAsync(Options options)
         {
             WebApplicationBuilder builder = WebApplication.CreateBuilder();
             builder.Environment.EnvironmentName = Environments.Development;
+            _ = builder.Services.AddSingleton(options);
 
             // Map controllers from this assembly, regardless of where we're started
             builder.Services.AddControllers().PartManager.ApplicationParts.Add(new AssemblyPart(typeof(Controllers.WebSocketController).Assembly));
@@ -50,9 +40,21 @@ namespace Unlimitedinf.Tom.WebSocket
             _ = app.UseWebSockets();
             _ = app.MapControllers();
 
+            if (options.HttpsCertificate != default)
+            {
+                app.Logger.LogInformation(
+                    $"Using HTTPS certificate with the following properties (echoing for manual validation on self-signed certs):\n" +
+                    $"Certificate '{options.HttpsCertificate.Thumbprint}' " +
+                    $"with subject name '{options.HttpsCertificate.Subject}' " +
+                    (options.HttpsCertificate.Subject == options.HttpsCertificate.Issuer ? string.Empty : $"issued by '{options.HttpsCertificate.Issuer}' ") +
+                    $"is valid from '{options.HttpsCertificate.NotBefore:yyyy-MM-dd HH:mm}' ({DateTime.Now.Subtract(options.HttpsCertificate.NotBefore).TotalDays:0.00}d ago) " +
+                    $"to '{options.HttpsCertificate.NotAfter:yyyy-MM-dd HH:mm}' ({options.HttpsCertificate.NotAfter.Subtract(DateTime.Now).TotalDays:0.00}d from now)."
+                    );
+            }
+
             // Establish the PSK for authorization
-            Password = GeneratePassword();
-            app.Logger.LogInformation($"Use the following PSK (Pre-Shared Key) for authorization to establish a web socket and browse for the lifetime of this session:\n{Password}");
+            options.Password = GeneratePassword();
+            app.Logger.LogInformation($"Use the following PSK (Pre-Shared Key) for authorization to establish a web socket and browse for the lifetime of this session:\n{options.Password}");
 
             await app.RunAsync();
         }

@@ -11,6 +11,13 @@ namespace Unlimitedinf.Tom.WebSocket.Controllers
     [ApiController]
     public sealed class WebSocketController : ControllerBase
     {
+        private readonly Options options;
+
+        public WebSocketController(Options options)
+        {
+            this.options = options;
+        }
+
         [HttpGet("ping")]
         public IActionResult Ping() => this.NoContent();
 
@@ -18,7 +25,7 @@ namespace Unlimitedinf.Tom.WebSocket.Controllers
         public async Task ConnectAsync(CancellationToken cancellationToken)
         {
             // Since we don't return IActionResult from web sockets, we need to set the status code on validation directly
-            if (!string.Equals(this.HttpContext.Request.Headers.Authorization.FirstOrDefault(), Program.Password))
+            if (!string.Equals(this.HttpContext.Request.Headers.Authorization.FirstOrDefault(), this.options.Password))
             {
                 this.HttpContext.Response.StatusCode = StatusCodes.Status401Unauthorized;
                 await this.HttpContext.Response.WriteAsync("PSK required.", cancellationToken);

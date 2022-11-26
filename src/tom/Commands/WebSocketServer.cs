@@ -1,6 +1,7 @@
 ﻿using System;
 using System.CommandLine;
 using System.IO;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 
@@ -16,12 +17,11 @@ namespace Unlimitedinf.Tom.Commands
                 "--host",
                 () => "+",
                 "The hostname to run on. By default accepts any hostname.");
-            command.AddAlias("-h");
             command.AddOption(hostOpt);
 
             Option<int> portOpt = new(
                 "--port",
-                () => Random.Shared.Next(49152, 65536),
+                () => System.Random.Shared.Next(49152, 65536),
                 "The port to listen on for connections.");
             portOpt.AddAlias("-p");
             command.AddOption(portOpt);
@@ -41,11 +41,16 @@ namespace Unlimitedinf.Tom.Commands
                 "If provided, will use this certificate for HTTPS instead of the built-in ASP.NET Core certificate. Needs to be paired with --https-certpem-path to work.");
             command.AddOption(httpsKeyPemPathOpt);
 
-            command.SetHandler(HandleAsync, hostOpt, portOpt, httpsPfxPathOpt, httpsCertPemPathOpt, httpsKeyPemPathOpt);
+            Option<bool> httpsGenerateCertOpt = new(
+                "--https-generate-cert",
+                "If provided, will generate an https certificate with a nonsense subject name to be used for manual validation.");
+            command.AddOption(httpsGenerateCertOpt);
+
+            command.SetHandler(HandleAsync, hostOpt, portOpt, httpsPfxPathOpt, httpsCertPemPathOpt, httpsKeyPemPathOpt, httpsGenerateCertOpt);
             return command;
         }
 
-        private static Task HandleAsync(string host, int port, FileInfo httpsPfxPath, FileInfo httpsCertPemPath, FileInfo httpsKeyPemPath)
+        private static Task HandleAsync(string host, int port, FileInfo httpsPfxPath, FileInfo httpsCertPemPath, FileInfo httpsKeyPemPath, bool httpsGenerateCert)
         {
             X509Certificate2 httpsCert = default;
             if (httpsPfxPath != default)
@@ -55,6 +60,11 @@ namespace Unlimitedinf.Tom.Commands
             else if (httpsCertPemPath != default && httpsKeyPemPath != default)
             {
                 httpsCert = X509Certificate2.CreateFromPemFile(httpsCertPemPath.FullName, httpsKeyPemPath.FullName);
+            }
+            else if (httpsGenerateCert)
+            {
+                string subjectName = $"CN={Random.InnerHandle(Random.RandomType.Name).Replace('_','-')}.{port}.tomwssself";
+                httpsCert = new CertificateRequest(subjectName, ECDsa.Create(), HashAlgorithmName.SHA256).CreateSelfSigned(DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddDays(7));
             }
 
             return WebSocket.Program.MainAsync(
