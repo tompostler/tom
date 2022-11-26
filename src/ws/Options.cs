@@ -8,6 +8,6 @@ namespace Unlimitedinf.Tom.WebSocket
         public string Host { get; set; } = "+";
         public int Port { get; set; } = Random.Shared.Next(49152, 65536);
         public X509Certificate2 HttpsCertificate { get; set; }
-        public string Password { get; internal set; }
+        public string Token { get; internal set; }
     }
 }

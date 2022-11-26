@@ -1,14 +1,15 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Unlimitedinf.Tom.WebSocket.Filters;
 
 namespace Unlimitedinf.Tom.WebSocket.Controllers
 {
     [Route("/ws")]
     [ApiController]
+    [RequiresToken]
     public sealed class WebSocketController : ControllerBase
     {
         private readonly Options options;
@@ -25,12 +26,7 @@ namespace Unlimitedinf.Tom.WebSocket.Controllers
         public async Task ConnectAsync(CancellationToken cancellationToken)
         {
             // Since we don't return IActionResult from web sockets, we need to set the status code on validation directly
-            if (!string.Equals(this.HttpContext.Request.Headers.Authorization.FirstOrDefault(), this.options.Password))
-            {
-                this.HttpContext.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                await this.HttpContext.Response.WriteAsync("PSK required.", cancellationToken);
-            }
-            else if (!this.HttpContext.WebSockets.IsWebSocketRequest)
+            if (!this.HttpContext.WebSockets.IsWebSocketRequest)
             {
                 this.HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
                 await this.HttpContext.Response.WriteAsync("Web socket request expected.", cancellationToken);

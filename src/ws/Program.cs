@@ -53,13 +53,13 @@ namespace Unlimitedinf.Tom.WebSocket
             }
 
             // Establish the PSK for authorization
-            options.Password = GeneratePassword();
-            app.Logger.LogInformation($"Use the following PSK (Pre-Shared Key) for authorization to establish a web socket and browse for the lifetime of this session:\n{options.Password}");
+            options.Token = GenerateToken();
+            app.Logger.LogInformation($"Use the following PSK (Pre-Shared Key) for authorization to establish a web socket and browse for the lifetime of this session:\n{options.Token}");
 
             await app.RunAsync();
         }
 
-        private static string GeneratePassword()
+        private static string GenerateToken()
         {
             const string validCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
