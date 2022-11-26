@@ -105,7 +105,7 @@ namespace Unlimitedinf.Tom.IO
         /// </summary>
         /// <param name="baseStream">The base stream.</param>
         public ThrottledStream(Stream baseStream)
-            : this(baseStream, ThrottledStream.Infinite)
+            : this(baseStream, Infinite)
         {
             // Nothing todo.
         }

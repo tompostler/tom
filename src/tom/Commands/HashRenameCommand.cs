@@ -8,7 +8,7 @@ using Unlimitedinf.Tom.Hashing;
 
 namespace Unlimitedinf.Tom.Commands
 {
-    internal static class HashRename
+    internal static class HashRenameCommand
     {
         public static Command Create()
         {

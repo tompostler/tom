@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Unlimitedinf.Tom.Commands
 {
-    internal static class ImageDimensionFilter
+    internal static class ImageDimensionFilterCommand
     {
         public static Command Create()
         {

@@ -365,7 +365,7 @@ namespace Unlimitedinf.Tom.Hashing
         protected override byte[] HashFinal()
         {
             this.haImageData.Seek(0, SeekOrigin.Begin);
-            return Blockhash.ComputeHash(this.haImageData);
+            return ComputeHash(this.haImageData);
         }
 
         /// <summary>

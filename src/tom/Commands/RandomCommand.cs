@@ -7,7 +7,7 @@ namespace Unlimitedinf.Tom.Commands
     /// <remarks>
     /// Most of this is sourced from number-sequence\src\number-sequence\Controllers\RandomController.cs
     /// </remarks>
-    internal static class Random
+    internal static class RandomCommand
     {
         public static Command Create()
         {

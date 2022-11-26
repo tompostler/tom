@@ -11,12 +11,12 @@ namespace Unlimitedinf.Tom
 
             RootCommand rootCommand = new("Various tools and utilities that I've needed or found useful.");
 
-            rootCommand.AddCommand(Commands.ImageDimensionFilter.Create());
-            rootCommand.AddCommand(Commands.ImageDuplicateBlockhash.Create());
-            rootCommand.AddCommand(Commands.Hash.Create());
-            rootCommand.AddCommand(Commands.HashRename.Create());
-            rootCommand.AddCommand(Commands.Random.Create());
-            rootCommand.AddCommand(Commands.WebSocketServer.Create());
+            rootCommand.AddCommand(Commands.ImageDimensionFilterCommand.Create());
+            rootCommand.AddCommand(Commands.ImageDuplicateBlockhashCommand.Create());
+            rootCommand.AddCommand(Commands.HashCommand.Create());
+            rootCommand.AddCommand(Commands.HashRenameCommand.Create());
+            rootCommand.AddCommand(Commands.RandomCommand.Create());
+            rootCommand.AddCommand(Commands.WebSocketServerCommand.Create());
 
             return await rootCommand.InvokeAsync(args);
         }

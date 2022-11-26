@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Unlimitedinf.Tom.Commands
 {
-    internal static class WebSocketServer
+    internal static class WebSocketServerCommand
     {
         public static Command Create()
         {
@@ -27,7 +27,7 @@ namespace Unlimitedinf.Tom.Commands
 
             Option<int> portOpt = new(
                 "--port",
-                () => System.Random.Shared.Next(49152, 65536),
+                () => Random.Shared.Next(49152, 65536),
                 "The port to listen on for connections.");
             portOpt.AddAlias("-p");
             command.AddOption(portOpt);
@@ -69,7 +69,7 @@ namespace Unlimitedinf.Tom.Commands
             }
             else if (httpsGenerateCert)
             {
-                string subjectName = $"CN={Random.InnerHandle(Random.RandomType.Name).Replace('_','-')}.{port}.tomwssself";
+                string subjectName = $"CN={RandomCommand.InnerHandle(RandomCommand.RandomType.Name).Replace('_','-')}.{port}.tomwssself";
                 httpsCert = new CertificateRequest(subjectName, ECDsa.Create(), HashAlgorithmName.SHA256).CreateSelfSigned(DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddDays(7));
             }
 
