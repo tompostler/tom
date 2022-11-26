@@ -5,4 +5,8 @@
     <AssemblyName>Unlimitedinf.Tom.WebSocket</AssemblyName>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\util\util.csproj" />
+  </ItemGroup>
+
 </Project>
