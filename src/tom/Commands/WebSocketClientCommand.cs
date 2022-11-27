@@ -127,12 +127,12 @@ namespace Unlimitedinf.Tom.Commands
             httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Token", token);
 
             // Set up the web socket client
-            ClientWebSocket client = new();
+            ClientWebSocket wsClient = new();
             if (!string.IsNullOrWhiteSpace(sslCertSubjectName) || !string.IsNullOrWhiteSpace(sslCertThumbprint))
             {
-                client.Options.RemoteCertificateValidationCallback = (_, certificate, chain, sslPolicyErrors) => serverCertificateValidationCallback(certificate, chain, sslPolicyErrors);
+                wsClient.Options.RemoteCertificateValidationCallback = (_, certificate, chain, sslPolicyErrors) => serverCertificateValidationCallback(certificate, chain, sslPolicyErrors);
             }
-            client.Options.SetRequestHeader(HeaderNames.Authorization, httpClient.DefaultRequestHeaders.Authorization.ToString());
+            wsClient.Options.SetRequestHeader(HeaderNames.Authorization, httpClient.DefaultRequestHeaders.Authorization.ToString());
 
             // First attempt a basic ping to make sure the routing, authentication, and ssl validation are all correct
             Uri pingEndpoint = endpoint.Scheme.StartsWith("ws") ? new($"http{endpoint.AbsoluteUri[2..]}") : endpoint;
@@ -146,7 +146,11 @@ namespace Unlimitedinf.Tom.Commands
             Console.WriteLine($"Successful ping in {sw.ElapsedMilliseconds}ms.");
             Console.WriteLine();
 
-            //await client.ConnectAsync(new Uri(endpoint, "ws/connect"), cts.Token);
+            // Connect the web socket
+            sw.Restart();
+            await wsClient.ConnectAsync(new Uri(endpoint, "ws/connect"), cts.Token);
+            Console.WriteLine($"Successful web socket connect in {sw.ElapsedMilliseconds}ms.");
+            Console.WriteLine();
         }
     }
 }

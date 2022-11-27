@@ -49,7 +49,7 @@ namespace Unlimitedinf.Tom.WebSocket.Controllers
                 }); 
         }
 
-        [HttpPost("connect")]
+        [HttpGet("connect")]
         public async Task ConnectAsync(CancellationToken cancellationToken)
         {
             // Since we don't return IActionResult from web sockets, we need to set the status code on validation directly
