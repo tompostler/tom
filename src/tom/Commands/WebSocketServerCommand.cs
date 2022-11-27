@@ -4,6 +4,7 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
+using Unlimitedinf.Utilities;
 
 namespace Unlimitedinf.Tom.Commands
 {
@@ -75,7 +76,7 @@ namespace Unlimitedinf.Tom.Commands
             }
             else if (httpsGenerateCert)
             {
-                string subjectName = $"CN={RandomCommand.InnerHandle(RandomCommand.RandomType.Name).Replace('_','-')}.{port}.tomwssself";
+                string subjectName = $"CN={Rando.GetString(Rando.RandomType.Name).Replace('_','-')}.{port}.tomwssself";
                 httpsCert = new CertificateRequest(subjectName, ECDsa.Create(), HashAlgorithmName.SHA256).CreateSelfSigned(DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddDays(7));
             }
 

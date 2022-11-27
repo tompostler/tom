@@ -153,6 +153,8 @@ namespace Unlimitedinf.Tom.Commands
             await wsClient.ConnectAsync(new Uri(endpoint, "ws/connect"), cts.Token);
             Console.WriteLine($"Successful web socket connect in {sw.ElapsedMilliseconds}ms.");
             Console.WriteLine();
+
+            // Using 4kb chunks, we should always receive the whole message (when sending text)
             byte[] buffer = new byte[1024 * 4];
 
             // Send the motd to get basic session info
@@ -160,7 +162,6 @@ namespace Unlimitedinf.Tom.Commands
             WebSocketReceiveResult receiveResult = await wsClient.ReceiveAsync(buffer, cts.Token);
             if (!receiveResult.EndOfMessage)
             {
-                // Using 4kb chunks, we should always receive the whole message
                 await wsClient.CloseAsync(WebSocketCloseStatus.PolicyViolation, "Text message not sent in full.", cts.Token);
                 return;
             }
@@ -168,6 +169,22 @@ namespace Unlimitedinf.Tom.Commands
             Console.WriteLine("Current status:");
             Console.WriteLine(motdResponse.ToJsonString(indented: true));
             Console.WriteLine();
+
+            // List the current directory
+            await wsClient.SendAsync(new CommandMessageLsRequest().ToJsonBytes(), WebSocketMessageType.Text, endOfMessage: true, cts.Token);
+            receiveResult = await wsClient.ReceiveAsync(buffer, cts.Token);
+            if (!receiveResult.EndOfMessage)
+            {
+                await wsClient.CloseAsync(WebSocketCloseStatus.PolicyViolation, "Text message not sent in full.", cts.Token);
+                return;
+            }
+            CommandMessageLsResponse lsResponse = buffer.FromJsonBytes<CommandMessageLsResponse>(receiveResult.Count);
+            Console.WriteLine("Current directory contents:");
+            Output.WriteTable(
+                lsResponse.Dirs.Union(lsResponse.Files).Select(x => new { x.Name, x.Modified, Length = x.Length == 0 ? string.Empty : x.Length.AsBytesToFriendlyString() }),
+                nameof(CommandMessageLsResponse.TrimmedFileSystemObjectInfo.Name),
+                nameof(CommandMessageLsResponse.TrimmedFileSystemObjectInfo.Modified),
+                nameof(CommandMessageLsResponse.TrimmedFileSystemObjectInfo.Length));
 
             // Close the websocket
             await wsClient.CloseAsync(WebSocketCloseStatus.NormalClosure, statusDescription: default, cts.Token);

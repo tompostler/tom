@@ -3,12 +3,14 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Unlimitedinf.Tom.WebSocket.Filters;
 using Unlimitedinf.Tom.WebSocket.Models;
+using Unlimitedinf.Utilities;
 using Unlimitedinf.Utilities.Extensions;
 
 namespace Unlimitedinf.Tom.WebSocket.Controllers
@@ -97,6 +99,7 @@ namespace Unlimitedinf.Tom.WebSocket.Controllers
                             await webSocket.SendAsync(
                                 new CommandMessageMotdResponse
                                 {
+                                    Message = $"Hello {Rando.GetString(Rando.RandomType.Name)} on this fine {DateTime.Now.DayOfWeek}. According to the magic 8 ball, this session will go {Rando.GetString(Rando.RandomType.EightBall)}",
                                     CurrentDirectory = state.CurrentDirectory.FullName,
                                     BytesPerSecondLimit = this.options.BytesPerSecondLimit,
                                     Status = Status.Instance
@@ -111,7 +114,17 @@ namespace Unlimitedinf.Tom.WebSocket.Controllers
                         //TODO
 
                         case CommandType.ls:
-                        //TODO
+                            await webSocket.SendAsync(
+                                new CommandMessageLsResponse
+                                {
+                                    Dirs = state.CurrentDirectory.GetDirectories().Select(x => new CommandMessageLsResponse.TrimmedFileSystemObjectInfo { Name = x.Name, Modified = x.LastWriteTime }).ToList(),
+                                    Files = state.CurrentDirectory.GetFiles().Select(x => new CommandMessageLsResponse.TrimmedFileSystemObjectInfo { Name = x.Name, Length = x.Length, Modified = x.LastWriteTime }).ToList()
+                                }.ToJsonBytes(),
+                                WebSocketMessageType.Text,
+                                endOfMessage: true,
+                                cancellationToken);
+                            _ = Interlocked.Increment(ref Status.Instance.textMessagesSent);
+                            break;
 
                         default:
                             await webSocket.SendAsync(
