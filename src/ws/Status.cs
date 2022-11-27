@@ -1,27 +1,24 @@
 ﻿using System;
-using System.Text.Json.Serialization;
 
 namespace Unlimitedinf.Tom.WebSocket
 {
     public sealed class Status
     {
-        public DateTime StartTime { get; } = DateTime.Now;
-        [JsonIgnore]
+        internal static Status Instance { get; } = new();
+
+        public DateTime StartTime { get; set; } = DateTime.Now;
         public TimeSpan UpTime => DateTime.Now.Subtract(this.StartTime);
 
         public ulong BinaryBytesReceived;
-        [JsonIgnore]
-        public double MegabytesReceived => this.BinaryBytesReceived / 1_000_000d;
-        [JsonIgnore]
         public double GigabytesReceived => this.BinaryBytesReceived / 1_000_000_000d;
 
         public ulong BinaryBytesSent;
-        [JsonIgnore]
-        public double MegabytesSent => this.BinaryBytesSent / 1_000_000d;
-        [JsonIgnore]
         public double GigabytesSent => this.BinaryBytesSent / 1_000_000_000d;
 
-        public ulong TextMessagesReceived;
-        public ulong TextMessagesSent;
+        internal ulong textMessagesReceived;
+        public ulong TextMessagesReceived { get => this.textMessagesReceived; set => this.textMessagesReceived = value; }
+
+        internal ulong textMessagesSent;
+        public ulong TextMessagesSent { get => this.textMessagesSent; set => this.textMessagesSent = value; }
     }
 }

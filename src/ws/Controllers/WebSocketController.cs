@@ -16,17 +16,15 @@ namespace Unlimitedinf.Tom.WebSocket.Controllers
     [Route("/ws")]
     [ApiController]
     [RequiresToken]
-    internal sealed class WebSocketController : ControllerBase
+    public sealed class WebSocketController : ControllerBase
     {
         private readonly Options options;
-        private readonly Status status;
 
         public WebSocketController(
             Options options,
             Status status)
         {
             this.options = options;
-            this.status = status;
         }
 
         [HttpGet("ping")]
@@ -47,7 +45,7 @@ namespace Unlimitedinf.Tom.WebSocket.Controllers
                 {
                     Environment.CurrentDirectory,
                     this.options,
-                    this.status,
+                    status = Status.Instance,
                     environmentVariables
                 });
         }
@@ -90,9 +88,9 @@ namespace Unlimitedinf.Tom.WebSocket.Controllers
                         return;
                     }
 
-                    _ = Interlocked.Increment(ref this.status.TextMessagesReceived);
+                    _ = Interlocked.Increment(ref Status.Instance.textMessagesReceived);
                     string messageText = Encoding.UTF8.GetString(buffer, 0, receiveResult.Count);
-                    CommandMessageBase commandMessageBase = messageText.FromJsonString<CommandMessageBase>();
+                    CommandMessage commandMessageBase = messageText.FromJsonString<CommandMessage>();
                     switch (commandMessageBase.Type)
                     {
                         case CommandType.motd:
@@ -101,12 +99,12 @@ namespace Unlimitedinf.Tom.WebSocket.Controllers
                                 {
                                     CurrentDirectory = state.CurrentDirectory.FullName,
                                     BytesPerSecondLimit = this.options.BytesPerSecondLimit,
-                                    Status = this.status
+                                    Status = Status.Instance
                                 }.ToJsonBytes(),
                                 WebSocketMessageType.Text,
                                 endOfMessage: true,
                                 cancellationToken);
-                            _ = Interlocked.Increment(ref this.status.TextMessagesSent);
+                            _ = Interlocked.Increment(ref Status.Instance.textMessagesSent);
                             break;
 
                         case CommandType.cd:
@@ -117,11 +115,11 @@ namespace Unlimitedinf.Tom.WebSocket.Controllers
 
                         default:
                             await webSocket.SendAsync(
-                                new CommandMessageUnknown { Payload = $"{nameof(CommandType)}.{commandMessageBase.Type} is not mapped for handling." }.ToJsonBytes(),
+                                new CommandMessageUnknownResponse { Payload = $"{nameof(CommandType)}.{commandMessageBase.Type} is not mapped for handling." }.ToJsonBytes(),
                                 WebSocketMessageType.Text,
                                 endOfMessage: true,
                                 cancellationToken);
-                            _ = Interlocked.Increment(ref this.status.TextMessagesSent);
+                            _ = Interlocked.Increment(ref Status.Instance.textMessagesSent);
                             break;
                     }
                 }

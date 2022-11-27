@@ -8,24 +8,24 @@
         ls
     }
 
-    public abstract class CommandMessageBase
+    public class CommandMessage
     {
         public CommandType Type { get; set; }
     }
 
-    public sealed class CommandMessageUnknown : CommandMessageBase
+    public sealed class CommandMessageUnknownResponse : CommandMessage
     {
         public new CommandType Type => CommandType.unknown;
 
         public string Payload { get; set; }
     }
 
-    public sealed class CommandMessageMotdRequest : CommandMessageBase
+    public sealed class CommandMessageMotdRequest : CommandMessage
     {
         public new CommandType Type => CommandType.motd;
     }
 
-    public sealed class CommandMessageMotdResponse : CommandMessageBase
+    public sealed class CommandMessageMotdResponse : CommandMessage
     {
         public new CommandType Type => CommandType.motd;
 
@@ -34,7 +34,7 @@
         public string CurrentDirectory { get; set; }
     }
 
-    public sealed class CommandMessageCd : CommandMessageBase
+    public sealed class CommandMessageCd : CommandMessage
     {
         public new CommandType Type => CommandType.cd;
 
