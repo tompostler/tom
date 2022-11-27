@@ -8,7 +8,8 @@ namespace Unlimitedinf.Tom.WebSocket.Models
         error,
         motd,
         cd,
-        ls
+        ls,
+        get,
     }
 
     public class CommandMessage
@@ -50,6 +51,15 @@ namespace Unlimitedinf.Tom.WebSocket.Models
         public new CommandType Type => CommandType.ls;
     }
 
+    public sealed class TrimmedFileSystemObjectInfo
+    {
+        public string Name { get; set; }
+        public DateTime Modified { get; set; }
+
+        // Only applicable to files
+        public long? Length { get; set; }
+    }
+
     public sealed class CommandMessageLsResponse : CommandMessage
     {
         public new CommandType Type => CommandType.ls;
@@ -57,14 +67,26 @@ namespace Unlimitedinf.Tom.WebSocket.Models
         public string CurrentDirectory { get; set; }
         public List<TrimmedFileSystemObjectInfo> Dirs { get; set; }
         public List<TrimmedFileSystemObjectInfo> Files { get; set; }
+    }
 
-        public sealed class TrimmedFileSystemObjectInfo
-        {
-            public string Name { get; set; }
-            public DateTime Modified { get; set; }
+    public sealed class CommandMessageGetRequest : CommandMessage
+    {
+        public new CommandType Type => CommandType.get;
 
-            // Only applicable to files
-            public long? Length { get; set; }
-        }
+        public string Target { get; set; }
+    }
+
+    public sealed class CommandMessageGetResponse : CommandMessage
+    {
+        public new CommandType Type => CommandType.get;
+
+        public List<TrimmedFileSystemObjectInfo> Files { get; set; }
+    }
+
+    public sealed class CommandMessageGetEndResponse : CommandMessage
+    {
+        public new CommandType Type => CommandType.get;
+
+        public string HashSHA256 { get; set; }
     }
 }

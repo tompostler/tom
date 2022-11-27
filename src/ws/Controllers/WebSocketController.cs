@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.WebSockets;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,6 +15,7 @@ using Unlimitedinf.Tom.WebSocket.Filters;
 using Unlimitedinf.Tom.WebSocket.Models;
 using Unlimitedinf.Utilities;
 using Unlimitedinf.Utilities.Extensions;
+using Unlimitedinf.Utilities.IO;
 
 namespace Unlimitedinf.Tom.WebSocket.Controllers
 {
@@ -22,6 +24,9 @@ namespace Unlimitedinf.Tom.WebSocket.Controllers
     [RequiresToken]
     public sealed class WebSocketController : ControllerBase
     {
+        // Using 16KiB chunks, we should always receive the whole message
+        private const int BufferSize = 1024 * 16;
+
         private readonly Options options;
         private readonly ILogger<WebSocketController> logger;
 
@@ -77,7 +82,7 @@ namespace Unlimitedinf.Tom.WebSocket.Controllers
         {
             WebSocketState state = new() { CurrentDirectory = new(Environment.CurrentDirectory) };
 
-            byte[] buffer = new byte[1024 * 4];
+            byte[] buffer = new byte[BufferSize];
 
             // We wait for the client to send the first message
             WebSocketReceiveResult receiveResult = await webSocket.ReceiveAsync(buffer, cancellationToken);
@@ -87,7 +92,6 @@ namespace Unlimitedinf.Tom.WebSocket.Controllers
                 // If the message type is text, then it's a command and we can buffer it entirely into memory to decide what to do with it
                 if (receiveResult.MessageType == WebSocketMessageType.Text)
                 {
-                    // Using 4kb chunks, we should always receive the whole message
                     if (!receiveResult.EndOfMessage)
                     {
                         this.logger.LogWarning("Closing web socket since text message did not fit in buffer.");
@@ -148,13 +152,50 @@ namespace Unlimitedinf.Tom.WebSocket.Controllers
                                 new CommandMessageLsResponse
                                 {
                                     CurrentDirectory = state.CurrentDirectory.FullName,
-                                    Dirs = state.CurrentDirectory.GetDirectories().Select(x => new CommandMessageLsResponse.TrimmedFileSystemObjectInfo { Name = x.Name, Modified = x.LastWriteTime }).ToList(),
-                                    Files = state.CurrentDirectory.GetFiles().Select(x => new CommandMessageLsResponse.TrimmedFileSystemObjectInfo { Name = x.Name, Length = x.Length, Modified = x.LastWriteTime }).ToList()
+                                    Dirs = state.CurrentDirectory.GetDirectories().Select(x => new TrimmedFileSystemObjectInfo { Name = x.Name, Modified = x.LastWriteTime }).ToList(),
+                                    Files = state.CurrentDirectory.GetFiles().Select(x => new TrimmedFileSystemObjectInfo { Name = x.Name, Length = x.Length, Modified = x.LastWriteTime }).ToList()
                                 }.ToJsonBytes(),
                                 WebSocketMessageType.Text,
                                 endOfMessage: true,
                                 cancellationToken);
                             _ = Interlocked.Increment(ref Status.Instance.textMessagesSent);
+                            break;
+
+                        case CommandType.get:
+                            CommandMessageGetRequest commandMessageGetRequest = messageText.FromJsonString<CommandMessageGetRequest>();
+                            this.logger.LogInformation($"Attempting to get non-empty files based on {commandMessageGetRequest.Target}");
+                            FileInfo[] filesToSend = state.CurrentDirectory.GetFiles(commandMessageGetRequest.Target, SearchOption.AllDirectories).Where(x => x.Length > 0).ToArray();
+                            if (filesToSend.Length == 0)
+                            {
+                                this.logger.LogWarning("No files found.");
+                                await webSocket.SendAsync(
+                                    new CommandMessageErrorResponse { Payload = $"Could not find any files in {state.CurrentDirectory.FullName} for {commandMessageGetRequest.Target}" }.ToJsonBytes(),
+                                    WebSocketMessageType.Text,
+                                    endOfMessage: true,
+                                    cancellationToken);
+                                _ = Interlocked.Increment(ref Status.Instance.textMessagesSent);
+                            }
+                            else
+                            {
+                                this.logger.LogInformation($"Sending {filesToSend.Length} files: {string.Join(", ", filesToSend.Select(x => x.FullName))}");
+                                await webSocket.SendAsync(
+                                    new CommandMessageGetResponse
+                                    {
+                                        Files = filesToSend.Select(x => new TrimmedFileSystemObjectInfo
+                                        {
+                                            Name = x.FullName.Substring(state.CurrentDirectory.FullName.Length),
+                                            Modified = x.LastWriteTime,
+                                            Length = x.Length
+                                        }).ToList()
+                                    }.ToJsonBytes(),
+                                    WebSocketMessageType.Text,
+                                    endOfMessage: true,
+                                    cancellationToken);
+                                _ = Interlocked.Increment(ref Status.Instance.textMessagesSent);
+
+                                state.SendingFiles = new(filesToSend);
+                                await this.HandleFileGetAsync(webSocket, state, cancellationToken);
+                            }
                             break;
 
                         default:
@@ -187,6 +228,48 @@ namespace Unlimitedinf.Tom.WebSocket.Controllers
             }
 
             await webSocket.CloseAsync(receiveResult.CloseStatus.Value, receiveResult.CloseStatusDescription, cancellationToken);
+        }
+
+        /// <summary>
+        /// Getting a list of files from the server follows the following process:
+        /// 1. A list of all files to be sent is sent as a <see cref="CommandMessageGetResponse"/>
+        /// 2. On a loop until the queue is exhausted:
+        ///     1. The file is sent
+        ///     2. A summary of the file sent (including the hash for verification) is sent as a <see cref="CommandMessageGetEndResponse"/>
+        /// </summary>
+        private async Task HandleFileGetAsync(System.Net.WebSockets.WebSocket webSocket, WebSocketState state, CancellationToken cancellationToken)
+        {
+            while (state.SendingFiles.TryDequeue(out FileInfo fileToSend))
+            {
+                this.logger.LogInformation($"Sending {fileToSend.FullName}");
+
+                // First send the file
+                var sha256 = SHA256.Create();
+                using (FileStream fs = fileToSend.OpenRead())
+                using (ThrottledStream ts = new(fs, this.options.BytesPerSecondLimit))
+                {
+                    byte[] buffer = new byte[BufferSize];
+                    while (fs.Position < fs.Length)
+                    {
+                        int bytesRead = await ts.ReadAsync(buffer, cancellationToken);
+                        _ = sha256.TransformBlock(buffer, inputOffset: 0, bytesRead, outputBuffer: default, outputOffset: 0);
+                        _ = Interlocked.Add(ref Status.Instance.BinaryBytesSent, (ulong)bytesRead);
+                        await webSocket.SendAsync(buffer.AsMemory(0, bytesRead), WebSocketMessageType.Binary, endOfMessage: bytesRead != buffer.Length, cancellationToken);
+                    }
+                }
+                _ = sha256.TransformFinalBlock(Array.Empty<byte>(), default, default);
+
+                // Once that's complete, send the hash
+                await webSocket.SendAsync(
+                    new CommandMessageGetEndResponse
+                    {
+                        HashSHA256 = sha256.Hash.ToLowercaseHash()
+                    }.ToJsonBytes(),
+                    WebSocketMessageType.Text,
+                    endOfMessage: true,
+                    cancellationToken);
+                _ = Interlocked.Increment(ref Status.Instance.textMessagesSent);
+            }
         }
     }
 }

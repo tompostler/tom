@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Security;
 using System.Net.WebSockets;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
@@ -54,8 +55,8 @@ namespace Unlimitedinf.Tom.Commands
             return command;
         }
 
-        // Using 4KiB chunks, we should always receive the whole message (when sending text)
-        private const int BufferSize = 1024 * 4;
+        // Using 16KiB chunks, we should always receive the whole message (when sending text)
+        private const int BufferSize = 1024 * 16;
 
         private static async Task HandleAsync(Uri endpoint, DirectoryInfo workingDir, string sslCertSubjectName, string sslCertThumbprint, TimeSpan maxSessionDuration)
         {
@@ -170,25 +171,12 @@ namespace Unlimitedinf.Tom.Commands
             await wsClient.CloseAsync(WebSocketCloseStatus.NormalClosure, statusDescription: default, cts.Token);
         }
 
-        private static string Prompt(DirectoryInfo remotePath)
-        {
-            Console.WriteLine($"Local: {Environment.CurrentDirectory}");
-            Console.WriteLine($"Remote: {remotePath.FullName}");
-            string input;
-            do
-            {
-                Console.Write("> ");
-                input = Console.ReadLine()?.Trim();
-            }
-            while (string.IsNullOrEmpty(input));
-            return input;
-        }
-
         private static async Task StartMessageLoopAsync(DirectoryInfo remotePath, ClientWebSocket wsClient, CancellationToken cancellationToken)
         {
+            DirectoryInfo localPath = new(Environment.CurrentDirectory);
             StringBuilder sb = new();
             _ = sb.AppendLine("Available commands:");
-            _ = sb.AppendLine("   cd          Change the remote directory. To change the local directory, start the program in a different directory.");
+            _ = sb.AppendLine("   cd          Change the directory. Will only allow changing to remote directories that exist, and the local directory structure will be forced to match.");
             _ = sb.AppendLine("   ls          List the contents of the remote directory. Also displayed after using the cd command and connecting to the server.");
             _ = sb.AppendLine("   motd        Display the server status and welcome text.");
             _ = sb.AppendLine("   get <glob>  Receive remote file(s) from the server. Accepts wildcards and operates recursively.");
@@ -205,19 +193,38 @@ namespace Unlimitedinf.Tom.Commands
 
             while (true)
             {
-                string input = Prompt(remotePath);
-                string[] tokens = input.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                // Prompt for input
+                Console.WriteLine($"Local: {localPath.FullName}");
+                Console.WriteLine($"Remote: {remotePath.FullName}");
+                string input;
+                do
+                {
+                    Console.Write("> ");
+                    input = Console.ReadLine()?.Trim();
+                }
+                while (string.IsNullOrEmpty(input));
 
+                string[] tokens = input.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
                 switch (tokens.FirstOrDefault()?.ToLower())
                 {
                     case "cd":
                         CommandMessageLsResponse cdResponse = await SendAndReceiveCdAsync(wsClient, tokens.Last(), cancellationToken);
-                        remotePath = cdResponse != default ? new(cdResponse.CurrentDirectory) : remotePath;
+                        if (cdResponse != default)
+                        {
+                            localPath = new(Path.Join(localPath.FullName, tokens.Last()));
+                            localPath.Create();
+
+                            remotePath = new(cdResponse.CurrentDirectory);
+                        }
                         break;
 
                     case "ls":
                         CommandMessageLsResponse lsResponse = await SendAndReceiveLsAsync(wsClient, cancellationToken);
                         remotePath = new(lsResponse.CurrentDirectory);
+                        break;
+
+                    case "get":
+                        await HandleGetAsync(wsClient, localPath, tokens.Last(), cancellationToken);
                         break;
 
                     case "motd":
@@ -240,17 +247,126 @@ namespace Unlimitedinf.Tom.Commands
             }
         }
 
-        private static async Task<CommandMessageLsResponse> SendAndReceiveCdAsync(ClientWebSocket wsClient, string target, CancellationToken cancellationToken)
+        private static async Task<WebSocketReceiveResult> ReceiveWholeTextMessageAsync(this ClientWebSocket wsClient, byte[] buffer, CancellationToken cancellationToken)
         {
-            await wsClient.SendAsync(new CommandMessageCd { Target = target }.ToJsonBytes(), WebSocketMessageType.Text, endOfMessage: true, cancellationToken);
-
-            byte[] buffer = new byte[BufferSize];
             WebSocketReceiveResult receiveResult = await wsClient.ReceiveAsync(buffer, cancellationToken);
             if (!receiveResult.EndOfMessage)
             {
                 await wsClient.CloseAsync(WebSocketCloseStatus.PolicyViolation, "Text message not sent in full.", cancellationToken);
                 throw new NotImplementedException("Text message not sent in full.");
             }
+            return receiveResult;
+        }
+
+        /// <summary>
+        /// Getting a list of files from the server follows the following process:
+        /// 0. An error message may be sent if there's nothing to send as a <see cref="CommandMessageErrorResponse"/>
+        /// 1. A list of all files to be sent is sent as a <see cref="CommandMessageGetResponse"/>
+        /// 2. On a loop until the queue is exhausted:
+        ///     1. The file is sent
+        ///     2. A summary of the file sent (including the hash for verification) is sent as a <see cref="CommandMessageGetEndResponse"/>
+        /// </summary>
+        private static async Task HandleGetAsync(ClientWebSocket wsClient, DirectoryInfo localPath, string target, CancellationToken cancellationToken)
+        {
+            await wsClient.SendAsync(new CommandMessageGetRequest { Target = target }.ToJsonBytes(), WebSocketMessageType.Text, endOfMessage: true, cancellationToken);
+
+            byte[] buffer = new byte[BufferSize];
+            WebSocketReceiveResult receiveResult = await wsClient.ReceiveWholeTextMessageAsync(buffer, cancellationToken);
+
+            string messageText = Encoding.UTF8.GetString(buffer, 0, receiveResult.Count);
+            CommandMessage commandMessage = messageText.FromJsonString<CommandMessage>();
+            if (commandMessage.Type == CommandType.error)
+            {
+                CommandMessageErrorResponse errorMessage = messageText.FromJsonString<CommandMessageErrorResponse>();
+                Console.WriteLine($"ERROR:\n{errorMessage.Payload}");
+                return;
+            }
+            else if (commandMessage.Type != CommandType.get)
+            {
+                Console.WriteLine($"ERROR:\nMessage was of unexpected type {commandMessage.Type}");
+                return;
+            }
+
+            CommandMessageGetResponse getResponse = messageText.FromJsonString<CommandMessageGetResponse>();
+            Console.WriteLine("Starting transfer of the following files:");
+            Output.WriteTable(
+                getResponse.Files.Select(x => new { x.Name, x.Modified, Length = x.Length?.AsBytesToFriendlyString() }),
+                nameof(TrimmedFileSystemObjectInfo.Name),
+                nameof(TrimmedFileSystemObjectInfo.Modified),
+                nameof(TrimmedFileSystemObjectInfo.Length));
+
+            ConsoleLogger consoleLogger = new(ConsoleLoggerVerbosity.Info);
+            ProgressLogger jobProgressLogger = new(getResponse.Files.Sum(x => x.Length.Value), consoleLogger);
+            long jobReceivedBytes = 0;
+            foreach (TrimmedFileSystemObjectInfo incomingFile in getResponse.Files)
+            {
+                // Set up the target to write to
+                FileInfo fileInfo = new(Path.Join(localPath.FullName, incomingFile.Name));
+                _ = Directory.CreateDirectory(fileInfo.DirectoryName);
+
+                Console.WriteLine($"Receiving {fileInfo.FullName}");
+                ProgressLogger fileProgressLogger = new(incomingFile.Length.Value, consoleLogger);
+
+                // First receive the file
+                var sha256 = SHA256.Create();
+                using (FileStream fs = fileInfo.OpenWrite())
+                {
+                    long fileReceivedBytes = 0;
+                    do
+                    {
+                        receiveResult = await wsClient.ReceiveAsync(buffer, cancellationToken);
+                        _ = sha256.TransformBlock(buffer, inputOffset: 0, receiveResult.Count, outputBuffer: default, outputOffset: default);
+                        fileReceivedBytes += receiveResult.Count;
+
+                        await fs.WriteAsync(buffer.AsMemory(0, receiveResult.Count), cancellationToken);
+                        fileProgressLogger.Report(fileReceivedBytes);
+                    }
+                    while (!receiveResult.EndOfMessage);
+                    _ = sha256.TransformFinalBlock(Array.Empty<byte>(), default, default);
+                    jobReceivedBytes += fileReceivedBytes;
+                }
+                fileProgressLogger.ReportComplete();
+
+                // Get the message to verify the hash
+                receiveResult = await wsClient.ReceiveWholeTextMessageAsync(buffer, cancellationToken);
+                CommandMessageGetEndResponse getEndResponse = buffer.FromJsonBytes<CommandMessageGetEndResponse>(receiveResult.Count);
+                string actualHashSHA256 = sha256.Hash.ToLowercaseHash();
+                if (!string.Equals(getEndResponse.HashSHA256, actualHashSHA256, StringComparison.OrdinalIgnoreCase))
+                {
+                    Console.WriteLine($"ERROR:\nFor file {fileInfo.FullName}, exepected hash was {getEndResponse.HashSHA256} but actual hash was {actualHashSHA256}.\nTerminating socket.");
+                    await wsClient.CloseAsync(WebSocketCloseStatus.InvalidPayloadData, "Did not receive correct data.", cancellationToken);
+                    throw new NotImplementedException("Did not receive correct data.");
+                }
+                else
+                {
+                    Console.WriteLine($"Validated {fileInfo.FullName} had expected hash.");
+                }
+
+                Console.WriteLine();
+                Console.WriteLine("Overall status:");
+                jobProgressLogger.Report(jobReceivedBytes);
+                Console.WriteLine();
+            }
+            Console.WriteLine("Overall status:");
+            jobProgressLogger.ReportComplete();
+            Console.WriteLine();
+        }
+
+        private static void PrintLsResponse(CommandMessageLsResponse lsResponse)
+        {
+            Output.WriteTable(
+                lsResponse.Dirs.Union(lsResponse.Files).Select(x => new { x.Name, x.Modified, Length = x.Length?.AsBytesToFriendlyString() }),
+                nameof(TrimmedFileSystemObjectInfo.Name),
+                nameof(TrimmedFileSystemObjectInfo.Modified),
+                nameof(TrimmedFileSystemObjectInfo.Length));
+        }
+
+        private static async Task<CommandMessageLsResponse> SendAndReceiveCdAsync(ClientWebSocket wsClient, string target, CancellationToken cancellationToken)
+        {
+            await wsClient.SendAsync(new CommandMessageCd { Target = target }.ToJsonBytes(), WebSocketMessageType.Text, endOfMessage: true, cancellationToken);
+
+            byte[] buffer = new byte[BufferSize];
+            WebSocketReceiveResult receiveResult = await wsClient.ReceiveWholeTextMessageAsync(buffer, cancellationToken);
 
             string messageText = Encoding.UTF8.GetString(buffer, 0, receiveResult.Count);
             CommandMessage commandMessage = messageText.FromJsonString<CommandMessage>();
@@ -259,11 +375,7 @@ namespace Unlimitedinf.Tom.Commands
             {
                 CommandMessageLsResponse lsResponse = messageText.FromJsonString<CommandMessageLsResponse>();
                 Console.WriteLine("Current directory contents on remote:");
-                Output.WriteTable(
-                    lsResponse.Dirs.Union(lsResponse.Files).Select(x => new { x.Name, x.Modified, Length = x.Length?.AsBytesToFriendlyString() }),
-                    nameof(CommandMessageLsResponse.TrimmedFileSystemObjectInfo.Name),
-                    nameof(CommandMessageLsResponse.TrimmedFileSystemObjectInfo.Modified),
-                    nameof(CommandMessageLsResponse.TrimmedFileSystemObjectInfo.Length));
+                PrintLsResponse(lsResponse);
                 return lsResponse;
             }
             else if (commandMessage.Type == CommandType.error)
@@ -283,20 +395,11 @@ namespace Unlimitedinf.Tom.Commands
             await wsClient.SendAsync(new CommandMessageLsRequest().ToJsonBytes(), WebSocketMessageType.Text, endOfMessage: true, cancellationToken);
 
             byte[] buffer = new byte[BufferSize];
-            WebSocketReceiveResult receiveResult = await wsClient.ReceiveAsync(buffer, cancellationToken);
-            if (!receiveResult.EndOfMessage)
-            {
-                await wsClient.CloseAsync(WebSocketCloseStatus.PolicyViolation, "Text message not sent in full.", cancellationToken);
-                throw new NotImplementedException("Text message not sent in full.");
-            }
+            WebSocketReceiveResult receiveResult = await wsClient.ReceiveWholeTextMessageAsync(buffer, cancellationToken);
 
             CommandMessageLsResponse lsResponse = buffer.FromJsonBytes<CommandMessageLsResponse>(receiveResult.Count);
             Console.WriteLine("Current directory contents on remote:");
-            Output.WriteTable(
-                lsResponse.Dirs.Union(lsResponse.Files).Select(x => new { x.Name, x.Modified, Length = x.Length?.AsBytesToFriendlyString() }),
-                nameof(CommandMessageLsResponse.TrimmedFileSystemObjectInfo.Name),
-                nameof(CommandMessageLsResponse.TrimmedFileSystemObjectInfo.Modified),
-                nameof(CommandMessageLsResponse.TrimmedFileSystemObjectInfo.Length));
+            PrintLsResponse(lsResponse);
             return lsResponse;
         }
 
@@ -305,12 +408,7 @@ namespace Unlimitedinf.Tom.Commands
             await wsClient.SendAsync(new CommandMessageMotdRequest().ToJsonBytes(), WebSocketMessageType.Text, endOfMessage: true, cancellationToken);
 
             byte[] buffer = new byte[BufferSize];
-            WebSocketReceiveResult receiveResult = await wsClient.ReceiveAsync(buffer, cancellationToken);
-            if (!receiveResult.EndOfMessage)
-            {
-                await wsClient.CloseAsync(WebSocketCloseStatus.PolicyViolation, "Text message not sent in full.", cancellationToken);
-                throw new NotImplementedException("Text message not sent in full.");
-            }
+            WebSocketReceiveResult receiveResult = await wsClient.ReceiveWholeTextMessageAsync(buffer, cancellationToken);
 
             CommandMessageMotdResponse motdResponse = buffer.FromJsonBytes<CommandMessageMotdResponse>(receiveResult.Count);
             Console.WriteLine("Current status:");

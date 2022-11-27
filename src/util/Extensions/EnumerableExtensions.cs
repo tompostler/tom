@@ -16,6 +16,14 @@ namespace Unlimitedinf.Utilities.Extensions
         public static T FromJsonBytes<T>(this byte[] @this, int length) => Encoding.UTF8.GetString(@this, 0, length).FromJsonString<T>();
 
         /// <summary>
+        /// Convert an array of bytes to its lowercase hexadecimal format (usually for a cryptographic hash)
+        /// </summary>
+        /// <remarks>
+        /// BitConverter averages 50% faster than using a StringBuilder with every byte.ToString("x2")
+        /// </remarks>
+        public static string ToLowercaseHash(this byte[] @this) => BitConverter.ToString(@this).Replace("-", "").ToLowerInvariant();
+
+        /// <summary>
         /// Calculate the medain of an enumerable. Attempts to convert to doubles.
         /// </summary>
         public static double Median<T>(this IEnumerable<T> source)

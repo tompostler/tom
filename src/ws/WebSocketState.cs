@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 
 namespace Unlimitedinf.Tom.WebSocket
 {
@@ -16,8 +17,8 @@ namespace Unlimitedinf.Tom.WebSocket
         public string ReceivingFileSha256 { get; set; }
 
         /// <summary>
-        /// Set when we are sending a file to the client
+        /// Set when we are sending file(s) to the client
         /// </summary>
-        public FileInfo SendingFile { get; set; }
+        public Queue<FileInfo> SendingFiles { get; set; }
     }
 }
