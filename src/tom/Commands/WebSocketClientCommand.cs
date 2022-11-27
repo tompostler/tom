@@ -210,6 +210,11 @@ namespace Unlimitedinf.Tom.Commands
 
                 switch (tokens.FirstOrDefault()?.ToLower())
                 {
+                    case "cd":
+                        CommandMessageLsResponse cdResponse = await SendAndReceiveCdAsync(wsClient, tokens.Last(), cancellationToken);
+                        remotePath = cdResponse != default ? new(cdResponse.CurrentDirectory) : remotePath;
+                        break;
+
                     case "ls":
                         CommandMessageLsResponse lsResponse = await SendAndReceiveLsAsync(wsClient, cancellationToken);
                         remotePath = new(lsResponse.CurrentDirectory);
@@ -233,6 +238,44 @@ namespace Unlimitedinf.Tom.Commands
                         break;
                 }
             }
+        }
+
+        private static async Task<CommandMessageLsResponse> SendAndReceiveCdAsync(ClientWebSocket wsClient, string target, CancellationToken cancellationToken)
+        {
+            await wsClient.SendAsync(new CommandMessageCd { Target = target }.ToJsonBytes(), WebSocketMessageType.Text, endOfMessage: true, cancellationToken);
+
+            byte[] buffer = new byte[BufferSize];
+            WebSocketReceiveResult receiveResult = await wsClient.ReceiveAsync(buffer, cancellationToken);
+            if (!receiveResult.EndOfMessage)
+            {
+                await wsClient.CloseAsync(WebSocketCloseStatus.PolicyViolation, "Text message not sent in full.", cancellationToken);
+                throw new NotImplementedException("Text message not sent in full.");
+            }
+
+            string messageText = Encoding.UTF8.GetString(buffer, 0, receiveResult.Count);
+            CommandMessage commandMessage = messageText.FromJsonString<CommandMessage>();
+
+            if (commandMessage.Type == CommandType.ls)
+            {
+                CommandMessageLsResponse lsResponse = messageText.FromJsonString<CommandMessageLsResponse>();
+                Console.WriteLine("Current directory contents on remote:");
+                Output.WriteTable(
+                    lsResponse.Dirs.Union(lsResponse.Files).Select(x => new { x.Name, x.Modified, Length = x.Length?.AsBytesToFriendlyString() }),
+                    nameof(CommandMessageLsResponse.TrimmedFileSystemObjectInfo.Name),
+                    nameof(CommandMessageLsResponse.TrimmedFileSystemObjectInfo.Modified),
+                    nameof(CommandMessageLsResponse.TrimmedFileSystemObjectInfo.Length));
+                return lsResponse;
+            }
+            else if (commandMessage.Type == CommandType.error)
+            {
+                CommandMessageErrorResponse errorMessage = messageText.FromJsonString<CommandMessageErrorResponse>();
+                Console.WriteLine($"ERROR:\n{errorMessage.Payload}");
+            }
+            else
+            {
+                Console.WriteLine($"ERROR:\nMessage was of unexpected type {commandMessage.Type}");
+            }
+            return default;
         }
 
         private static async Task<CommandMessageLsResponse> SendAndReceiveLsAsync(ClientWebSocket wsClient, CancellationToken cancellationToken)

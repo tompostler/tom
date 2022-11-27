@@ -97,9 +97,9 @@ namespace Unlimitedinf.Tom.WebSocket.Controllers
 
                     _ = Interlocked.Increment(ref Status.Instance.textMessagesReceived);
                     string messageText = Encoding.UTF8.GetString(buffer, 0, receiveResult.Count);
-                    CommandMessage commandMessageBase = messageText.FromJsonString<CommandMessage>();
-                    this.logger.LogInformation($"Handling {commandMessageBase.Type}");
-                    switch (commandMessageBase.Type)
+                    CommandMessage commandMessage = messageText.FromJsonString<CommandMessage>();
+                    this.logger.LogInformation($"Handling {commandMessage.Type}");
+                    switch (commandMessage.Type)
                     {
                         case CommandType.motd:
                             await webSocket.SendAsync(
@@ -121,10 +121,16 @@ namespace Unlimitedinf.Tom.WebSocket.Controllers
                             this.logger.LogInformation($"Attempting to cd to {commandMessageCd.Target}");
                             DirectoryInfo[] currentDirs = state.CurrentDirectory.GetDirectories();
                             DirectoryInfo matchingDir = currentDirs.FirstOrDefault(x => string.Equals(x.Name, commandMessageCd.Target, StringComparison.Ordinal));
-                            if (matchingDir == default)
+                            if (commandMessageCd.Target == ".." && state.CurrentDirectory.FullName.Length > new DirectoryInfo(Environment.CurrentDirectory).FullName.Length)
+                            {
+                                // Only allow parent traversal if the current directory full name length is longer than the root directory of the process
+                                state.CurrentDirectory = state.CurrentDirectory.Parent;
+                                goto case CommandType.ls;
+                            }
+                            else if (matchingDir == default)
                             {
                                 await webSocket.SendAsync(
-                                    new CommandMessageErrorResponse { Payload = $"{nameof(CommandType)}.{commandMessageBase.Type} is not mapped for handling." }.ToJsonBytes(),
+                                    new CommandMessageErrorResponse { Payload = $"[{commandMessageCd.Target}] directory does not exist." }.ToJsonBytes(),
                                     WebSocketMessageType.Text,
                                     endOfMessage: true,
                                     cancellationToken);
@@ -141,6 +147,7 @@ namespace Unlimitedinf.Tom.WebSocket.Controllers
                             await webSocket.SendAsync(
                                 new CommandMessageLsResponse
                                 {
+                                    CurrentDirectory = state.CurrentDirectory.FullName,
                                     Dirs = state.CurrentDirectory.GetDirectories().Select(x => new CommandMessageLsResponse.TrimmedFileSystemObjectInfo { Name = x.Name, Modified = x.LastWriteTime }).ToList(),
                                     Files = state.CurrentDirectory.GetFiles().Select(x => new CommandMessageLsResponse.TrimmedFileSystemObjectInfo { Name = x.Name, Length = x.Length, Modified = x.LastWriteTime }).ToList()
                                 }.ToJsonBytes(),
@@ -152,7 +159,7 @@ namespace Unlimitedinf.Tom.WebSocket.Controllers
 
                         default:
                             await webSocket.SendAsync(
-                                new CommandMessageErrorResponse { Payload = $"{nameof(CommandType)}.{commandMessageBase.Type} is not mapped for handling." }.ToJsonBytes(),
+                                new CommandMessageErrorResponse { Payload = $"{nameof(CommandType)}.{commandMessage.Type} is not mapped for handling." }.ToJsonBytes(),
                                 WebSocketMessageType.Text,
                                 endOfMessage: true,
                                 cancellationToken);
