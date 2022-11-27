@@ -54,26 +54,36 @@ namespace Unlimitedinf.Tom
             Console.Error.WriteLine();
         }
 
-        private static void ReportUpdateIfNecessary(string sourceVersion, string targetVersion, string suffix)
+        private static void ReportUpdateIfNecessary(string sourceVersionStr, string targetVersionStr, string suffix)
         {
-            Console.Error.WriteLine($"Target version v{targetVersion} from {suffix}");
+            Console.Error.WriteLine($"Target version v{targetVersionStr} from {suffix}");
 
             // Could not parse version
-            if (string.Equals(sourceVersion, "0.0.0", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(sourceVersionStr, "0.0.0", StringComparison.OrdinalIgnoreCase))
             {
                 Console.Error.WriteLine("Could not parse version properly from source assembly.");
             }
 
             // Running in debug locally
-            else if (string.Equals(sourceVersion, "1.0.0", StringComparison.OrdinalIgnoreCase))
+            else if (string.Equals(sourceVersionStr, "1.0.0", StringComparison.OrdinalIgnoreCase))
             {
                 Console.Error.WriteLine("Version indicates running in local debugging.");
             }
 
-            // Need to update
-            else if (!string.Equals(sourceVersion, targetVersion, StringComparison.OrdinalIgnoreCase))
+            // Might need to update
+            else if (!string.Equals(sourceVersionStr, targetVersionStr, StringComparison.OrdinalIgnoreCase))
             {
-                Console.Error.WriteLine("Update tom as a tool with 'dotnet tool update Unlimitedinf.Tom --global'");
+                // Try to parse the versions for comparison
+                if (Version.TryParse(sourceVersionStr, out Version sourceVersion)
+                    && Version.TryParse(targetVersionStr, out Version targetVersion)
+                    && sourceVersion >= targetVersion)
+                {
+                    // We could parse it and the source version is higher than the target
+                }
+                else
+                {
+                    Console.Error.WriteLine("Update tom as a tool with 'dotnet tool update Unlimitedinf.Tom --global'");
+                }
             }
         }
     }
