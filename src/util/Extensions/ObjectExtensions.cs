@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -15,11 +16,17 @@ namespace Unlimitedinf.Utilities.Extensions
 
         static ObjectExtensions()
         {
-            indentedOptions = new JsonSerializerOptions();
+            indentedOptions = new JsonSerializerOptions
+            {
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                WriteIndented = true
+            };
             indentedOptions.Converters.Add(new JsonStringEnumConverter());
-            indentedOptions.WriteIndented = true;
 
-            options = new JsonSerializerOptions();
+            options = new JsonSerializerOptions
+            {
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+            };
             options.Converters.Add(new JsonStringEnumConverter());
         }
 

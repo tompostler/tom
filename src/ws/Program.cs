@@ -20,7 +20,6 @@ namespace Unlimitedinf.Tom.WebSocket
             builder.Environment.EnvironmentName = Environments.Development;
             
             _ = builder.Services.AddSingleton(options);
-            _ = builder.Services.AddSingleton(new Status());
 
             // Map controllers from this assembly, regardless of where we're started
             builder.Services.AddControllers().PartManager.ApplicationParts.Add(new AssemblyPart(typeof(Controllers.WebSocketController).Assembly));

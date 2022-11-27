@@ -5,7 +5,7 @@ namespace Unlimitedinf.Tom.WebSocket.Models
 {
     public enum CommandType
     {
-        unknown,
+        error,
         motd,
         cd,
         ls
@@ -16,9 +16,9 @@ namespace Unlimitedinf.Tom.WebSocket.Models
         public CommandType Type { get; set; }
     }
 
-    public sealed class CommandMessageUnknownResponse : CommandMessage
+    public sealed class CommandMessageErrorResponse : CommandMessage
     {
-        public new CommandType Type => CommandType.unknown;
+        public new CommandType Type => CommandType.error;
 
         public string Payload { get; set; }
     }
@@ -34,7 +34,7 @@ namespace Unlimitedinf.Tom.WebSocket.Models
 
         public string Message { get; set; }
         public Status Status { get; set; }
-        public long BytesPerSecondLimit { get; set; }
+        public double MegabitPerSecondLimit { get; set; }
         public string CurrentDirectory { get; set; }
     }
 
@@ -54,6 +54,7 @@ namespace Unlimitedinf.Tom.WebSocket.Models
     {
         public new CommandType Type => CommandType.ls;
 
+        public string CurrentDirectory { get; set; }
         public List<TrimmedFileSystemObjectInfo> Dirs { get; set; }
         public List<TrimmedFileSystemObjectInfo> Files { get; set; }
 
@@ -63,7 +64,7 @@ namespace Unlimitedinf.Tom.WebSocket.Models
             public DateTime Modified { get; set; }
 
             // Only applicable to files
-            public long Length { get; set; }
+            public long? Length { get; set; }
         }
     }
 }

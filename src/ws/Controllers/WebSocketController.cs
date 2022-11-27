@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.WebSockets;
 using System.Text;
@@ -21,12 +23,14 @@ namespace Unlimitedinf.Tom.WebSocket.Controllers
     public sealed class WebSocketController : ControllerBase
     {
         private readonly Options options;
+        private readonly ILogger<WebSocketController> logger;
 
         public WebSocketController(
             Options options,
-            Status status)
+            ILogger<WebSocketController> logger)
         {
             this.options = options;
+            this.logger = logger;
         }
 
         [HttpGet("ping")]
@@ -86,6 +90,7 @@ namespace Unlimitedinf.Tom.WebSocket.Controllers
                     // Using 4kb chunks, we should always receive the whole message
                     if (!receiveResult.EndOfMessage)
                     {
+                        this.logger.LogWarning("Closing web socket since text message did not fit in buffer.");
                         await webSocket.CloseAsync(WebSocketCloseStatus.PolicyViolation, "Text message not sent in full.", cancellationToken);
                         return;
                     }
@@ -93,15 +98,16 @@ namespace Unlimitedinf.Tom.WebSocket.Controllers
                     _ = Interlocked.Increment(ref Status.Instance.textMessagesReceived);
                     string messageText = Encoding.UTF8.GetString(buffer, 0, receiveResult.Count);
                     CommandMessage commandMessageBase = messageText.FromJsonString<CommandMessage>();
+                    this.logger.LogInformation($"Handling {commandMessageBase.Type}");
                     switch (commandMessageBase.Type)
                     {
                         case CommandType.motd:
                             await webSocket.SendAsync(
                                 new CommandMessageMotdResponse
                                 {
-                                    Message = $"Hello {Rando.GetString(Rando.RandomType.Name)} on this fine {DateTime.Now.DayOfWeek}. According to the magic 8 ball, this session will go {Rando.GetString(Rando.RandomType.EightBall)}",
+                                    Message = $"Hello {Rando.GetString(Rando.RandomType.Name)} on this fine {DateTime.Now.DayOfWeek}. When I asked the magic 8 ball 'Will this session be successful?', it responded: {Rando.GetString(Rando.RandomType.EightBall)}",
                                     CurrentDirectory = state.CurrentDirectory.FullName,
-                                    BytesPerSecondLimit = this.options.BytesPerSecondLimit,
+                                    MegabitPerSecondLimit = this.options.BytesPerSecondLimit / 1_000_000d * 8,
                                     Status = Status.Instance
                                 }.ToJsonBytes(),
                                 WebSocketMessageType.Text,
@@ -111,7 +117,25 @@ namespace Unlimitedinf.Tom.WebSocket.Controllers
                             break;
 
                         case CommandType.cd:
-                        //TODO
+                            CommandMessageCd commandMessageCd = messageText.FromJsonString<CommandMessageCd>();
+                            this.logger.LogInformation($"Attempting to cd to {commandMessageCd.Target}");
+                            DirectoryInfo[] currentDirs = state.CurrentDirectory.GetDirectories();
+                            DirectoryInfo matchingDir = currentDirs.FirstOrDefault(x => string.Equals(x.Name, commandMessageCd.Target, StringComparison.Ordinal));
+                            if (matchingDir == default)
+                            {
+                                await webSocket.SendAsync(
+                                    new CommandMessageErrorResponse { Payload = $"{nameof(CommandType)}.{commandMessageBase.Type} is not mapped for handling." }.ToJsonBytes(),
+                                    WebSocketMessageType.Text,
+                                    endOfMessage: true,
+                                    cancellationToken);
+                                _ = Interlocked.Increment(ref Status.Instance.textMessagesSent);
+                                break;
+                            }
+                            else
+                            {
+                                state.CurrentDirectory = matchingDir;
+                                goto case CommandType.ls;
+                            }
 
                         case CommandType.ls:
                             await webSocket.SendAsync(
@@ -128,7 +152,7 @@ namespace Unlimitedinf.Tom.WebSocket.Controllers
 
                         default:
                             await webSocket.SendAsync(
-                                new CommandMessageUnknownResponse { Payload = $"{nameof(CommandType)}.{commandMessageBase.Type} is not mapped for handling." }.ToJsonBytes(),
+                                new CommandMessageErrorResponse { Payload = $"{nameof(CommandType)}.{commandMessageBase.Type} is not mapped for handling." }.ToJsonBytes(),
                                 WebSocketMessageType.Text,
                                 endOfMessage: true,
                                 cancellationToken);
@@ -142,6 +166,7 @@ namespace Unlimitedinf.Tom.WebSocket.Controllers
                 {
                     if (state.ReceivingFile == default)
                     {
+                        this.logger.LogWarning("Closing web socket since unexpected binary message sent.");
                         await webSocket.CloseAsync(WebSocketCloseStatus.PolicyViolation, "Binary message sent without first establishing file transfer information.", cancellationToken);
                         return;
                     }
