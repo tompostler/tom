@@ -29,6 +29,11 @@ namespace Unlimitedinf.Utilities.Extensions
         public static string ToBase64JsonString(this object value) => Convert.ToBase64String(Encoding.UTF8.GetBytes(value.ToJsonString()));
 
         /// <summary>
+        /// Convert an object to a binary array of (optionally indented) UTF8-encoded json.
+        /// </summary>
+        public static byte[] ToJsonBytes(this object value, bool indented = false) => Encoding.UTF8.GetBytes(JsonSerializer.Serialize(value, indented ? indentedOptions : options));
+
+        /// <summary>
         /// Convert an object to a string of (optionally indented) json.
         /// </summary>
         public static string ToJsonString(this object value, bool indented = false) => JsonSerializer.Serialize(value, indented ? indentedOptions : options);

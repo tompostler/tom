@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace Unlimitedinf.Utilities.Extensions
 {
@@ -9,6 +10,11 @@ namespace Unlimitedinf.Utilities.Extensions
     /// </summary>
     public static class EnumerableExtensions
     {
+        /// <summary>
+        /// Convert an array of UTF8-encoded json back to a specified type
+        /// </summary>
+        public static T FromJsonBytes<T>(this byte[] @this, int length) => Encoding.UTF8.GetString(@this, 0, length).FromJsonString<T>();
+
         /// <summary>
         /// Calculate the medain of an enumerable. Attempts to convert to doubles.
         /// </summary>

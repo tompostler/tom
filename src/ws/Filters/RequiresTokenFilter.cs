@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Unlimitedinf.Tom.WebSocket.Filters
 {
-    public sealed class RequiresTokenFilter : IAuthorizationFilter
+    internal sealed class RequiresTokenFilter : IAuthorizationFilter
     {
         private readonly Options options;
         private readonly ILogger<RequiresTokenFilter> logger;

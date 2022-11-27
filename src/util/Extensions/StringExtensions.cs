@@ -21,8 +21,6 @@ namespace Unlimitedinf.Utilities.Extensions
         /// <summary>
         /// Using UTF8 encoding, convert a string to its (lowercase) hashed SHA256 value.
         /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
         public static string ComputeSHA256(this string value)
         {
             using var sha256 = SHA256.Create();

@@ -6,7 +6,7 @@ using System;
 namespace Unlimitedinf.Tom.WebSocket.Filters
 {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true, Inherited = false)]
-    public sealed class RequiresTokenAttribute : Attribute, IFilterFactory
+    internal sealed class RequiresTokenAttribute : Attribute, IFilterFactory
     {
         public bool IsReusable => true;
 

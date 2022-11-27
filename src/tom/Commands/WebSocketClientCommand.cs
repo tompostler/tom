@@ -11,7 +11,9 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Unlimitedinf.Tom.WebSocket.Models;
 using Unlimitedinf.Utilities;
+using Unlimitedinf.Utilities.Extensions;
 
 namespace Unlimitedinf.Tom.Commands
 {
@@ -151,6 +153,24 @@ namespace Unlimitedinf.Tom.Commands
             await wsClient.ConnectAsync(new Uri(endpoint, "ws/connect"), cts.Token);
             Console.WriteLine($"Successful web socket connect in {sw.ElapsedMilliseconds}ms.");
             Console.WriteLine();
+            byte[] buffer = new byte[1024 * 4];
+
+            // Send the motd to get basic session info
+            await wsClient.SendAsync(new CommandMessageMotdRequest().ToJsonBytes(), WebSocketMessageType.Text, endOfMessage: true, cts.Token);
+            WebSocketReceiveResult receiveResult = await wsClient.ReceiveAsync(buffer, cts.Token);
+            if (!receiveResult.EndOfMessage)
+            {
+                // Using 4kb chunks, we should always receive the whole message
+                await wsClient.CloseAsync(WebSocketCloseStatus.PolicyViolation, "Text message not sent in full.", cts.Token);
+                return;
+            }
+            CommandMessageMotdResponse motdResponse = buffer.FromJsonBytes<CommandMessageMotdResponse>(receiveResult.Count);
+            Console.WriteLine("Current status:");
+            Console.WriteLine(motdResponse.ToJsonString(indented: true));
+            Console.WriteLine();
+
+            // Close the websocket
+            await wsClient.CloseAsync(WebSocketCloseStatus.NormalClosure, statusDescription: default, cts.Token);
         }
     }
 }
