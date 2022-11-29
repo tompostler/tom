@@ -56,8 +56,10 @@ namespace Unlimitedinf.Tom.WebSocket.Models
         public string Name { get; set; }
         public DateTime Modified { get; set; }
 
+        public string Type { get; set; }
+
         // Only applicable to files
-        public long? Length { get; set; }
+        public long Length { get; set; }
     }
 
     public sealed class CommandMessageLsResponse : CommandMessage

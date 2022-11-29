@@ -290,13 +290,13 @@ namespace Unlimitedinf.Tom.Commands
             CommandMessageGetResponse getResponse = messageText.FromJsonString<CommandMessageGetResponse>();
             Console.WriteLine("Starting transfer of the following files:");
             Output.WriteTable(
-                getResponse.Files.Select(x => new { x.Name, x.Modified, Length = x.Length?.AsBytesToFriendlyString() }),
+                getResponse.Files.Select(x => new { x.Name, x.Modified, Length = x.Length.AsBytesToFriendlyString() }),
                 nameof(TrimmedFileSystemObjectInfo.Name),
                 nameof(TrimmedFileSystemObjectInfo.Modified),
                 nameof(TrimmedFileSystemObjectInfo.Length));
 
             ConsoleLogger consoleLogger = new(ConsoleLoggerVerbosity.Info);
-            ProgressLogger jobProgressLogger = new(getResponse.Files.Sum(x => x.Length.Value), consoleLogger);
+            ProgressLogger jobProgressLogger = new(getResponse.Files.Sum(x => x.Length), consoleLogger);
             long jobReceivedBytes = 0;
             foreach (TrimmedFileSystemObjectInfo incomingFile in getResponse.Files)
             {
@@ -305,7 +305,7 @@ namespace Unlimitedinf.Tom.Commands
                 _ = Directory.CreateDirectory(fileInfo.DirectoryName);
 
                 Console.WriteLine($"Receiving {fileInfo.FullName}");
-                ProgressLogger fileProgressLogger = new(incomingFile.Length.Value, consoleLogger);
+                ProgressLogger fileProgressLogger = new(incomingFile.Length, consoleLogger);
 
                 // First receive the file
                 var sha256 = SHA256.Create();
@@ -355,9 +355,10 @@ namespace Unlimitedinf.Tom.Commands
         private static void PrintLsResponse(CommandMessageLsResponse lsResponse)
         {
             Output.WriteTable(
-                lsResponse.Dirs.Union(lsResponse.Files).Select(x => new { x.Name, x.Modified, Length = x.Length?.AsBytesToFriendlyString() }),
+                lsResponse.Dirs.Union(lsResponse.Files).Select(x => new { x.Name, x.Modified, x.Type, Length = x.Length.AsBytesToFriendlyString() }),
                 nameof(TrimmedFileSystemObjectInfo.Name),
                 nameof(TrimmedFileSystemObjectInfo.Modified),
+                nameof(TrimmedFileSystemObjectInfo.Type),
                 nameof(TrimmedFileSystemObjectInfo.Length));
         }
 

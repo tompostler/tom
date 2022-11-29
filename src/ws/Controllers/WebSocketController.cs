@@ -152,8 +152,24 @@ namespace Unlimitedinf.Tom.WebSocket.Controllers
                                 new CommandMessageLsResponse
                                 {
                                     CurrentDirectory = state.CurrentDirectory.FullName,
-                                    Dirs = state.CurrentDirectory.GetDirectories().Select(x => new TrimmedFileSystemObjectInfo { Name = x.Name, Modified = x.LastWriteTime }).ToList(),
-                                    Files = state.CurrentDirectory.GetFiles().Select(x => new TrimmedFileSystemObjectInfo { Name = x.Name, Length = x.Length, Modified = x.LastWriteTime }).ToList()
+                                    Dirs = state.CurrentDirectory.GetDirectories()
+                                        .Select(
+                                            x => new TrimmedFileSystemObjectInfo
+                                            {
+                                                Type = "Dir",
+                                                Name = x.Name,
+                                                Modified = x.LastWriteTime,
+                                                Length = x.GetFiles("*", SearchOption.AllDirectories).Sum(x => x.Length)
+                                            }).ToList(),
+                                    Files = state.CurrentDirectory.GetFiles()
+                                        .Select(
+                                            x => new TrimmedFileSystemObjectInfo
+                                            {
+                                                Type = "File",
+                                                Name = x.Name,
+                                                Length = x.Length,
+                                                Modified = x.LastWriteTime
+                                            }).ToList()
                                 }.ToJsonBytes(),
                                 WebSocketMessageType.Text,
                                 endOfMessage: true,
@@ -181,12 +197,14 @@ namespace Unlimitedinf.Tom.WebSocket.Controllers
                                 await webSocket.SendAsync(
                                     new CommandMessageGetResponse
                                     {
-                                        Files = filesToSend.Select(x => new TrimmedFileSystemObjectInfo
-                                        {
-                                            Name = x.FullName.Substring(state.CurrentDirectory.FullName.Length),
-                                            Modified = x.LastWriteTime,
-                                            Length = x.Length
-                                        }).ToList()
+                                        Files = filesToSend.Select(
+                                            x => new TrimmedFileSystemObjectInfo
+                                            {
+                                                Type = "File",
+                                                Name = x.FullName.Substring(state.CurrentDirectory.FullName.Length),
+                                                Modified = x.LastWriteTime,
+                                                Length = x.Length
+                                            }).ToList()
                                     }.ToJsonBytes(),
                                     WebSocketMessageType.Text,
                                     endOfMessage: true,
