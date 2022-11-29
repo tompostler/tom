@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.WebSockets;
 using System.Security.Cryptography;
 using System.Text;
@@ -216,6 +217,12 @@ namespace Unlimitedinf.Tom.WebSocket.Controllers
                             }
                             break;
 
+                        case CommandType.put:
+                            CommandMessagePutRequest commandMessagePutRequest = messageText.FromJsonString<CommandMessagePutRequest>();
+                            state.SendingFiles = new(commandMessagePutRequest.Files.Select(x => new FileInfo(Path.Join(state.CurrentDirectory.FullName, x.Name))));
+                            await this.HandleFilePutAsync(webSocket, state, cancellationToken);
+                            break;
+
                         default:
                             await webSocket.SendAsync(
                                 new CommandMessageErrorResponse { Payload = $"{nameof(CommandType)}.{commandMessage.Type} is not mapped for handling." }.ToJsonBytes(),
@@ -227,18 +234,12 @@ namespace Unlimitedinf.Tom.WebSocket.Controllers
                     }
                 }
 
-                // If it's binary, then we better be expecting a file to be coming in
+                // We shouldn't be receiving random binary requests
                 else if (receiveResult.MessageType == WebSocketMessageType.Binary)
                 {
-                    if (state.ReceivingFile == default)
-                    {
-                        this.logger.LogWarning("Closing web socket since unexpected binary message sent.");
-                        await webSocket.CloseAsync(WebSocketCloseStatus.PolicyViolation, "Binary message sent without first establishing file transfer information.", cancellationToken);
-                        return;
-                    }
-
-                    // Process the file transfer
-                    //TODO
+                    this.logger.LogWarning("Closing web socket since unexpected binary message sent.");
+                    await webSocket.CloseAsync(WebSocketCloseStatus.PolicyViolation, "Binary message sent without first establishing file transfer information.", cancellationToken);
+                    return;
                 }
 
                 // Get the next message
@@ -287,6 +288,60 @@ namespace Unlimitedinf.Tom.WebSocket.Controllers
                     endOfMessage: true,
                     cancellationToken);
                 _ = Interlocked.Increment(ref Status.Instance.textMessagesSent);
+            }
+        }
+
+        /// <summary>
+        /// Sending a list of files from the client follows the following process:
+        /// 1. A list of all files to be sent is sent as a <see cref="CommandMessagePutRequest"/>
+        /// 2. On a loop until the queue is exhausted:
+        ///     1. The file is sent
+        ///     2. A summary of the file sent (including the hash for verification) is sent as a <see cref="CommandMessagePutEndRequest"/>
+        /// </summary>
+        private async Task HandleFilePutAsync(System.Net.WebSockets.WebSocket webSocket, WebSocketState state, CancellationToken cancellationToken)
+        {
+            byte[] buffer = new byte[BufferSize];
+            WebSocketReceiveResult receiveResult;
+            while (state.SendingFiles.TryDequeue(out FileInfo fileToReceive))
+            {
+                this.logger.LogInformation($"Receiving {fileToReceive.FullName}");
+
+                // First receive the file
+                var sha256 = SHA256.Create();
+                using (FileStream fs = fileToReceive.OpenWrite())
+                using (ThrottledStream ts = new(fs, this.options.BytesPerSecondLimit))
+                {
+                    do
+                    {
+                        receiveResult = await webSocket.ReceiveAsync(buffer, cancellationToken);
+                        _ = sha256.TransformBlock(buffer, inputOffset: 0, receiveResult.Count, outputBuffer: default, outputOffset: default);
+                        _ = Interlocked.Add(ref Status.Instance.BinaryBytesReceived, (ulong)receiveResult.Count);
+                        await fs.WriteAsync(buffer.AsMemory(0, receiveResult.Count), cancellationToken);
+                    }
+                    while (!receiveResult.EndOfMessage);
+                }
+                _ = sha256.TransformFinalBlock(Array.Empty<byte>(), default, default);
+
+                // Get the message to verify the hash
+                receiveResult = await webSocket.ReceiveAsync(buffer, cancellationToken);
+                _ = Interlocked.Increment(ref Status.Instance.textMessagesReceived);
+                if (!receiveResult.EndOfMessage)
+                {
+                    await webSocket.CloseAsync(WebSocketCloseStatus.PolicyViolation, "Text message not sent in full.", cancellationToken);
+                    throw new InvalidOperationException("Text message not sent in full.");
+                }
+                CommandMessagePutEndRequest putEndRequest = buffer.FromJsonBytes<CommandMessagePutEndRequest>(receiveResult.Count);
+                string actualHashSHA256 = sha256.Hash.ToLowercaseHash();
+                if (!string.Equals(putEndRequest.HashSHA256, actualHashSHA256, StringComparison.OrdinalIgnoreCase))
+                {
+                    this.logger.LogError($"For file {fileToReceive.FullName}, exepected hash was {putEndRequest.HashSHA256} but actual hash was {actualHashSHA256}. Terminating socket.");
+                    await webSocket.CloseAsync(WebSocketCloseStatus.InvalidPayloadData, "Did not receive correct data.", cancellationToken);
+                    throw new InvalidOperationException("Did not receive correct data.");
+                }
+                else
+                {
+                    this.logger.LogInformation($"Validated {fileToReceive.FullName} had expected hash.");
+                }
             }
         }
     }

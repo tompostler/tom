@@ -204,14 +204,13 @@ namespace Unlimitedinf.Tom.Commands
                 }
                 while (string.IsNullOrEmpty(input));
 
-                string[] tokens = input.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-                switch (tokens.FirstOrDefault()?.ToLower())
+                switch (input.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).FirstOrDefault()?.ToLower())
                 {
                     case "cd":
-                        CommandMessageLsResponse cdResponse = await SendAndReceiveCdAsync(wsClient, tokens.Last(), cancellationToken);
+                        CommandMessageLsResponse cdResponse = await SendAndReceiveCdAsync(wsClient, input.Substring("cd ".Length), cancellationToken);
                         if (cdResponse != default)
                         {
-                            localPath = new(Path.Join(localPath.FullName, tokens.Last()));
+                            localPath = new(Path.Join(localPath.FullName, input.Substring("cd ".Length)));
                             localPath.Create();
 
                             remotePath = new(cdResponse.CurrentDirectory);
@@ -224,7 +223,11 @@ namespace Unlimitedinf.Tom.Commands
                         break;
 
                     case "get":
-                        await HandleGetAsync(wsClient, localPath, tokens.Last(), cancellationToken);
+                        await HandleGetAsync(wsClient, localPath, input.Substring("get ".Length), cancellationToken);
+                        break;
+
+                    case "put":
+                        await HandlePutAsync(wsClient, localPath, input.Substring("put ".Length), cancellationToken);
                         break;
 
                     case "motd":
@@ -345,6 +348,87 @@ namespace Unlimitedinf.Tom.Commands
                 Console.WriteLine();
                 Console.WriteLine("Overall status:");
                 jobProgressLogger.Report(jobReceivedBytes);
+                Console.WriteLine();
+            }
+            Console.WriteLine("Overall status:");
+            jobProgressLogger.ReportComplete();
+            Console.WriteLine();
+        }
+
+        /// <summary>
+        /// Putting a list of files from the client follows the following process:
+        /// 0. An error message may be shown if there's nothing to send
+        /// 1. A list of all files to be sent is sent as a <see cref="CommandMessagePutRequest"/>
+        /// 2. On a loop until the queue is exhausted:
+        ///     1. The file is sent
+        ///     2. A summary of the file sent (including the hash for verification) is sent as a <see cref="CommandMessagePutEndRequest"/>
+        /// </summary>
+        private static async Task HandlePutAsync(ClientWebSocket wsClient, DirectoryInfo localPath, string target, CancellationToken cancellationToken)
+        {
+            FileInfo[] filesToSend = localPath.GetFiles(target, SearchOption.AllDirectories).Where(x => x.Length > 0).ToArray();
+            if (filesToSend.Length == 0)
+            {
+                Console.WriteLine("ERROR: No files found.");
+                return;
+            }
+            Console.WriteLine($"Sending {filesToSend.Length} files: {string.Join(", ", filesToSend.Select(x => x.FullName))}");
+            await wsClient.SendAsync(
+                new CommandMessagePutRequest
+                {
+                    Files = filesToSend.Select(
+                        x => new TrimmedFileSystemObjectInfo
+                        {
+                            Type = "File",
+                            Name = x.FullName.Substring(localPath.FullName.Length),
+                            Modified = x.LastWriteTime,
+                            Length = x.Length
+                        }).ToList()
+                }.ToJsonBytes(),
+                WebSocketMessageType.Text,
+                endOfMessage: true,
+                cancellationToken);
+
+            ConsoleLogger consoleLogger = new(ConsoleLoggerVerbosity.Info);
+            ProgressLogger jobProgressLogger = new(filesToSend.Sum(x => x.Length), consoleLogger);
+            long jobSentBytes = 0;
+            foreach (FileInfo fileToSend in filesToSend)
+            {
+                Console.WriteLine($"Sending {fileToSend.FullName}");
+                ProgressLogger fileProgressLogger = new(fileToSend.Length, consoleLogger);
+
+                // First send the file
+                var sha256 = SHA256.Create();
+                byte[] buffer = new byte[BufferSize];
+                long fileSentBytes = 0;
+                using (FileStream fs = fileToSend.OpenRead())
+                {
+                    while (fs.Position < fs.Length)
+                    {
+                        int bytesRead = await fs.ReadAsync(buffer, cancellationToken);
+                        fileSentBytes += bytesRead;
+                        _ = sha256.TransformBlock(buffer, inputOffset: 0, bytesRead, outputBuffer: default, outputOffset: 0);
+
+                        await wsClient.SendAsync(buffer.AsMemory(0, bytesRead), WebSocketMessageType.Binary, endOfMessage: bytesRead != buffer.Length, cancellationToken);
+                        fileProgressLogger.Report(fileSentBytes);
+                    }
+                }
+                _ = sha256.TransformFinalBlock(Array.Empty<byte>(), default, default);
+                fileProgressLogger.ReportComplete();
+                jobSentBytes += fileSentBytes;
+
+                // Once that's complete, send the hash
+                await wsClient.SendAsync(
+                    new CommandMessagePutEndRequest
+                    {
+                        HashSHA256 = sha256.Hash.ToLowercaseHash()
+                    }.ToJsonBytes(),
+                    WebSocketMessageType.Text,
+                    endOfMessage: true,
+                    cancellationToken);
+
+                Console.WriteLine();
+                Console.WriteLine("Overall status:");
+                jobProgressLogger.Report(jobSentBytes);
                 Console.WriteLine();
             }
             Console.WriteLine("Overall status:");

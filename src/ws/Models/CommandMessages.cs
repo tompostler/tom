@@ -10,6 +10,7 @@ namespace Unlimitedinf.Tom.WebSocket.Models
         cd,
         ls,
         get,
+        put,
     }
 
     public class CommandMessage
@@ -88,6 +89,20 @@ namespace Unlimitedinf.Tom.WebSocket.Models
     public sealed class CommandMessageGetEndResponse : CommandMessage
     {
         public new CommandType Type => CommandType.get;
+
+        public string HashSHA256 { get; set; }
+    }
+
+    public sealed class CommandMessagePutRequest : CommandMessage
+    {
+        public new CommandType Type => CommandType.put;
+
+        public List<TrimmedFileSystemObjectInfo> Files { get; set; }
+    }
+
+    public sealed class CommandMessagePutEndRequest : CommandMessage
+    {
+        public new CommandType Type => CommandType.put;
 
         public string HashSHA256 { get; set; }
     }
