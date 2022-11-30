@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Unlimitedinf.Tom.WebSocket.Models
+namespace Unlimitedinf.Tom.WebSocket.Contracts
 {
     public enum CommandType
     {

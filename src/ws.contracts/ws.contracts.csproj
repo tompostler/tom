@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Unlimitedinf.WebSocket.Contracts</RootNamespace>
+    <AssemblyName>Unlimitedinf.Tom.WebSocket.Contracts</AssemblyName>
+  </PropertyGroup>
+
+</Project>

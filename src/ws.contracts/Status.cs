@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 
-namespace Unlimitedinf.Tom.WebSocket
+[assembly:InternalsVisibleTo("Unlimitedinf.Tom.WebSocket")]
+
+namespace Unlimitedinf.Tom.WebSocket.Contracts
 {
     public sealed class Status
     {

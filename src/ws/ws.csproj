@@ -7,6 +7,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\util\util.csproj" />
+    <ProjectReference Include="..\ws.contracts\ws.contracts.csproj" />
   </ItemGroup>
 
 </Project>

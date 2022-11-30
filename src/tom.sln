@@ -18,6 +18,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ws", "ws\ws.csproj", "{C6C0
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "util", "util\util.csproj", "{09400BD4-2344-4489-ABAC-3CCFB9B3152F}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ws.contracts", "ws.contracts\ws.contracts.csproj", "{A5AF9E79-EA3B-471B-8E10-92E8F70D9E42}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -29,6 +31,8 @@ Global
 		{C6C00311-D375-4CC6-8119-8A7885A9C700}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{09400BD4-2344-4489-ABAC-3CCFB9B3152F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{09400BD4-2344-4489-ABAC-3CCFB9B3152F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5AF9E79-EA3B-471B-8E10-92E8F70D9E42}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5AF9E79-EA3B-471B-8E10-92E8F70D9E42}.Debug|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
