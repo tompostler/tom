@@ -305,6 +305,7 @@ namespace Unlimitedinf.Tom.WebSocket.Controllers
             while (state.SendingFiles.TryDequeue(out FileInfo fileToReceive))
             {
                 this.logger.LogInformation($"Receiving {fileToReceive.FullName}");
+                _ = Directory.CreateDirectory(fileToReceive.DirectoryName);
 
                 // First receive the file
                 var sha256 = SHA256.Create();
@@ -316,7 +317,7 @@ namespace Unlimitedinf.Tom.WebSocket.Controllers
                         receiveResult = await webSocket.ReceiveAsync(buffer, cancellationToken);
                         _ = sha256.TransformBlock(buffer, inputOffset: 0, receiveResult.Count, outputBuffer: default, outputOffset: default);
                         _ = Interlocked.Add(ref Status.Instance.BinaryBytesReceived, (ulong)receiveResult.Count);
-                        await fs.WriteAsync(buffer.AsMemory(0, receiveResult.Count), cancellationToken);
+                        await ts.WriteAsync(buffer.AsMemory(0, receiveResult.Count), cancellationToken);
                     }
                     while (!receiveResult.EndOfMessage);
                 }
