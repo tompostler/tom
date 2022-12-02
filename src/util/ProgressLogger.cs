@@ -47,7 +47,13 @@ namespace Unlimitedinf.Utilities
                         (DateTimeOffset, long) ago = this.byteProgress.Dequeue();
                         long bytesProgress = value - ago.Item2;
                         decimal duration = (decimal)(now - ago.Item1).TotalSeconds;
-                        this.logger.LogInformation($"Progress: {value.AsBytesToFriendlyString(),9}/{this.expectedLength.AsBytesToFriendlyString()} ({1.0 * value / this.expectedLength:p}). Average over last {duration:0} seconds: {BytesToFriendlyBitString(bytesProgress / duration)}ps");
+                        string durationUnit = "seconds";
+                        if (duration > 100)
+                        {
+                            duration /= 100;
+                            durationUnit = "minutes";
+                        }
+                        this.logger.LogInformation($"Progress: {value.AsBytesToFriendlyString(),9}/{this.expectedLength.AsBytesToFriendlyString()} ({1.0 * value / this.expectedLength:p}). Average over last {duration:0.0} {durationUnit}: {BytesToFriendlyBitString(bytesProgress / duration)}ps");
                     }
                     else
                     {
