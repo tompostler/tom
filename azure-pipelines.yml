@@ -37,14 +37,14 @@ steps:
   inputs:
     command: publish
     projects: src/tom.exe/tom.exe.csproj
-    arguments: '--no-restore --configuration Debug --runtime linux-x64'
+    arguments: '--no-restore --configuration Debug --runtime linux-x64 --output $(Build.ArtifactStagingDirectory)/publish/linux-x64/'
 
 - task: DotNetCoreCLI@2
   displayName: Publish self-contained (win-x64)
   inputs:
     command: publish
     projects: src/tom.exe/tom.exe.csproj
-    arguments: '--no-restore --configuration Debug --runtime win-x64'
+    arguments: '--no-restore --configuration Debug --runtime win-x64 --output $(Build.ArtifactStagingDirectory)/publish/win-x64/'
 
 - task: PublishBuildArtifacts@1
   displayName: Publish build artifacts
