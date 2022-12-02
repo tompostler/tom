@@ -38,7 +38,8 @@ steps:
     command: publish
     publishWebProjects: false
     projects: src/tom.exe/tom.exe.csproj
-    arguments: '--no-restore --configuration Debug --runtime linux-x64 --output $(Build.ArtifactStagingDirectory)/publish/linux-x64/'
+    arguments: '--no-restore --configuration Debug --runtime linux-x64 --output $(Build.ArtifactStagingDirectory)/linux-x64/'
+    zipAfterPublish: false
 
 - task: DotNetCoreCLI@2
   displayName: Publish self-contained (win-x64)
@@ -46,7 +47,8 @@ steps:
     command: publish
     publishWebProjects: false
     projects: src/tom.exe/tom.exe.csproj
-    arguments: '--no-restore --configuration Debug --runtime win-x64 --output $(Build.ArtifactStagingDirectory)/publish/win-x64/'
+    arguments: '--no-restore --configuration Debug --runtime win-x64 --output $(Build.ArtifactStagingDirectory)/win-x64/'
+    zipAfterPublish: false
 
 - task: PublishBuildArtifacts@1
   displayName: Publish build artifacts
