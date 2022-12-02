@@ -5,7 +5,6 @@
     <AssemblyName>Unlimitedinf.Tom.Exe</AssemblyName>
     <PublishSingleFile>true</PublishSingleFile>
     <SelfContained>true</SelfContained>
-    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <PublishReadyToRun>true</PublishReadyToRun>
     <PublishTrimmed>true</PublishTrimmed>
     <OutputType>Exe</OutputType>
