@@ -80,8 +80,7 @@ namespace Unlimitedinf.Tom.WebSocket.Controllers
 
         private async Task HandleAsync(System.Net.WebSockets.WebSocket webSocket, CancellationToken cancellationToken)
         {
-            WebSocketState state = new() { CurrentDirectory = new(Environment.CurrentDirectory) };
-
+            DirectoryInfo localDir = new(Environment.CurrentDirectory);
             byte[] buffer = new byte[BufferSize];
 
             // We wait for the client to send the first message
@@ -110,7 +109,7 @@ namespace Unlimitedinf.Tom.WebSocket.Controllers
                                 new CommandMessageMotdResponse
                                 {
                                     Message = $"Hello {Rando.GetString(Rando.RandomType.Name)} on this fine {DateTime.Now.DayOfWeek}. When I asked the magic 8 ball 'Will this session be successful?', it responded: {Rando.GetString(Rando.RandomType.EightBall)}",
-                                    CurrentDirectory = state.CurrentDirectory.FullName,
+                                    CurrentDirectory = localDir.FullName,
                                     MegabitPerSecondLimit = this.options.BytesPerSecondLimit / 1_000_000d * 8,
                                     Status = Status.Instance
                                 }.ToJsonBytes(),
@@ -123,12 +122,12 @@ namespace Unlimitedinf.Tom.WebSocket.Controllers
                         case CommandType.cd:
                             CommandMessageCd commandMessageCd = messageText.FromJsonString<CommandMessageCd>();
                             this.logger.LogInformation($"Attempting to cd to {commandMessageCd.Target}");
-                            DirectoryInfo[] currentDirs = state.CurrentDirectory.GetDirectories();
+                            DirectoryInfo[] currentDirs = localDir.GetDirectories();
                             DirectoryInfo matchingDir = currentDirs.FirstOrDefault(x => string.Equals(x.Name, commandMessageCd.Target, StringComparison.Ordinal));
-                            if (commandMessageCd.Target == ".." && state.CurrentDirectory.FullName.Length > new DirectoryInfo(Environment.CurrentDirectory).FullName.Length)
+                            if (commandMessageCd.Target == ".." && localDir.FullName.Length > new DirectoryInfo(Environment.CurrentDirectory).FullName.Length)
                             {
                                 // Only allow parent traversal if the current directory full name length is longer than the root directory of the process
-                                state.CurrentDirectory = state.CurrentDirectory.Parent;
+                                localDir = localDir.Parent;
                                 goto case CommandType.ls;
                             }
                             else if (matchingDir == default)
@@ -143,7 +142,7 @@ namespace Unlimitedinf.Tom.WebSocket.Controllers
                             }
                             else
                             {
-                                state.CurrentDirectory = matchingDir;
+                                localDir = matchingDir;
                                 goto case CommandType.ls;
                             }
 
@@ -151,8 +150,8 @@ namespace Unlimitedinf.Tom.WebSocket.Controllers
                             await webSocket.SendAsync(
                                 new CommandMessageLsResponse
                                 {
-                                    CurrentDirectory = state.CurrentDirectory.FullName,
-                                    Dirs = state.CurrentDirectory.GetDirectories()
+                                    CurrentDirectory = localDir.FullName,
+                                    Dirs = localDir.GetDirectories()
                                         .Select(
                                             x => new TrimmedFileSystemObjectInfo
                                             {
@@ -161,7 +160,7 @@ namespace Unlimitedinf.Tom.WebSocket.Controllers
                                                 Modified = x.LastWriteTime,
                                                 Length = x.GetFiles("*", SearchOption.AllDirectories).Sum(x => x.Length)
                                             }).ToList(),
-                                    Files = state.CurrentDirectory.GetFiles()
+                                    Files = localDir.GetFiles()
                                         .Select(
                                             x => new TrimmedFileSystemObjectInfo
                                             {
@@ -180,12 +179,12 @@ namespace Unlimitedinf.Tom.WebSocket.Controllers
                         case CommandType.get:
                             CommandMessageGetRequest commandMessageGetRequest = messageText.FromJsonString<CommandMessageGetRequest>();
                             this.logger.LogInformation($"Attempting to get non-empty files based on {commandMessageGetRequest.Target}");
-                            FileInfo[] filesToSend = state.CurrentDirectory.GetFiles(commandMessageGetRequest.Target, SearchOption.AllDirectories).Where(x => x.Length > 0).OrderBy(x => x.FullName).ToArray();
+                            FileInfo[] filesToSend = localDir.GetFiles(commandMessageGetRequest.Target, SearchOption.AllDirectories).Where(x => x.Length > 0).OrderBy(x => x.FullName).ToArray();
                             if (filesToSend.Length == 0)
                             {
                                 this.logger.LogWarning("No files found.");
                                 await webSocket.SendAsync(
-                                    new CommandMessageErrorResponse { Payload = $"Could not find any files in {state.CurrentDirectory.FullName} for {commandMessageGetRequest.Target}" }.ToJsonBytes(),
+                                    new CommandMessageErrorResponse { Payload = $"Could not find any files in {localDir.FullName} for {commandMessageGetRequest.Target}" }.ToJsonBytes(),
                                     WebSocketMessageType.Text,
                                     endOfMessage: true,
                                     cancellationToken);
@@ -201,7 +200,7 @@ namespace Unlimitedinf.Tom.WebSocket.Controllers
                                             x => new TrimmedFileSystemObjectInfo
                                             {
                                                 Type = "File",
-                                                Name = x.FullName.Substring(state.CurrentDirectory.FullName.Length),
+                                                Name = x.FullName.Substring(localDir.FullName.Length),
                                                 Modified = x.LastWriteTime,
                                                 Length = x.Length
                                             }).ToList()
@@ -218,7 +217,7 @@ namespace Unlimitedinf.Tom.WebSocket.Controllers
 
                         case CommandType.put:
                             CommandMessagePutRequest commandMessagePutRequest = messageText.FromJsonString<CommandMessagePutRequest>();
-                            Queue<FileInfo> receivingFiles = new(commandMessagePutRequest.Files.Select(x => new FileInfo(Path.Join(state.CurrentDirectory.FullName, x.Name))));
+                            Queue<FileInfo> receivingFiles = new(commandMessagePutRequest.Files.Select(x => new FileInfo(Path.Join(localDir.FullName, x.Name))));
                             await this.HandleFilePutAsync(webSocket, receivingFiles, cancellationToken);
                             break;
 
