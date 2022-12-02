@@ -38,8 +38,9 @@ steps:
     command: publish
     publishWebProjects: false
     projects: src/tom.exe/tom.exe.csproj
-    arguments: '--no-restore --configuration Debug --runtime linux-x64 --output $(Build.ArtifactStagingDirectory)/linux-x64/'
+    arguments: '--no-restore --configuration Debug --runtime linux-x64 --output $(Build.ArtifactStagingDirectory)/tom.exe/linux-x64/'
     zipAfterPublish: false
+    modifyOutputPath: false
 
 - task: DotNetCoreCLI@2
   displayName: Publish self-contained (win-x64)
@@ -47,8 +48,15 @@ steps:
     command: publish
     publishWebProjects: false
     projects: src/tom.exe/tom.exe.csproj
-    arguments: '--no-restore --configuration Debug --runtime win-x64 --output $(Build.ArtifactStagingDirectory)/win-x64/'
+    arguments: '--no-restore --configuration Debug --runtime win-x64 --output $(Build.ArtifactStagingDirectory)/tom.exe/win-x64/'
     zipAfterPublish: false
+    modifyOutputPath: false
+
+- task: DeleteFiles@1
+  displayName: Delete pdbs
+  inputs:
+    sourceFolder: $(Build.ArtifactStagingDirectory)/tom.exe
+    contents: '*.pdb'
 
 - task: PublishBuildArtifacts@1
   displayName: Publish build artifacts
