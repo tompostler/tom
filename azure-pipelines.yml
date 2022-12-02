@@ -53,10 +53,12 @@ steps:
     modifyOutputPath: false
 
 - task: DeleteFiles@1
-  displayName: Delete pdbs
+  displayName: Delete non-exes from publish
   inputs:
     sourceFolder: $(Build.ArtifactStagingDirectory)/tom.exe
-    contents: '*.pdb'
+    contents: |
+      **/*.pdb
+      **/*.xml
 
 - task: PublishBuildArtifacts@1
   displayName: Publish build artifacts
