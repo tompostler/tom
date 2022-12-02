@@ -163,7 +163,7 @@ namespace Unlimitedinf.Tom.Commands
 
             // List the current directory
             CommandMessageLsResponse lsResponse = await SendAndReceiveLsAsync(wsClient, cts.Token);
-            DirectoryInfo remotePath = new(lsResponse.CurrentDirectory);
+            string remotePath = lsResponse.CurrentDirectory;
 
             await StartMessageLoopAsync(remotePath, wsClient, cts.Token);
 
@@ -171,7 +171,7 @@ namespace Unlimitedinf.Tom.Commands
             await wsClient.CloseAsync(WebSocketCloseStatus.NormalClosure, statusDescription: default, cts.Token);
         }
 
-        private static async Task StartMessageLoopAsync(DirectoryInfo remotePath, ClientWebSocket wsClient, CancellationToken cancellationToken)
+        private static async Task StartMessageLoopAsync(string remotePath, ClientWebSocket wsClient, CancellationToken cancellationToken)
         {
             DirectoryInfo localPath = new(Environment.CurrentDirectory);
             StringBuilder sb = new();
@@ -194,8 +194,8 @@ namespace Unlimitedinf.Tom.Commands
             while (true)
             {
                 // Prompt for input
-                Console.WriteLine($"Local: {localPath.FullName}");
-                Console.WriteLine($"Remote: {remotePath.FullName}");
+                Console.WriteLine($"Local:  {localPath.FullName}");
+                Console.WriteLine($"Remote: {remotePath}");
                 string input;
                 do
                 {
@@ -213,13 +213,13 @@ namespace Unlimitedinf.Tom.Commands
                             localPath = new(Path.Join(localPath.FullName, input.Substring("cd ".Length)));
                             localPath.Create();
 
-                            remotePath = new(cdResponse.CurrentDirectory);
+                            remotePath = cdResponse.CurrentDirectory;
                         }
                         break;
 
                     case "ls":
                         CommandMessageLsResponse lsResponse = await SendAndReceiveLsAsync(wsClient, cancellationToken);
-                        remotePath = new(lsResponse.CurrentDirectory);
+                        remotePath = lsResponse.CurrentDirectory;
                         break;
 
                     case "get":
@@ -232,7 +232,7 @@ namespace Unlimitedinf.Tom.Commands
 
                     case "motd":
                         CommandMessageMotdResponse motdResponse = await SendAndReceiveMotdAsync(wsClient, cancellationToken);
-                        remotePath = new(motdResponse.CurrentDirectory);
+                        remotePath = motdResponse.CurrentDirectory;
                         break;
 
                     case "h" or "help":
@@ -365,7 +365,7 @@ namespace Unlimitedinf.Tom.Commands
         /// </summary>
         private static async Task HandlePutAsync(ClientWebSocket wsClient, DirectoryInfo localPath, string target, CancellationToken cancellationToken)
         {
-            FileInfo[] filesToSend = localPath.GetFiles(target, SearchOption.AllDirectories).Where(x => x.Length > 0).ToArray();
+            FileInfo[] filesToSend = localPath.GetFiles(target, SearchOption.AllDirectories).Where(x => x.Length > 0).OrderBy(x => x.FullName).ToArray();
             if (filesToSend.Length == 0)
             {
                 Console.WriteLine("ERROR: No files found.");

@@ -180,7 +180,7 @@ namespace Unlimitedinf.Tom.WebSocket.Controllers
                         case CommandType.get:
                             CommandMessageGetRequest commandMessageGetRequest = messageText.FromJsonString<CommandMessageGetRequest>();
                             this.logger.LogInformation($"Attempting to get non-empty files based on {commandMessageGetRequest.Target}");
-                            FileInfo[] filesToSend = state.CurrentDirectory.GetFiles(commandMessageGetRequest.Target, SearchOption.AllDirectories).Where(x => x.Length > 0).ToArray();
+                            FileInfo[] filesToSend = state.CurrentDirectory.GetFiles(commandMessageGetRequest.Target, SearchOption.AllDirectories).Where(x => x.Length > 0).OrderBy(x => x.FullName).ToArray();
                             if (filesToSend.Length == 0)
                             {
                                 this.logger.LogWarning("No files found.");
@@ -211,15 +211,15 @@ namespace Unlimitedinf.Tom.WebSocket.Controllers
                                     cancellationToken);
                                 _ = Interlocked.Increment(ref Status.Instance.textMessagesSent);
 
-                                state.SendingFiles = new(filesToSend);
-                                await this.HandleFileGetAsync(webSocket, state, cancellationToken);
+                                Queue<FileInfo> sendingFiles = new(filesToSend);
+                                await this.HandleFileGetAsync(webSocket, sendingFiles, cancellationToken);
                             }
                             break;
 
                         case CommandType.put:
                             CommandMessagePutRequest commandMessagePutRequest = messageText.FromJsonString<CommandMessagePutRequest>();
-                            state.SendingFiles = new(commandMessagePutRequest.Files.Select(x => new FileInfo(Path.Join(state.CurrentDirectory.FullName, x.Name))));
-                            await this.HandleFilePutAsync(webSocket, state, cancellationToken);
+                            Queue<FileInfo> receivingFiles = new(commandMessagePutRequest.Files.Select(x => new FileInfo(Path.Join(state.CurrentDirectory.FullName, x.Name))));
+                            await this.HandleFilePutAsync(webSocket, receivingFiles, cancellationToken);
                             break;
 
                         default:
@@ -255,9 +255,9 @@ namespace Unlimitedinf.Tom.WebSocket.Controllers
         ///     1. The file is sent
         ///     2. A summary of the file sent (including the hash for verification) is sent as a <see cref="CommandMessageGetEndResponse"/>
         /// </summary>
-        private async Task HandleFileGetAsync(System.Net.WebSockets.WebSocket webSocket, WebSocketState state, CancellationToken cancellationToken)
+        private async Task HandleFileGetAsync(System.Net.WebSockets.WebSocket webSocket, Queue<FileInfo> sendingFiles, CancellationToken cancellationToken)
         {
-            while (state.SendingFiles.TryDequeue(out FileInfo fileToSend))
+            while (sendingFiles.TryDequeue(out FileInfo fileToSend))
             {
                 this.logger.LogInformation($"Sending {fileToSend.FullName}");
 
@@ -297,11 +297,11 @@ namespace Unlimitedinf.Tom.WebSocket.Controllers
         ///     1. The file is sent
         ///     2. A summary of the file sent (including the hash for verification) is sent as a <see cref="CommandMessagePutEndRequest"/>
         /// </summary>
-        private async Task HandleFilePutAsync(System.Net.WebSockets.WebSocket webSocket, WebSocketState state, CancellationToken cancellationToken)
+        private async Task HandleFilePutAsync(System.Net.WebSockets.WebSocket webSocket, Queue<FileInfo> receivingFiles, CancellationToken cancellationToken)
         {
             byte[] buffer = new byte[BufferSize];
             WebSocketReceiveResult receiveResult;
-            while (state.SendingFiles.TryDequeue(out FileInfo fileToReceive))
+            while (receivingFiles.TryDequeue(out FileInfo fileToReceive))
             {
                 this.logger.LogInformation($"Receiving {fileToReceive.FullName}");
                 _ = Directory.CreateDirectory(fileToReceive.DirectoryName);
