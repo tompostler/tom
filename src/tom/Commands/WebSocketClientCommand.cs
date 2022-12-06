@@ -388,33 +388,26 @@ namespace Unlimitedinf.Tom.Commands
                 endOfMessage: true,
                 cancellationToken);
 
-            ConsoleLogger consoleLogger = new(ConsoleLoggerVerbosity.Info);
-            ProgressLogger jobProgressLogger = new(filesToSend.Sum(x => x.Length), consoleLogger);
-            long jobSentBytes = 0;
+            SpectreConsoleFileTransferProgressLogger progressLogger = new(default, 0, filesToSend.Length + 1, filesToSend.Sum(x => x.Length));
             foreach (FileInfo fileToSend in filesToSend)
             {
-                Console.WriteLine($"Sending {fileToSend.FullName}");
-                ProgressLogger fileProgressLogger = new(fileToSend.Length, consoleLogger);
+                progressLogger.ResetCurrentFile(fileToSend.Name, fileToSend.Length);
 
                 // First send the file
                 var sha256 = SHA256.Create();
                 byte[] buffer = new byte[BufferSize];
-                long fileSentBytes = 0;
                 using (FileStream fs = fileToSend.OpenRead())
                 {
                     while (fs.Position < fs.Length)
                     {
                         int bytesRead = await fs.ReadAsync(buffer, cancellationToken);
-                        fileSentBytes += bytesRead;
                         _ = sha256.TransformBlock(buffer, inputOffset: 0, bytesRead, outputBuffer: default, outputOffset: 0);
 
                         await wsClient.SendAsync(buffer.AsMemory(0, bytesRead), WebSocketMessageType.Binary, endOfMessage: bytesRead != buffer.Length, cancellationToken);
-                        fileProgressLogger.Report(fileSentBytes);
+                        progressLogger.AddProgress(bytesRead);
                     }
                 }
                 _ = sha256.TransformFinalBlock(Array.Empty<byte>(), default, default);
-                fileProgressLogger.ReportComplete();
-                jobSentBytes += fileSentBytes;
 
                 // Once that's complete, send the hash
                 await wsClient.SendAsync(
@@ -425,15 +418,8 @@ namespace Unlimitedinf.Tom.Commands
                     WebSocketMessageType.Text,
                     endOfMessage: true,
                     cancellationToken);
-
-                Console.WriteLine();
-                Console.WriteLine("Overall status:");
-                jobProgressLogger.Report(jobSentBytes);
-                Console.WriteLine();
             }
-            Console.WriteLine("Overall status:");
-            jobProgressLogger.ReportComplete();
-            Console.WriteLine();
+            progressLogger.MarkComplete();
         }
 
         private static void PrintLsResponse(CommandMessageLsResponse lsResponse)

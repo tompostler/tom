@@ -1,5 +1,6 @@
 ﻿using Spectre.Console;
 using System;
+using System.Threading.Tasks;
 
 namespace Unlimitedinf.Tom
 {
@@ -8,16 +9,10 @@ namespace Unlimitedinf.Tom
     /// </summary>
     internal sealed class SpectreConsoleFileTransferProgressLogger
     {
-        private long currentFileSeenLength;
-        private long currentFileExpectedLength;
-
-        private long totalFileSeenLength;
-        private readonly long totalFileExpectedLength;
-
-        private ProgressContext context;
-        private readonly ProgressTask currentFileBytesTask;
-        private readonly ProgressTask totalFileCountTask;
-        private readonly ProgressTask totalFileBytesTask;
+        private readonly Task progressTask;
+        private ProgressTask currentFileBytesTask;
+        private ProgressTask totalFileCountTask;
+        private ProgressTask totalFileBytesTask;
 
         /// <inheritdoc/>
         public SpectreConsoleFileTransferProgressLogger(
@@ -26,9 +21,6 @@ namespace Unlimitedinf.Tom
             long totalFileCount,
             long totalFileExpectedLength)
         {
-            this.currentFileExpectedLength = currentFileExpectedLength;
-            this.totalFileExpectedLength = totalFileExpectedLength;
-
             Progress progress = AnsiConsole.Progress()
                 .Columns(new ProgressColumn[]
                 {
@@ -40,12 +32,23 @@ namespace Unlimitedinf.Tom
                     new RemainingTimeColumn(),
                     new TransferSpeedColumn(),
                 });
-            progress.RefreshRate = TimeSpan.FromSeconds(0.5);
-            progress.Start(context => { this.context = context; });
+            this.progressTask = progress.StartAsync(
+                async context =>
+                {
+                    this.currentFileBytesTask = context.AddTask(currentFileName ?? "TBD", maxValue: currentFileExpectedLength);
+                    this.currentFileBytesTask.StartTask();
 
-            this.currentFileBytesTask = this.context.AddTask(currentFileName);
-            this.totalFileCountTask = this.context.AddTask("Total file count", maxValue: totalFileCount);
-            this.totalFileBytesTask = this.context.AddTask("Total file bytes");
+                    this.totalFileCountTask = context.AddTask("Total file count", maxValue: totalFileCount);
+                    this.totalFileCountTask.StartTask();
+
+                    this.totalFileBytesTask = context.AddTask("Total file bytes", maxValue: totalFileExpectedLength);
+                    this.totalFileBytesTask.StartTask();
+
+                    while (!context.IsFinished)
+                    {
+                        await Task.Delay(TimeSpan.FromSeconds(0.1));
+                    }
+                });
         }
 
         /// <summary>
@@ -53,11 +56,8 @@ namespace Unlimitedinf.Tom
         /// </summary>
         public void AddProgress(long value)
         {
-            this.currentFileSeenLength += value;
-            this.currentFileBytesTask.Value = this.currentFileSeenLength * 100d / this.currentFileExpectedLength;
-
-            this.totalFileSeenLength += value;
-            this.totalFileBytesTask.Value = this.totalFileSeenLength * 100d / this.totalFileExpectedLength;
+            this.currentFileBytesTask.Increment(value);
+            this.totalFileBytesTask.Increment(value);
         }
 
         /// <summary>
@@ -67,8 +67,7 @@ namespace Unlimitedinf.Tom
         {
             this.currentFileBytesTask.Description = newFileName;
             this.currentFileBytesTask.Value = 0;
-            this.currentFileSeenLength = 0;
-            this.currentFileExpectedLength = newExpectedBytesLength;
+            this.currentFileBytesTask.MaxValue = newExpectedBytesLength;
 
             this.totalFileCountTask.Increment(1);
         }
@@ -81,6 +80,8 @@ namespace Unlimitedinf.Tom
             this.currentFileBytesTask.Value = this.currentFileBytesTask.MaxValue;
             this.totalFileCountTask.Value = this.totalFileCountTask.MaxValue;
             this.totalFileBytesTask.Value = this.totalFileBytesTask.MaxValue;
+
+            this.progressTask.Wait();
         }
     }
 }
