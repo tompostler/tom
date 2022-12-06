@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
 
-namespace Unlimitedinf.Utilities
+namespace Unlimitedinf.Utilities.Logging
 {
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public enum ConsoleLoggerVerbosity

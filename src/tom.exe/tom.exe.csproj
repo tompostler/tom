@@ -3,9 +3,10 @@
   <PropertyGroup>
     <RootNamespace>Unlimitedinf.Tom.Exe</RootNamespace>
     <AssemblyName>Unlimitedinf.Tom.Exe</AssemblyName>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <RuntimeIdentifiers>win-x64;linux-x64</RuntimeIdentifiers>
     <PublishSingleFile>true</PublishSingleFile>
     <SelfContained>true</SelfContained>
-    <RuntimeIdentifiers>win-x64;linux-x64</RuntimeIdentifiers>
     <PublishReadyToRun>true</PublishReadyToRun>
     <PublishTrimmed>true</PublishTrimmed>
     <OutputType>Exe</OutputType>
@@ -32,10 +33,6 @@
   <ItemGroup>
     <ProjectReference Include="..\util\util.csproj" />
     <ProjectReference Include="..\ws.contracts\ws.contracts.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Commands\" />
   </ItemGroup>
 
 </Project>

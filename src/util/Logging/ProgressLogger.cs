@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using Unlimitedinf.Utilities.Extensions;
 
-namespace Unlimitedinf.Utilities
+namespace Unlimitedinf.Utilities.Logging
 {
     /// <summary>
     /// Log the progress of a long-running operation.

@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using Unlimitedinf.Tom.WebSocket.Contracts;
 using Unlimitedinf.Utilities;
 using Unlimitedinf.Utilities.Extensions;
+using Unlimitedinf.Utilities.Logging;
 
 namespace Unlimitedinf.Tom.Commands
 {
