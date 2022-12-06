@@ -46,14 +46,15 @@ namespace Unlimitedinf.Utilities
                     {
                         (DateTimeOffset, long) ago = this.byteProgress.Dequeue();
                         long bytesProgress = value - ago.Item2;
-                        decimal duration = (decimal)(now - ago.Item1).TotalSeconds;
+                        decimal durationSeconds = (decimal)(now - ago.Item1).TotalSeconds;
+                        decimal durationDisplay = durationSeconds;
                         string durationUnit = "seconds";
-                        if (duration > 100)
+                        if (durationDisplay > 100)
                         {
-                            duration /= 100;
+                            durationDisplay /= 60;
                             durationUnit = "minutes";
                         }
-                        this.logger.LogInformation($"Progress: {value.AsBytesToFriendlyString(),9}/{this.expectedLength.AsBytesToFriendlyString()} ({1.0 * value / this.expectedLength:p}). Average over last {duration:0.0} {durationUnit}: {BytesToFriendlyBitString(bytesProgress / duration)}ps");
+                        this.logger.LogInformation($"Progress: {value.AsBytesToFriendlyString(),9}/{this.expectedLength.AsBytesToFriendlyString()} ({1.0 * value / this.expectedLength:p}). Average over last {durationDisplay:0.0} {durationUnit}: {BytesToFriendlyBitString(bytesProgress / durationSeconds)}ps");
                     }
                     else
                     {
@@ -71,8 +72,8 @@ namespace Unlimitedinf.Utilities
         public void ReportComplete()
         {
             TimeSpan duration = DateTimeOffset.UtcNow - this.started;
-            decimal totalSeconds = (decimal)duration.TotalSeconds;
-            this.logger.LogInformation($"Progress: {this.expectedLength.AsBytesToFriendlyString(),9}/{this.expectedLength.AsBytesToFriendlyString()} ({1.0:p}). Averaged {BytesToFriendlyBitString(this.expectedLength / totalSeconds)}ps over {duration:mm\\:ss}.");
+            decimal durationSeconds = (decimal)duration.TotalSeconds;
+            this.logger.LogInformation($"Progress: {this.expectedLength.AsBytesToFriendlyString(),9}/{this.expectedLength.AsBytesToFriendlyString()} ({1.0:p}). Averaged {BytesToFriendlyBitString(this.expectedLength / durationSeconds)}ps over {duration:mm\\:ss}.");
         }
 
         private static string BytesToFriendlyBitString(decimal bytes)
