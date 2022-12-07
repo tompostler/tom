@@ -299,37 +299,30 @@ namespace Unlimitedinf.Tom.Commands
                 nameof(TrimmedFileSystemObjectInfo.Modified),
                 nameof(TrimmedFileSystemObjectInfo.Length));
 
-            ConsoleLogger consoleLogger = new(ConsoleLoggerVerbosity.Info);
-            ProgressLogger jobProgressLogger = new(getResponse.Files.Sum(x => x.Length), consoleLogger);
-            long jobReceivedBytes = 0;
+            SpectreConsoleFileTransferProgressLogger progressLogger = new(default, 0, getResponse.Files.Count + 1, getResponse.Files.Sum(x => x.Length));
             foreach (TrimmedFileSystemObjectInfo incomingFile in getResponse.Files)
             {
                 // Set up the target to write to
                 FileInfo fileInfo = new(Path.Join(localPath.FullName, incomingFile.Name));
                 _ = Directory.CreateDirectory(fileInfo.DirectoryName);
 
-                Console.WriteLine($"Receiving {fileInfo.FullName}");
-                ProgressLogger fileProgressLogger = new(incomingFile.Length, consoleLogger);
+                progressLogger.ResetCurrentFile(fileInfo.FullName.Substring(localPath.FullName.Length), incomingFile.Length);
 
                 // First receive the file
                 var sha256 = SHA256.Create();
                 using (FileStream fs = fileInfo.OpenWrite())
                 {
-                    long fileReceivedBytes = 0;
                     do
                     {
                         receiveResult = await wsClient.ReceiveAsync(buffer, cancellationToken);
                         _ = sha256.TransformBlock(buffer, inputOffset: 0, receiveResult.Count, outputBuffer: default, outputOffset: default);
-                        fileReceivedBytes += receiveResult.Count;
 
                         await fs.WriteAsync(buffer.AsMemory(0, receiveResult.Count), cancellationToken);
-                        fileProgressLogger.Report(fileReceivedBytes);
+                        progressLogger.AddProgress(receiveResult.Count);
                     }
                     while (!receiveResult.EndOfMessage);
                     _ = sha256.TransformFinalBlock(Array.Empty<byte>(), default, default);
-                    jobReceivedBytes += fileReceivedBytes;
                 }
-                fileProgressLogger.ReportComplete();
 
                 // Get the message to verify the hash
                 receiveResult = await wsClient.ReceiveWholeTextMessageAsync(buffer, cancellationToken);
@@ -345,15 +338,8 @@ namespace Unlimitedinf.Tom.Commands
                 {
                     Console.WriteLine($"Validated {fileInfo.FullName} had expected hash.");
                 }
-
-                Console.WriteLine();
-                Console.WriteLine("Overall status:");
-                jobProgressLogger.Report(jobReceivedBytes);
-                Console.WriteLine();
             }
-            Console.WriteLine("Overall status:");
-            jobProgressLogger.ReportComplete();
-            Console.WriteLine();
+            progressLogger.MarkComplete();
         }
 
         /// <summary>
