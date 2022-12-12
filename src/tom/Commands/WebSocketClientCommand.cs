@@ -299,7 +299,7 @@ namespace Unlimitedinf.Tom.Commands
                 nameof(TrimmedFileSystemObjectInfo.Modified),
                 nameof(TrimmedFileSystemObjectInfo.Length));
 
-            SpectreConsoleFileTransferProgressLogger progressLogger = new(default, 0, getResponse.Files.Count + 1, getResponse.Files.Sum(x => x.Length));
+            ConsoleFileProgressLogger progressLogger = new(default, 0, getResponse.Files.Count + 1, getResponse.Files.Sum(x => x.Length));
             foreach (TrimmedFileSystemObjectInfo incomingFile in getResponse.Files)
             {
                 // Set up the target to write to
@@ -375,7 +375,7 @@ namespace Unlimitedinf.Tom.Commands
                 endOfMessage: true,
                 cancellationToken);
 
-            SpectreConsoleFileTransferProgressLogger progressLogger = new(default, 0, filesToSend.Length + 1, filesToSend.Sum(x => x.Length));
+            ConsoleFileProgressLogger progressLogger = new(default, 0, filesToSend.Length + 1, filesToSend.Sum(x => x.Length));
             foreach (FileInfo fileToSend in filesToSend)
             {
                 progressLogger.ResetCurrentFile(fileToSend.Name, fileToSend.Length);

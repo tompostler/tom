@@ -75,7 +75,11 @@ namespace Unlimitedinf.Utilities.Logging
             this.totalFileBytes = this.totalFileExpectedLength;
             this.currentFileNumber = this.totalFileCount;
 
-            this.UpdateConsole();
+            this.UpdateConsole(ignoreUpdateInterval: true);
+            Console.WriteLine();
+            Console.WriteLine();
+            Console.WriteLine();
+            Console.WriteLine();
         }
 
         private void UpdateConsole(bool ignoreUpdateInterval = false)
@@ -110,6 +114,7 @@ namespace Unlimitedinf.Utilities.Logging
                     this.currentFileExpectedLength,
                     this.currentFileInterval.Elapsed,
                     currentFileBytesPerSecond);
+                this.currentFileByteProgress.Enqueue((now, this.currentFileBytes));
 
                 // Second line is the file count progress
                 AddLine(
@@ -127,7 +132,7 @@ namespace Unlimitedinf.Utilities.Logging
                     (DateTimeOffset, long) ago = this.totalFileByteProgress.Dequeue();
                     long bytesProgress = this.totalFileBytes - ago.Item2;
                     long durationSeconds = (long)(now - ago.Item1).TotalSeconds;
-                    currentFileBytesPerSecond = bytesProgress / durationSeconds;
+                    totalFileBytesPerSecond = bytesProgress / durationSeconds;
                 }
                 AddLine(
                     "Total file bytes",
@@ -136,6 +141,7 @@ namespace Unlimitedinf.Utilities.Logging
                     this.totalFileExpectedLength,
                     this.totalFileInterval.Elapsed,
                     totalFileBytesPerSecond);
+                this.totalFileByteProgress.Enqueue((now, this.currentFileBytes));
             }
 
             Console.SetCursorPosition(startingLeft, startingTop);
@@ -153,13 +159,14 @@ namespace Unlimitedinf.Utilities.Logging
             ConsoleColor originalColor = Console.ForegroundColor;
 
             // First column is the row name. 16-64 characters
-            if (currentLineName.Length > 64)
+            const int rowNameLength = 64;
+            if (currentLineName.Length > rowNameLength)
             {
-                currentLineName = string.Concat("...", currentLineName.AsSpan(3, 61));
+                currentLineName = string.Concat("...", currentLineName.AsSpan(3, rowNameLength - 3));
             }
-            if (currentLineNameLength > 64)
+            if (currentLineNameLength > rowNameLength)
             {
-                currentLineNameLength = 64;
+                currentLineNameLength = rowNameLength;
             }
             if (currentLineNameLength < 16)
             {
@@ -170,7 +177,7 @@ namespace Unlimitedinf.Utilities.Logging
 
             // Second column is the progress bar. 42 characters
             const int progressBarLength = 42;
-            int countCompleteDashes = (int)(1.0 * progressBarLength * progressCount / totalCount);
+            int countCompleteDashes = (int)(1.0 * progressBarLength * Math.Min(progressCount, totalCount) / totalCount);
             if (countCompleteDashes < progressBarLength)
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;
@@ -181,15 +188,23 @@ namespace Unlimitedinf.Utilities.Logging
             }
             Console.Write(new string('-', countCompleteDashes));
             int countIncompleteDashes = progressBarLength - countCompleteDashes;
-            Console.ForegroundColor = ConsoleColor.DarkGray;
-            Console.Write(new string('-', countIncompleteDashes));
+            if (countIncompleteDashes > 0)
+            {
+                Console.ForegroundColor = ConsoleColor.DarkGray;
+                Console.Write(new string('-', countIncompleteDashes));
+            }
             Console.ForegroundColor = originalColor;
             Console.Write(' ');
 
             // Determine the scaling factor for the numerical progress output
             double scalingFactor;
             string units;
-            if (totalCount < 1_048_576)
+            if (totalCount < 1_024)
+            {
+                scalingFactor = 1;
+                units = "B";
+            }
+            else if (totalCount < 1_048_576)
             {
                 scalingFactor = 1_024d;
                 units = "KiB";
@@ -210,11 +225,13 @@ namespace Unlimitedinf.Utilities.Logging
                 units = "TiB";
             }
 
-            // Third column is the numerical progress. 15 characters (but add one for the end of the column)
-            const int numericalProgressLength = 16;
+            // Third column is the numerical progress.
             string progressCountString = (progressCount / scalingFactor).ToString("0.0");
             if (progressCount == totalCount)
             {
+                // 10 characters (but add one for the end of the column)
+                const int numericalProgressLength = 11;
+
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.Write(progressCountString);
                 Console.Write(' ');
@@ -231,6 +248,9 @@ namespace Unlimitedinf.Utilities.Logging
             }
             else
             {
+                // 15 characters (but add one for the end of the column)
+                const int numericalProgressLength = 16;
+
                 Console.Write(progressCountString);
 
                 Console.ForegroundColor = ConsoleColor.DarkGray;
@@ -271,20 +291,20 @@ namespace Unlimitedinf.Utilities.Logging
             if (elapsedTime.HasValue)
             {
                 Console.ForegroundColor = ConsoleColor.Blue;
-                Console.Write(elapsedTime.Value.ToString());
+                Console.Write(elapsedTime.Value.ToString("hh\\:mm\\:ss"));
                 Console.ForegroundColor = originalColor;
                 Console.Write(' ');
             }
 
-            // Sixth column is transfer rate. 11 characters
+            // Sixth column is transfer rate. 10 characters
             if (bytesPerSecond.HasValue)
             {
-                Console.Write(bytesPerSecond.Value.AsBytesToFriendlyBitString().PadLeft(9));
+                Console.Write(bytesPerSecond.Value.AsBytesToFriendlyBitString().PadLeft(8));
                 Console.Write("ps");
             }
 
             // And that's it
-            Console.WriteLine();
+            Console.WriteLine(new string(' ', rowNameLength - currentLineName.Length));
         }
     }
 }
