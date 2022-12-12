@@ -19,6 +19,7 @@
     <Compile Include="..\tom\Commands\ImageDuplicateBlockhashCommand.cs" Link="Commands\ImageDuplicateBlockhashCommand.cs" />
     <Compile Include="..\tom\Commands\RandomCommand.cs" Link="Commands\RandomCommand.cs" />
     <Compile Include="..\tom\Commands\WebSocketClientCommand.cs" Link="Commands\WebSocketClientCommand.cs" />
+    <Compile Include="..\tom\Commands\ZzTestConsoleProgressLoggerCommand.cs" Link="Commands\ZzTestConsoleProgressLoggerCommand.cs" />
     <Compile Include="..\tom\Commands\ZzTestSpectreConsoleProgressLoggerCommand.cs" Link="Commands\ZzTestSpectreConsoleProgressLoggerCommand.cs" />
     <Compile Include="..\tom\SpectreConsoleFileTransferProgressLogger.cs" Link="SpectreConsoleFileTransferProgressLogger.cs" />
     <Compile Include="..\tom\VersionProvider.cs" Link="VersionProvider.cs" />
