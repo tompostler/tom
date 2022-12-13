@@ -299,7 +299,7 @@ namespace Unlimitedinf.Tom.Commands
                 nameof(TrimmedFileSystemObjectInfo.Modified),
                 nameof(TrimmedFileSystemObjectInfo.Length));
 
-            ConsoleFileProgressLogger progressLogger = new(default, 0, getResponse.Files.Count + 1, getResponse.Files.Sum(x => x.Length));
+            ConsoleFileProgressLogger progressLogger = new(default, 0, getResponse.Files.Count, getResponse.Files.Sum(x => x.Length));
             foreach (TrimmedFileSystemObjectInfo incomingFile in getResponse.Files)
             {
                 // Set up the target to write to
