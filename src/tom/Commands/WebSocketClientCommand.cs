@@ -375,7 +375,7 @@ namespace Unlimitedinf.Tom.Commands
                 endOfMessage: true,
                 cancellationToken);
 
-            ConsoleFileProgressLogger progressLogger = new(default, 0, filesToSend.Length + 1, filesToSend.Sum(x => x.Length));
+            ConsoleFileProgressLogger progressLogger = new(default, 0, filesToSend.Length, filesToSend.Sum(x => x.Length));
             foreach (FileInfo fileToSend in filesToSend)
             {
                 progressLogger.ResetCurrentFile(fileToSend.Name, fileToSend.Length);
