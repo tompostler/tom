@@ -64,6 +64,7 @@ namespace Unlimitedinf.Utilities.Logging
                 this.currentFileNumber += 1;
             }
             this.currentFileName = newFileName;
+            this.currentFileBytes = 0;
             this.currentFileExpectedLength = newExpectedBytesLength;
             this.currentFileInterval.Restart();
             this.currentFileByteProgress.Clear();
