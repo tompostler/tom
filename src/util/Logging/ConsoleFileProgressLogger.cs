@@ -16,7 +16,7 @@ namespace Unlimitedinf.Utilities.Logging
         private readonly Queue<(DateTimeOffset, long)> currentFileByteProgress = new(5);
 
         private long currentFileBytes = 0;
-        private long currentFileNumber = 1;
+        private long currentFileNumber = 0;
         private long totalFileBytes = 0;
         private readonly object consoleOutputLock = new();
 
@@ -59,11 +59,14 @@ namespace Unlimitedinf.Utilities.Logging
         /// </summary>
         public void ResetCurrentFile(string newFileName, long newExpectedBytesLength)
         {
+            if (this.currentFileName != default)
+            {
+                this.currentFileNumber += 1;
+            }
             this.currentFileName = newFileName;
             this.currentFileExpectedLength = newExpectedBytesLength;
             this.currentFileInterval.Restart();
             this.currentFileByteProgress.Clear();
-            this.currentFileNumber += 1;
         }
 
         /// <summary>
