@@ -52,6 +52,11 @@ steps:
     zipAfterPublish: false
     modifyOutputPath: false
 
+- powershell: |
+    Rename-Item -Path '$(Build.ArtifactStagingDirectory)/tom.exe/linux-x64/Unlimitedinf.Tom.Exe' -NewName 'tom' -Force -Verbose;
+    Rename-Item -Path '$(Build.ArtifactStagingDirectory)/tom.exe/win-x64/Unlimitedinf.Tom.Exe.exe' -NewName 'tom.exe' -Force -Verbose;
+  displayName: Rename self-contained output files
+
 - task: DeleteFiles@1
   displayName: Delete non-exes from publish
   inputs:
