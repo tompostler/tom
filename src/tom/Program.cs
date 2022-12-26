@@ -19,6 +19,7 @@ namespace Unlimitedinf.Tom
             rootCommand.AddCommand(Commands.WebSocketClientCommand.Create());
             rootCommand.AddCommand(Commands.WebSocketServerCommand.Create());
 
+            rootCommand.AddCommand(Commands.ZzTestChartLineCommand.Create());
             rootCommand.AddCommand(Commands.ZzTestConsoleColorsCommand.Create());
             rootCommand.AddCommand(Commands.ZzTestConsoleProgressLoggerCommand.Create());
 

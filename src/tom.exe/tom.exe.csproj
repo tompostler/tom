@@ -19,12 +19,14 @@
     <Compile Include="..\tom\Commands\ImageDuplicateBlockhashCommand.cs" Link="Commands\ImageDuplicateBlockhashCommand.cs" />
     <Compile Include="..\tom\Commands\RandomCommand.cs" Link="Commands\RandomCommand.cs" />
     <Compile Include="..\tom\Commands\WebSocketClientCommand.cs" Link="Commands\WebSocketClientCommand.cs" />
+    <Compile Include="..\tom\Commands\ZzTestChartLineCommand.cs" Link="Commands\ZzTestChartLineCommand.cs" />
     <Compile Include="..\tom\Commands\ZzTestConsoleColorsCommand.cs" Link="Commands\ZzTestConsoleColorsCommand.cs" />
     <Compile Include="..\tom\Commands\ZzTestConsoleProgressLoggerCommand.cs" Link="Commands\ZzTestConsoleProgressLoggerCommand.cs" />
     <Compile Include="..\tom\VersionProvider.cs" Link="VersionProvider.cs" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microcharts" Version="0.9.5.9" />
     <PackageReference Include="Microsoft.Net.Http.Headers" Version="2.2.8" />
     <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
   </ItemGroup>
