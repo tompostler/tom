@@ -145,7 +145,7 @@ namespace Unlimitedinf.Utilities.Logging
                     this.totalFileExpectedLength,
                     this.totalFileInterval.Elapsed,
                     totalFileBytesPerSecond);
-                this.totalFileByteProgress.Enqueue((now, this.currentFileBytes));
+                this.totalFileByteProgress.Enqueue((now, this.totalFileBytes));
             }
 
             Console.SetCursorPosition(startingLeft, startingTop);
