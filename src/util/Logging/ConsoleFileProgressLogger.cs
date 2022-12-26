@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using Unlimitedinf.Utilities.Extensions;
 
 namespace Unlimitedinf.Utilities.Logging
@@ -162,6 +163,9 @@ namespace Unlimitedinf.Utilities.Logging
         {
             ConsoleColor originalColor = Console.ForegroundColor;
 
+            // On the linux terminal I normally use, DarkGray translates to black. So use Gray instead.
+            ConsoleColor miscColor = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ConsoleColor.DarkGray : ConsoleColor.Gray;
+
             // First column is the row name. 16-64 characters
             const int rowNameLength = 64;
             if (currentLineName.Length > rowNameLength)
@@ -194,7 +198,7 @@ namespace Unlimitedinf.Utilities.Logging
             int countIncompleteDashes = progressBarLength - countCompleteDashes;
             if (countIncompleteDashes > 0)
             {
-                Console.ForegroundColor = ConsoleColor.DarkGray;
+                Console.ForegroundColor = miscColor;
                 Console.Write(new string('-', countIncompleteDashes));
             }
             Console.ForegroundColor = originalColor;
@@ -252,14 +256,14 @@ namespace Unlimitedinf.Utilities.Logging
             {
                 Console.Write(progressCountString);
 
-                Console.ForegroundColor = ConsoleColor.DarkGray;
+                Console.ForegroundColor = miscColor;
                 Console.Write('/');
                 Console.ForegroundColor = originalColor;
 
                 string totalCountString = (totalCount / scalingFactor).ToString(elapsedTime.HasValue ? "0.00" : "0");
                 Console.Write(totalCountString);
 
-                Console.ForegroundColor = ConsoleColor.DarkGray;
+                Console.ForegroundColor = miscColor;
                 Console.Write(' ');
                 Console.Write(units);
                 Console.ForegroundColor = originalColor;
