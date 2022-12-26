@@ -187,8 +187,7 @@ namespace Unlimitedinf.Tom.Commands
             _ = sb.AppendLine("A couple notes on file copies:");
             _ = sb.AppendLine(" - Wildcard and recursive behavior is based on System.IO.DirectoryInfo.GetFiles(searchPattern, SearchOption.AllDirectories)");
             _ = sb.AppendLine(" - When recursed files are requested, the matching directory structure will be created at the destination");
-            _ = sb.AppendLine(" - Duplicate files (based solely on filename) will be skipped");
-            _ = sb.AppendLine(" - A summary will be displayed at the end");
+            _ = sb.AppendLine(" - Progress will be emitted using the custom ConsoleFileProgressLogger");
             string helptext = sb.ToString();
             Console.WriteLine(helptext);
 
