@@ -229,13 +229,11 @@ namespace Unlimitedinf.Utilities.Logging
                 units = "TiB";
             }
 
-            // Third column is the numerical progress.
-            string progressCountString = (progressCount / scalingFactor).ToString("0.0");
+            // Third column is the numerical progress. 16 characters (but add one for the end of the column)
+            const int numericalProgressLength = 17;
+            string progressCountString = (progressCount / scalingFactor).ToString("0.00");
             if (progressCount == totalCount)
             {
-                // 10 characters (but add one for the end of the column)
-                const int numericalProgressLength = 11;
-
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.Write(progressCountString);
                 Console.Write(' ');
@@ -252,16 +250,13 @@ namespace Unlimitedinf.Utilities.Logging
             }
             else
             {
-                // 15 characters (but add one for the end of the column)
-                const int numericalProgressLength = 16;
-
                 Console.Write(progressCountString);
 
                 Console.ForegroundColor = ConsoleColor.DarkGray;
                 Console.Write('/');
                 Console.ForegroundColor = originalColor;
 
-                string totalCountString = (totalCount / scalingFactor).ToString("0.0");
+                string totalCountString = (totalCount / scalingFactor).ToString("0.00");
                 Console.Write(totalCountString);
 
                 Console.ForegroundColor = ConsoleColor.DarkGray;
