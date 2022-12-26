@@ -12,9 +12,9 @@ namespace Unlimitedinf.Utilities.Logging
     public sealed class ConsoleFileProgressLogger
     {
         /// <summary>
-        /// The interval at which to update the progress logger. Defaults to 3s.
+        /// The interval at which to update the progress logger. Defaults to 2s.
         /// </summary>
-        public TimeSpan UpdateInterval { get; set; } = TimeSpan.FromSeconds(3);
+        public TimeSpan UpdateInterval { get; set; } = TimeSpan.FromSeconds(2);
 
         private string currentFileName;
         private long currentFileExpectedLength;
