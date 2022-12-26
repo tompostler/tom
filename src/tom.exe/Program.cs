@@ -18,6 +18,7 @@ namespace Unlimitedinf.Tom
             rootCommand.AddCommand(Commands.RandomCommand.Create());
             rootCommand.AddCommand(Commands.WebSocketClientCommand.Create());
 
+            rootCommand.AddCommand(Commands.ZzTestConsoleColorsCommand.Create());
             rootCommand.AddCommand(Commands.ZzTestConsoleProgressLoggerCommand.Create());
 
             return await rootCommand.InvokeAsync(args);
