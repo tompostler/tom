@@ -56,8 +56,8 @@ namespace Unlimitedinf.Tom.Commands
             return command;
         }
 
-        // Using 16KiB chunks, we should always receive the whole message (when sending text)
-        private const int BufferSize = 1024 * 16;
+        // Using 128KiB chunks, we should always receive the whole message (when sending text)
+        private const int BufferSize = 1024 * 128;
 
         private static async Task HandleAsync(Uri endpoint, DirectoryInfo workingDir, string sslCertSubjectName, string sslCertThumbprint, TimeSpan maxSessionDuration)
         {

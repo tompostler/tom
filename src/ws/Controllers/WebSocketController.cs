@@ -24,8 +24,8 @@ namespace Unlimitedinf.Tom.WebSocket.Controllers
     [RequiresToken]
     public sealed class WebSocketController : ControllerBase
     {
-        // Using 16KiB chunks, we should always receive the whole message
-        private const int BufferSize = 1024 * 16;
+        // Using 128KiB chunks, we should always receive the whole message
+        private const int BufferSize = 1024 * 128;
 
         private readonly Options options;
         private readonly ILogger<WebSocketController> logger;
