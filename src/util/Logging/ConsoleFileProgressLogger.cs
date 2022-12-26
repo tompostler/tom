@@ -239,11 +239,22 @@ namespace Unlimitedinf.Utilities.Logging
                 units = "TiB";
             }
 
-            // Third column is the numerical progress. 16 characters (but add one for the end of the column)
-            const int numericalProgressLength = 17;
-            string progressCountString = (progressCount / scalingFactor).ToString(elapsedTime.HasValue ? "0.00" : "0");
+            // If there's no elapsed time specified, then we're on the file count line and we can skip a bunch of stuff
+            string numericProgressFormat = "0.00";
+            if (!elapsedTime.HasValue)
+            {
+                scalingFactor = 1;
+                units = string.Empty;
+                numericProgressFormat = "0";
+            }
+
+            // Third column is the numerical progress.
+            string progressCountString = (progressCount / scalingFactor).ToString(numericProgressFormat);
             if (progressCount == totalCount)
             {
+                // 10 characters when complete (but add one for the end of the column)
+                const int numericalProgressLength = 11;
+
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.Write(progressCountString);
                 Console.Write(' ');
@@ -260,13 +271,16 @@ namespace Unlimitedinf.Utilities.Logging
             }
             else
             {
+                // 16 characters (but add one for the end of the column)
+                const int numericalProgressLength = 17;
+
                 Console.Write(progressCountString);
 
                 Console.ForegroundColor = miscColor;
                 Console.Write('/');
                 Console.ForegroundColor = originalColor;
 
-                string totalCountString = (totalCount / scalingFactor).ToString(elapsedTime.HasValue ? "0.00" : "0");
+                string totalCountString = (totalCount / scalingFactor).ToString(numericProgressFormat);
                 Console.Write(totalCountString);
 
                 Console.ForegroundColor = miscColor;
