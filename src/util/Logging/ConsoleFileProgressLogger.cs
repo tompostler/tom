@@ -11,6 +11,11 @@ namespace Unlimitedinf.Utilities.Logging
     /// </summary>
     public sealed class ConsoleFileProgressLogger
     {
+        /// <summary>
+        /// The interval at which to update the progress logger. Defaults to 3s.
+        /// </summary>
+        public TimeSpan UpdateInterval { get; set; } = TimeSpan.FromSeconds(3);
+
         private string currentFileName;
         private long currentFileExpectedLength;
         private readonly Stopwatch currentFileInterval;
@@ -89,7 +94,7 @@ namespace Unlimitedinf.Utilities.Logging
 
         private void UpdateConsole(bool ignoreUpdateInterval = false)
         {
-            if (!ignoreUpdateInterval && this.updateInterval.Elapsed.TotalSeconds < 1)
+            if (!ignoreUpdateInterval && this.updateInterval.Elapsed < this.UpdateInterval)
             {
                 return;
             }
@@ -99,13 +104,13 @@ namespace Unlimitedinf.Utilities.Logging
 
             lock (this.consoleOutputLock)
             {
-                const int lookbackSliceCount = 5;
                 DateTimeOffset now = DateTimeOffset.UtcNow;
                 Console.WriteLine();
 
                 // First line is the current file progress
+                const int currentFileLookbackSliceCount = 3;
                 long? currentFileBytesPerSecond = default;
-                if (this.currentFileByteProgress.Count >= lookbackSliceCount)
+                if (this.currentFileByteProgress.Count >= currentFileLookbackSliceCount)
                 {
                     (DateTimeOffset, long) ago = this.currentFileByteProgress.Dequeue();
                     long bytesProgress = this.currentFileBytes - ago.Item2;
@@ -131,8 +136,9 @@ namespace Unlimitedinf.Utilities.Logging
                     bytesPerSecond: default);
 
                 // Third line is the total file progress
+                const int totalFileLookbackSliceCount = 10;
                 long? totalFileBytesPerSecond = default;
-                if (this.totalFileByteProgress.Count >= lookbackSliceCount)
+                if (this.totalFileByteProgress.Count >= totalFileLookbackSliceCount)
                 {
                     (DateTimeOffset, long) ago = this.totalFileByteProgress.Dequeue();
                     long bytesProgress = this.totalFileBytes - ago.Item2;
@@ -166,11 +172,11 @@ namespace Unlimitedinf.Utilities.Logging
             // On the linux terminal I normally use, DarkGray translates to black. So use Gray instead.
             ConsoleColor miscColor = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ConsoleColor.DarkGray : ConsoleColor.Gray;
 
-            // First column is the row name. 16-64 characters
-            const int rowNameLength = 64;
+            // First column is the row name. 16-42 characters
+            const int rowNameLength = 42;
             if (currentLineName.Length > rowNameLength)
             {
-                currentLineName = string.Concat("...", currentLineName.AsSpan(3, rowNameLength - 3));
+                currentLineName = string.Concat("...", currentLineName.AsSpan(currentLineName.Length - rowNameLength + 3));
             }
             if (currentLineNameLength > rowNameLength)
             {
