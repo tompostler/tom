@@ -231,7 +231,7 @@ namespace Unlimitedinf.Utilities.Logging
 
             // Third column is the numerical progress. 16 characters (but add one for the end of the column)
             const int numericalProgressLength = 17;
-            string progressCountString = (progressCount / scalingFactor).ToString("0.00");
+            string progressCountString = (progressCount / scalingFactor).ToString(elapsedTime.HasValue ? "0.00" : "0");
             if (progressCount == totalCount)
             {
                 Console.ForegroundColor = ConsoleColor.Green;
@@ -256,7 +256,7 @@ namespace Unlimitedinf.Utilities.Logging
                 Console.Write('/');
                 Console.ForegroundColor = originalColor;
 
-                string totalCountString = (totalCount / scalingFactor).ToString("0.00");
+                string totalCountString = (totalCount / scalingFactor).ToString(elapsedTime.HasValue ? "0.00" : "0");
                 Console.Write(totalCountString);
 
                 Console.ForegroundColor = ConsoleColor.DarkGray;
