@@ -26,7 +26,7 @@ namespace Unlimitedinf.Tom.Commands
                 Thread.Sleep(100);
             }
 
-            progressLogger.ResetCurrentFile("a/much/longer/file/path.extension", 123_456_789);
+            progressLogger.ResetCurrentFile("a/much/longer/file/path/that/exceeds/the/length/limit.extension", 123_456_789);
             for (int i = 0; i < 123_456_789; i += 500_000)
             {
                 progressLogger.AddProgress(500_000);

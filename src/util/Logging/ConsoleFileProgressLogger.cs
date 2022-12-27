@@ -85,51 +85,50 @@ namespace Unlimitedinf.Utilities.Logging
             this.totalFileBytes = this.totalFileExpectedLength;
             this.currentFileNumber = this.totalFileCount;
 
-            this.UpdateConsole(ignoreUpdateInterval: true);
-            Console.WriteLine();
-            Console.WriteLine();
-            Console.WriteLine();
-            Console.WriteLine();
+            this.UpdateConsole(isFinalUpdate: true);
         }
 
-        private void UpdateConsole(bool ignoreUpdateInterval = false)
+        private void UpdateConsole(bool isFinalUpdate = false)
         {
-            if (!ignoreUpdateInterval && this.updateInterval.Elapsed < this.UpdateInterval)
+            if (!isFinalUpdate && this.updateInterval.Elapsed < this.UpdateInterval)
             {
                 return;
             }
 
-            int startingLeft = Console.CursorLeft;
-            int startingTop = Console.CursorTop;
-
             lock (this.consoleOutputLock)
             {
+                int startingLeft = Console.CursorLeft;
+                int startingTop = Console.CursorTop;
+
                 DateTimeOffset now = DateTimeOffset.UtcNow;
                 Console.WriteLine();
 
                 // First line is the current file progress
-                const int currentFileLookbackSliceCount = 3;
-                long? currentFileBytesPerSecond = default;
-                if (this.currentFileByteProgress.Count >= currentFileLookbackSliceCount)
+                if (!isFinalUpdate)
                 {
-                    (DateTimeOffset, long) ago = this.currentFileByteProgress.Dequeue();
-                    long bytesProgress = this.currentFileBytes - ago.Item2;
-                    long durationSeconds = (long)(now - ago.Item1).TotalSeconds;
-                    currentFileBytesPerSecond = bytesProgress / durationSeconds;
+                    const int currentFileLookbackSliceCount = 3;
+                    long? currentFileBytesPerSecond = default;
+                    if (this.currentFileByteProgress.Count >= currentFileLookbackSliceCount)
+                    {
+                        (DateTimeOffset, long) ago = this.currentFileByteProgress.Dequeue();
+                        long bytesProgress = this.currentFileBytes - ago.Item2;
+                        long durationSeconds = (long)(now - ago.Item1).TotalSeconds;
+                        currentFileBytesPerSecond = bytesProgress / durationSeconds;
+                    }
+                    AddLine(
+                        this.currentFileName,
+                        this.currentFileName.Length,
+                        this.currentFileBytes,
+                        this.currentFileExpectedLength,
+                        this.currentFileInterval.Elapsed,
+                        currentFileBytesPerSecond);
+                    this.currentFileByteProgress.Enqueue((now, this.currentFileBytes));
                 }
-                AddLine(
-                    this.currentFileName,
-                    this.currentFileName.Length,
-                    this.currentFileBytes,
-                    this.currentFileExpectedLength,
-                    this.currentFileInterval.Elapsed,
-                    currentFileBytesPerSecond);
-                this.currentFileByteProgress.Enqueue((now, this.currentFileBytes));
 
                 // Second line is the file count progress
                 AddLine(
                     "Total file count",
-                    this.currentFileName.Length,
+                    isFinalUpdate ? 0 : this.currentFileName.Length,
                     this.currentFileNumber,
                     this.totalFileCount,
                     elapsedTime: default,
@@ -138,7 +137,11 @@ namespace Unlimitedinf.Utilities.Logging
                 // Third line is the total file progress
                 const int totalFileLookbackSliceCount = 10;
                 long? totalFileBytesPerSecond = default;
-                if (this.totalFileByteProgress.Count >= totalFileLookbackSliceCount)
+                if (isFinalUpdate)
+                {
+                    totalFileBytesPerSecond = this.totalFileBytes / (long)this.totalFileInterval.Elapsed.TotalSeconds;
+                }
+                else if (this.totalFileByteProgress.Count >= totalFileLookbackSliceCount)
                 {
                     (DateTimeOffset, long) ago = this.totalFileByteProgress.Dequeue();
                     long bytesProgress = this.totalFileBytes - ago.Item2;
@@ -147,15 +150,27 @@ namespace Unlimitedinf.Utilities.Logging
                 }
                 AddLine(
                     "Total file bytes",
-                    this.currentFileName.Length,
+                    isFinalUpdate ? 0 : this.currentFileName.Length,
                     this.totalFileBytes,
                     this.totalFileExpectedLength,
                     this.totalFileInterval.Elapsed,
                     totalFileBytesPerSecond);
                 this.totalFileByteProgress.Enqueue((now, this.totalFileBytes));
+
+                if (isFinalUpdate)
+                {
+                    // Need to overwrite the skipped first line with spaces
+                    // Max line length is about 128 when accounting for columns and spaces
+                    Console.WriteLine(new string(' ', 128));
+                }
+                else
+                {
+                    // Otherwise set the position back to the top of the section
+                    Console.SetCursorPosition(startingLeft, startingTop);
+                }
+                Console.CursorVisible = isFinalUpdate;
             }
 
-            Console.SetCursorPosition(startingLeft, startingTop);
             this.updateInterval.Restart();
         }
 
@@ -316,14 +331,22 @@ namespace Unlimitedinf.Utilities.Logging
                 Console.ForegroundColor = ConsoleColor.Blue;
                 Console.Write(elapsedTime.Value.ToString("hh\\:mm\\:ss"));
                 Console.ForegroundColor = originalColor;
-                Console.Write(' ');
             }
+            else
+            {
+                Console.Write(new string(' ', 8));
+            }
+            Console.Write(' ');
 
             // Sixth column is transfer rate. 10 characters
             if (bytesPerSecond.HasValue)
             {
                 Console.Write(bytesPerSecond.Value.AsBytesToFriendlyBitString().PadLeft(8));
                 Console.Write("ps");
+            }
+            else
+            {
+                Console.Write(new string(' ', 10));
             }
 
             // And that's it
