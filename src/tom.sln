@@ -22,6 +22,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ws.contracts", "ws.contract
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "tom.exe", "tom.exe\tom.exe.csproj", "{59B09B91-E533-4126-9EE0-468BD77D7D82}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microcharts", "..\subs\Microcharts\Sources\Microcharts\Microcharts.csproj", "{BF1BA8A1-8B3D-405A-A4D2-1528CB5BD0A2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -37,6 +39,8 @@ Global
 		{A5AF9E79-EA3B-471B-8E10-92E8F70D9E42}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{59B09B91-E533-4126-9EE0-468BD77D7D82}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{59B09B91-E533-4126-9EE0-468BD77D7D82}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BF1BA8A1-8B3D-405A-A4D2-1528CB5BD0A2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BF1BA8A1-8B3D-405A-A4D2-1528CB5BD0A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
