@@ -267,8 +267,8 @@ namespace Unlimitedinf.Utilities.Logging
             string progressCountString = (progressCount / scalingFactor).ToString(numericProgressFormat);
             if (progressCount == totalCount)
             {
-                // 10 characters when complete (but add one for the end of the column)
-                const int numericalProgressLength = 11;
+                // 11 characters when complete (but add one for the end of the column)
+                const int numericalProgressLength = 12;
 
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.Write(progressCountString);
@@ -286,8 +286,8 @@ namespace Unlimitedinf.Utilities.Logging
             }
             else
             {
-                // 16 characters (but add one for the end of the column)
-                const int numericalProgressLength = 17;
+                // 18 characters (but add one for the end of the column)
+                const int numericalProgressLength = 19;
 
                 Console.Write(progressCountString);
 
