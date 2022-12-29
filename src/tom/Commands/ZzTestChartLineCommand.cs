@@ -20,108 +20,124 @@ namespace Unlimitedinf.Tom.Commands
         {
             LineChart lineChart = new()
             {
+                LabelOrientation = Orientation.Horizontal,
+                LegendOption = SeriesLegendOption.Bottom,
+                IsAnimated = false,
+
+                MinValue = 0,
+                MaxValue = 30,
+                YAxisMaxTicks = 31,
+
+                ShowYAxisLines = true,
+                ShowYAxisText = true,
+
                 LineMode = LineMode.Straight,
+                LineSize = 1,
+                PointSize = 3,
+
                 Series = new[]
                 {
                     new ChartSerie
                     {
                         Name = "PrimeNumbers",
+                        Color = SKColor.Parse("#005f73"),
                         Entries = new[]
                         {
                             new ChartEntry(2)
                             {
-                                ValueLabel = "01"
+                                Label = "01"
                             },
                             new ChartEntry(3)
                             {
-                                ValueLabel = "02"
+                                Label = "02"
                             },
                             new ChartEntry(5)
                             {
-                                ValueLabel = "03"
+                                Label = "03"
                             },
                             new ChartEntry(7)
                             {
-                                ValueLabel = "04"
+                                Label = "04"
                             },
                             new ChartEntry(11)
                             {
-                                ValueLabel = "05"
+                                Label = "05"
                             },
                             new ChartEntry(13)
                             {
-                                ValueLabel = "06"
+                                Label = "06"
                             },
                             new ChartEntry(17)
                             {
-                                ValueLabel = "07"
+                                Label = "07"
                             },
                             new ChartEntry(19)
                             {
-                                ValueLabel = "08"
+                                Label = "08"
                             },
                             new ChartEntry(23)
                             {
-                                ValueLabel = "09"
+                                Label = "09"
                             },
                             new ChartEntry(29)
                             {
-                                ValueLabel = "10"
+                                Label = "10"
                             },
                         }
                     },
                     new ChartSerie
                     {
                         Name = "CompositeNumbers",
+                        Color = SKColor.Parse("#ae2012"),
                         Entries = new[]
                         {
                             new ChartEntry(4)
                             {
-                                ValueLabel = "01"
+                                Label = "01"
                             },
                             new ChartEntry(6)
                             {
-                                ValueLabel = "02"
+                                Label = "02"
                             },
                             new ChartEntry(9)
                             {
-                                ValueLabel = "03"
+                                Label = "03"
                             },
                             new ChartEntry(10)
                             {
-                                ValueLabel = "04"
+                                Label = "04"
                             },
                             new ChartEntry(12)
                             {
-                                ValueLabel = "05"
+                                Label = "05"
                             },
                             new ChartEntry(14)
                             {
-                                ValueLabel = "06"
+                                Label = "06"
                             },
                             new ChartEntry(15)
                             {
-                                ValueLabel = "07"
+                                Label = "07"
                             },
                             new ChartEntry(16)
                             {
-                                ValueLabel = "08"
+                                Label = "08"
                             },
                             new ChartEntry(18)
                             {
-                                ValueLabel = "09"
+                                Label = "09"
                             },
                             new ChartEntry(20)
                             {
-                                ValueLabel = "10"
+                                Label = "10"
                             },
                             new ChartEntry(21)
                             {
-                                ValueLabel = "11"
+                                Label = "11"
                             },
                             new ChartEntry(22)
                             {
-                                ValueLabel = "12"
+                                Label = "12"
                             },
                         }
                     },
@@ -129,18 +145,25 @@ namespace Unlimitedinf.Tom.Commands
             };
 
             SKBitmap bitmap = new(1920, 1080);
-            bitmap.Erase(SKColor.Empty);
             SKCanvas canvas = new(bitmap);
-            lineChart.DrawContent(canvas, 1920, 1080);
+            lineChart.Draw(canvas, bitmap.Width, bitmap.Height);
+
+            // Add a chart title
+            var title = SKTextBlob.Create("Sample chart title", new SKFont());
+            canvas.DrawText(title, (bitmap.Width / 2) - (title.Bounds.Width / 2), title.Bounds.Height * .75f, new SKPaint());
+
+            // Add a generated footer
+            var genText = SKTextBlob.Create($"Generated {DateTime.Now:yyyy-MM-dd HH:mm:ss}", new SKFont());
+            canvas.DrawText(genText, bitmap.Width - genText.Bounds.Width, bitmap.Height - genText.Bounds.Height, new SKPaint());
+
             _ = canvas.Save();
 
             File.Delete("t.png");
+
             using FileStream fs = File.Create("t.png");
             using var image = SKImage.FromPixels(bitmap.PeekPixels());
             using SKData data = image.Encode(SKEncodedImageFormat.Png, 100);
-            {
-                data.SaveTo(fs);
-            }
+            data.SaveTo(fs);
         }
     }
 }
