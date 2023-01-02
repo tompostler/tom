@@ -8,7 +8,10 @@ namespace Unlimitedinf.Tom.Commands
     {
         public static Command Create()
         {
-            Command command = new("zz-test-console-progress", "Test the ConsoleFileProgressLogger to validate functionality.");
+            Command command = new("zz-test-console-progress", "Test the ConsoleFileProgressLogger to validate functionality.")
+            {
+                IsHidden = true
+            };
             command.SetHandler(Handle);
             return command;
         }

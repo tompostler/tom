@@ -22,6 +22,7 @@
     <Compile Include="..\tom\Commands\ZzTestChartLineCommand.cs" Link="Commands\ZzTestChartLineCommand.cs" />
     <Compile Include="..\tom\Commands\ZzTestConsoleColorsCommand.cs" Link="Commands\ZzTestConsoleColorsCommand.cs" />
     <Compile Include="..\tom\Commands\ZzTestConsoleProgressLoggerCommand.cs" Link="Commands\ZzTestConsoleProgressLoggerCommand.cs" />
+    <Compile Include="..\tom\Commands\ZzTestConsoleWriteTableCommand.cs" Link="Commands\ZzTestConsoleWriteTableCommand.cs" />
     <Compile Include="..\tom\VersionProvider.cs" Link="VersionProvider.cs" />
   </ItemGroup>
 

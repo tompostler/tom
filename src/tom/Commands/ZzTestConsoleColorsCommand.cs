@@ -3,11 +3,14 @@ using System.CommandLine;
 
 namespace Unlimitedinf.Tom.Commands
 {
-    internal sealed class ZzTestConsoleColorsCommand
+    internal static class ZzTestConsoleColorsCommand
     {
         public static Command Create()
         {
-            Command command = new("zz-test-console-colors", "Test the output of the ConsoleColor enum to see what the terminal supports.");
+            Command command = new("zz-test-console-colors", "Test the output of the ConsoleColor enum to see what the terminal supports.")
+            {
+                IsHidden = true
+            };
 
             Option<ConsoleColor> backgroundColorOpt = new(
                 "--background-color",

@@ -6,11 +6,14 @@ using System.IO;
 
 namespace Unlimitedinf.Tom.Commands
 {
-    internal sealed class ZzTestChartLineCommand
+    internal static class ZzTestChartLineCommand
     {
         public static Command Create()
         {
-            Command command = new("zz-test-chart-line", "Test generating a Microcharts line chart and saving it as an image headlessly.");
+            Command command = new("zz-test-chart-line", "Test generating a Microcharts line chart and saving it as an image headlessly.")
+            {
+                IsHidden = true
+            };
 
             command.SetHandler(Handle);
             return command;

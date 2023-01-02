@@ -22,6 +22,7 @@ namespace Unlimitedinf.Tom
             rootCommand.AddCommand(Commands.ZzTestChartLineCommand.Create());
             rootCommand.AddCommand(Commands.ZzTestConsoleColorsCommand.Create());
             rootCommand.AddCommand(Commands.ZzTestConsoleProgressLoggerCommand.Create());
+            rootCommand.AddCommand(Commands.ZzTestConsoleWriteTableCommand.Create());
 
             return await rootCommand.InvokeAsync(args);
         }

@@ -37,5 +37,35 @@ namespace Unlimitedinf.Utilities.Extensions
         /// Convert a json string back to an object.
         /// </summary>
         public static T FromJsonString<T>(this string value) => JsonSerializer.Deserialize<T>(value, options);
+
+        /// <summary>
+        /// Given an input string, split it into chunks.
+        /// If the input string is not a multiple of <paramref name="chunkSize"/>, then the last chunk will be smaller.
+        /// </summary>
+        public static string[] Chunk(this string value, int chunkSize)
+        {
+            if (chunkSize <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(chunkSize), "Chunk size must be >0");
+            }
+            else if (string.IsNullOrEmpty(value))
+            {
+                return Array.Empty<string>();
+            }
+            else if (chunkSize >= value.Length)
+            {
+                return new[] { value };
+            }
+            else
+            {
+                // Init the array
+                string[] result = new string[(int)Math.Ceiling((double)value.Length / chunkSize)];
+                for (int chunk = 0; chunk * chunkSize < value.Length; chunk++)
+                {
+                    result[chunk] = value.Substring(chunk * chunkSize, Math.Min(chunkSize, value.Length - chunk * chunkSize));
+                }
+                return result;
+            }
+        }
     }
 }
