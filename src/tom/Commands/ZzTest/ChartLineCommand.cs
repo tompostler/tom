@@ -4,9 +4,9 @@ using System;
 using System.CommandLine;
 using System.IO;
 
-namespace Unlimitedinf.Tom.Commands
+namespace Unlimitedinf.Tom.Commands.ZzTest
 {
-    internal static class ZzTestChartLineCommand
+    internal static class ChartLineCommand
     {
         public static Command Create()
         {
@@ -153,7 +153,7 @@ namespace Unlimitedinf.Tom.Commands
 
             // Add a chart title
             var title = SKTextBlob.Create("Sample chart title", new SKFont());
-            canvas.DrawText(title, (bitmap.Width / 2) - (title.Bounds.Width / 2), title.Bounds.Height * .75f, new SKPaint());
+            canvas.DrawText(title, bitmap.Width / 2 - title.Bounds.Width / 2, title.Bounds.Height * .75f, new SKPaint());
 
             // Add a generated footer
             var genText = SKTextBlob.Create($"Generated {DateTime.Now:yyyy-MM-dd HH:mm:ss}", new SKFont());

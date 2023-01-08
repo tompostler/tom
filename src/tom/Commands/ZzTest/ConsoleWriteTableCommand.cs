@@ -1,9 +1,9 @@
 ﻿using System.CommandLine;
 using Unlimitedinf.Utilities;
 
-namespace Unlimitedinf.Tom.Commands
+namespace Unlimitedinf.Tom.Commands.ZzTest
 {
-    internal static class ZzTestConsoleWriteTableCommand
+    internal static class ConsoleWriteTableCommand
     {
         public static Command Create()
         {
@@ -65,10 +65,9 @@ namespace Unlimitedinf.Tom.Commands
                     Total = 0.54
                 }
             };
-            
+
             // Based on default terminal sizing for ~100 chars, this should fit
-            Output.WriteTable(
-                data,
+            data.WriteTable(
                 nameof(InvoiceLineItemData.Id),
                 nameof(InvoiceLineItemData.Title),
                 nameof(InvoiceLineItemData.Quantity),
@@ -77,8 +76,7 @@ namespace Unlimitedinf.Tom.Commands
                 nameof(InvoiceLineItemData.Total));
 
             // Based on default terminal sizing for ~100 chars, this should require wrapped text
-            Output.WriteTable(
-                data,
+            data.WriteTable(
                 nameof(InvoiceLineItemData.Id),
                 nameof(InvoiceLineItemData.Title),
                 nameof(InvoiceLineItemData.Description),

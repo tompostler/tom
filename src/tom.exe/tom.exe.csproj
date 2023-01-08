@@ -19,10 +19,10 @@
     <Compile Include="..\tom\Commands\ImageDuplicateBlockhashCommand.cs" Link="Commands\ImageDuplicateBlockhashCommand.cs" />
     <Compile Include="..\tom\Commands\RandomCommand.cs" Link="Commands\RandomCommand.cs" />
     <Compile Include="..\tom\Commands\WebSocketClientCommand.cs" Link="Commands\WebSocketClientCommand.cs" />
-    <Compile Include="..\tom\Commands\ZzTestChartLineCommand.cs" Link="Commands\ZzTestChartLineCommand.cs" />
-    <Compile Include="..\tom\Commands\ZzTestConsoleColorsCommand.cs" Link="Commands\ZzTestConsoleColorsCommand.cs" />
-    <Compile Include="..\tom\Commands\ZzTestConsoleProgressLoggerCommand.cs" Link="Commands\ZzTestConsoleProgressLoggerCommand.cs" />
-    <Compile Include="..\tom\Commands\ZzTestConsoleWriteTableCommand.cs" Link="Commands\ZzTestConsoleWriteTableCommand.cs" />
+    <Compile Include="..\tom\Commands\ZzTest\ChartLineCommand.cs" Link="Commands\ZzTest\ChartLineCommand.cs" />
+    <Compile Include="..\tom\Commands\ZzTest\ConsoleColorsCommand.cs" Link="Commands\ZzTest\ConsoleColorsCommand.cs" />
+    <Compile Include="..\tom\Commands\ZzTest\ConsoleProgressLoggerCommand.cs" Link="Commands\ZzTest\ConsoleProgressLoggerCommand.cs" />
+    <Compile Include="..\tom\Commands\ZzTest\ConsoleWriteTableCommand.cs" Link="Commands\ZzTest\ConsoleWriteTableCommand.cs" />
     <Compile Include="..\tom\VersionProvider.cs" Link="VersionProvider.cs" />
   </ItemGroup>
 

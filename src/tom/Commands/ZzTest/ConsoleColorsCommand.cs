@@ -1,9 +1,9 @@
 ﻿using System;
 using System.CommandLine;
 
-namespace Unlimitedinf.Tom.Commands
+namespace Unlimitedinf.Tom.Commands.ZzTest
 {
-    internal static class ZzTestConsoleColorsCommand
+    internal static class ConsoleColorsCommand
     {
         public static Command Create()
         {
@@ -33,7 +33,7 @@ namespace Unlimitedinf.Tom.Commands
                 Console.ForegroundColor = foregroundColor;
                 Console.WriteLine($"Foreground: {foregroundColor}, Background: {backgroundColor}");
             }
-            
+
             Console.ForegroundColor = currentForeground;
             Console.BackgroundColor = currentBackground;
 

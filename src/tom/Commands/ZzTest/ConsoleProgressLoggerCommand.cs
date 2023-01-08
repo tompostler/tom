@@ -2,9 +2,9 @@
 using System.Threading;
 using Unlimitedinf.Utilities.Logging;
 
-namespace Unlimitedinf.Tom.Commands
+namespace Unlimitedinf.Tom.Commands.ZzTest
 {
-    internal sealed class ZzTestConsoleProgressLoggerCommand
+    internal sealed class ConsoleProgressLoggerCommand
     {
         public static Command Create()
         {

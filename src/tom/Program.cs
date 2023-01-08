@@ -19,10 +19,10 @@ namespace Unlimitedinf.Tom
             rootCommand.AddCommand(Commands.WebSocketClientCommand.Create());
             rootCommand.AddCommand(Commands.WebSocketServerCommand.Create());
 
-            rootCommand.AddCommand(Commands.ZzTestChartLineCommand.Create());
-            rootCommand.AddCommand(Commands.ZzTestConsoleColorsCommand.Create());
-            rootCommand.AddCommand(Commands.ZzTestConsoleProgressLoggerCommand.Create());
-            rootCommand.AddCommand(Commands.ZzTestConsoleWriteTableCommand.Create());
+            rootCommand.AddCommand(Commands.ZzTest.ChartLineCommand.Create());
+            rootCommand.AddCommand(Commands.ZzTest.ConsoleColorsCommand.Create());
+            rootCommand.AddCommand(Commands.ZzTest.ConsoleProgressLoggerCommand.Create());
+            rootCommand.AddCommand(Commands.ZzTest.ConsoleWriteTableCommand.Create());
 
             return await rootCommand.InvokeAsync(args);
         }
