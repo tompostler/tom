@@ -13,6 +13,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\tom\Commands\ChartSystemStatsCommand.cs" Link="Commands\ChartSystemStatsCommand.cs" />
     <Compile Include="..\tom\Commands\HashCommand.cs" Link="Commands\HashCommand.cs" />
     <Compile Include="..\tom\Commands\HashRenameCommand.cs" Link="Commands\HashRenameCommand.cs" />
     <Compile Include="..\tom\Commands\ImageDimensionFilterCommand.cs" Link="Commands\ImageDimensionFilterCommand.cs" />
