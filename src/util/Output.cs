@@ -18,6 +18,7 @@ namespace Unlimitedinf.Utilities
         /// </summary>
         public static void WriteTable<T>(this IEnumerable<T> @this, params string[] propertyNames)
         {
+            @this ??= Enumerable.Empty<T>();
             PropertyInfo[] availableProperties = typeof(T).GetProperties();
             var propertyMap = availableProperties.ToDictionary(x => x.Name);
 
