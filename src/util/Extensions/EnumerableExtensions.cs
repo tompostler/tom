@@ -61,19 +61,5 @@ namespace Unlimitedinf.Utilities.Extensions
                 (@this[currentIndex], @this[targetIndex]) = (@this[targetIndex], @this[currentIndex]);
             }
         }
-
-        /// <summary>
-        /// Shuffle a list in place.
-        /// </summary>
-        public static void Shuffle<T>(this IList<T> @this)
-        {
-            int currentIndex = @this.Count;
-            while (currentIndex > 1)
-            {
-                currentIndex--;
-                int targetIndex = Random.Shared.Next(currentIndex + 1);
-                (@this[currentIndex], @this[targetIndex]) = (@this[targetIndex], @this[currentIndex]);
-            }
-        }
     }
 }
