@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -44,6 +45,34 @@ namespace Unlimitedinf.Utilities.Extensions
             else
             {
                 return Convert.ToDouble(source.ElementAt(midpoint));
+            }
+        }
+
+        /// <summary>
+        /// Shuffle a list in place.
+        /// </summary>
+        public static void Shuffle(this IList @this)
+        {
+            int currentIndex = @this.Count;
+            while (currentIndex > 1)
+            {
+                currentIndex--;
+                int targetIndex = Random.Shared.Next(currentIndex + 1);
+                (@this[currentIndex], @this[targetIndex]) = (@this[targetIndex], @this[currentIndex]);
+            }
+        }
+
+        /// <summary>
+        /// Shuffle a list in place.
+        /// </summary>
+        public static void Shuffle<T>(this IList<T> @this)
+        {
+            int currentIndex = @this.Count;
+            while (currentIndex > 1)
+            {
+                currentIndex--;
+                int targetIndex = Random.Shared.Next(currentIndex + 1);
+                (@this[currentIndex], @this[targetIndex]) = (@this[targetIndex], @this[currentIndex]);
             }
         }
     }
