@@ -20,7 +20,6 @@ namespace Unlimitedinf.Tom
         {
             // Get current version
             string sourceVersion = Assembly.GetAssembly(typeof(Program))?.GetName()?.Version?.ToString(fieldCount: 3) ?? "0.0.0";
-            Console.Error.Write($"tom v{sourceVersion}. ");
 
             // Check to see if the file exists and written within the last day, then use it
             if (versionFile.Exists && DateTime.Now.Subtract(versionFile.LastWriteTime).TotalDays < 1)
@@ -48,25 +47,24 @@ namespace Unlimitedinf.Tom
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"Could not determine target version: {ex.Message}");
+                    Console.Error.WriteLine($"tom v{sourceVersion}. Could not determine target version: {ex.Message}\n");
                 }
             }
-            Console.Error.WriteLine();
         }
 
         private static void ReportUpdateIfNecessary(string sourceVersionStr, string targetVersionStr, string suffix)
         {
-            Console.Error.WriteLine($"Target version v{targetVersionStr} from {suffix}");
-
             // Could not parse version
             if (string.Equals(sourceVersionStr, "0.0.0", StringComparison.OrdinalIgnoreCase))
             {
+                Console.Error.WriteLine($"tom v{sourceVersionStr}. Target version v{targetVersionStr} from {suffix}");
                 Console.Error.WriteLine("Could not parse version properly from source assembly.");
             }
 
             // Running in debug locally
             else if (string.Equals(sourceVersionStr, "1.0.0", StringComparison.OrdinalIgnoreCase))
             {
+                Console.Error.WriteLine($"tom v{sourceVersionStr}. Target version v{targetVersionStr} from {suffix}");
                 Console.Error.WriteLine("Version indicates running in local debugging.");
             }
 
@@ -82,6 +80,7 @@ namespace Unlimitedinf.Tom
                 }
                 else
                 {
+                    Console.Error.WriteLine($"tom v{sourceVersionStr}. Target version v{targetVersionStr} from {suffix}");
                     Console.Error.WriteLine("Update tom as a tool with 'dotnet tool update Unlimitedinf.Tom --global'");
                 }
             }
