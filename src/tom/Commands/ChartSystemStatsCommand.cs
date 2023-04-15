@@ -26,11 +26,16 @@ namespace Unlimitedinf.Tom.Commands
                 "Instead of generating charts, display the script that should be installed to generate the data files.");
             command.AddOption(displayScriptOpt);
 
-            command.SetHandler(Handle, dataDirArg, displayScriptOpt);
+            Option<bool> mergeOpt = new(
+                "--merge",
+                "Instead of generating charts, merge any single line files into a single file.");
+            command.AddOption(mergeOpt);
+
+            command.SetHandler(Handle, dataDirArg, displayScriptOpt, mergeOpt);
             return command;
         }
 
-        private static void Handle(DirectoryInfo dataDir, bool displayScript)
+        private static void Handle(DirectoryInfo dataDir, bool displayScript, bool merge)
         {
             if (displayScript)
             {
@@ -58,17 +63,52 @@ Set-Content -Path ""Z:\system-stats\data\$((Get-Date).ToString('yyyy-MM-dd_HH-mm
 ");
                 return;
             }
+
             var sw = Stopwatch.StartNew();
 
-            // Build up all the rows of all the files in memory while keeping track of the disk max size
-            var dataFiles = dataDir.EnumerateFiles().ToList();
+            // Enumerate the files first
+            var dataFiles = dataDir.EnumerateFiles().Where(x => x.Extension != ".png").ToList();
             Console.WriteLine($"[{sw.Elapsed:mm\\:ss\\.ffff}] Found {dataFiles.Count} data files to enumerate");
+
+            // If we're going to merge, set up for that
+            FileInfo mergedFile = default;
+            StreamWriter mergedFileWriter = default;
+            int mergedLineCount = 0;
+            if (merge)
+            {
+                mergedFile = new(Path.Combine(dataDir.FullName, "merged_" + Guid.NewGuid().ToString().Split('-').First() + ".txt"));
+                Console.WriteLine($"[{sw.Elapsed:mm\\:ss\\.ffff}] Merging existing single line data files into {mergedFile.FullName}");
+                mergedFile.Delete();
+                mergedFileWriter = new(mergedFile.OpenWrite());
+            }
+
+            // Build up all the rows of all the files in memory while keeping track of the disk max size
+            // Unless we're merging, then instead write them to the merged file
             List<SystemStatDataRow> dataRows = new();
             Dictionary<string, long> diskMaxSize = new();
             foreach (FileInfo dataFile in dataFiles)
             {
                 using StreamReader sr = new(dataFile.OpenRead());
                 string[] fileLines = sr.ReadToEnd().Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+                if (merge)
+                {
+                    if (fileLines.Length == 0)
+                    {
+                        Console.WriteLine($"[{sw.Elapsed:mm\\:ss\\.ffff}] Had 0 lines, so skipping: {dataFile.FullName}");
+                    }
+                    else if (fileLines.Length > 1)
+                    {
+                        Console.WriteLine($"[{sw.Elapsed:mm\\:ss\\.ffff}] Had {fileLines.Length} lines, so skipping: {dataFile.FullName}");
+                    }
+                    else
+                    {
+                        mergedFileWriter.WriteLine(fileLines.Single());
+                        mergedLineCount++;
+                    }
+                    continue;
+                }
+
                 foreach (string fileLine in fileLines)
                 {
                     try
@@ -84,7 +124,6 @@ Set-Content -Path ""Z:\system-stats\data\$((Get-Date).ToString('yyyy-MM-dd_HH-mm
                             else
                             {
                                 diskMaxSize.Add(disk.Key, disk.Value.UsedBytes);
-
                             }
                         }
                     }
@@ -95,15 +134,24 @@ Set-Content -Path ""Z:\system-stats\data\$((Get-Date).ToString('yyyy-MM-dd_HH-mm
                     }
                 }
             }
-            Console.WriteLine($"[{sw.Elapsed:mm\\:ss\\.ffff}] Found {dataRows.Count} rows of data to use");
+            if (merge)
+            {
+                Console.WriteLine($"[{sw.Elapsed:mm\\:ss\\.ffff}] Found {mergedLineCount} rows of data in {dataFiles.Count} files");
+                mergedFileWriter.Dispose();
+                return;
+            }
+            else
+            {
+                Console.WriteLine($"[{sw.Elapsed:mm\\:ss\\.ffff}] Found {dataRows.Count} rows of data to use");
+            }
 
             // Sort the rows by the timestamp
-
             dataRows.Sort((l, r) => l.Timestamp.CompareTo(r.Timestamp));
             Console.WriteLine($"[{sw.Elapsed:mm\\:ss\\.ffff}] Finished sorting data");
 
             // While running through the data, only sample one value every so often based on the total range of data:
             //  Data range  Sampling size
+            //  > 3 month   Daily, but labels every 7d
             //  > 1 month   Daily
             //  > 1 week    Hourly
             //  > 1 day     Minutely
@@ -112,6 +160,7 @@ Set-Content -Path ""Z:\system-stats\data\$((Get-Date).ToString('yyyy-MM-dd_HH-mm
             TimeSpan sampleSize = TimeSpan.Zero;
             string timestampFormat = "yyyy-MM-dd HH:mm:ss";
             TimeSpan dataRange = dataRows.Last().Timestamp.Subtract(dataRows.First().Timestamp);
+            int labelsEvery = dataRange.TotalDays > 90 ? 7 : 1;
             switch (dataRange.TotalDays)
             {
                 case > 30:
@@ -143,6 +192,7 @@ Set-Content -Path ""Z:\system-stats\data\$((Get-Date).ToString('yyyy-MM-dd_HH-mm
 
             // Actually run through the data
             DateTimeOffset previousRowTimestamp = DateTimeOffset.MinValue;
+            int addedRowCount = 0;
             foreach (SystemStatDataRow dataRow in dataRows)
             {
                 // If it's too many data points, then skip to the next one
@@ -152,7 +202,8 @@ Set-Content -Path ""Z:\system-stats\data\$((Get-Date).ToString('yyyy-MM-dd_HH-mm
                 }
                 previousRowTimestamp = dataRow.Timestamp;
 
-                string dataRowLabel = dataRow.Timestamp.ToString(timestampFormat);
+                // If we need to reduce the number of visible labels, then run through all the data sources and clear the lables on every entry between the ones we want to keep
+                string dataRowLabel = addedRowCount++ % labelsEvery == 0 ? dataRow.Timestamp.ToString(timestampFormat) : default;
 
                 // 1. UptimeDays and MemoryUsedGiB
                 uptimeDaysEntries.Add(new ChartEntry(dataRow.UptimeHours / 24) { Label = dataRowLabel });
@@ -185,16 +236,17 @@ Set-Content -Path ""Z:\system-stats\data\$((Get-Date).ToString('yyyy-MM-dd_HH-mm
             // 1. UptimeDays and MemoryUsedGiB
             LineChart uptimeChart = new()
             {
-                LabelOrientation = Orientation.Horizontal, // TODO: doesn't put the labels veritically, so they're all 2s
+                LabelOrientation = Orientation.Vertical,
                 LegendOption = SeriesLegendOption.Bottom,
                 IsAnimated = false,
 
                 MinValue = 0,
-                MaxValue = 30,
+                MaxValue = 60,
                 YAxisMaxTicks = 31,
 
                 ShowYAxisLines = true,
                 ShowYAxisText = true,
+                YAxisPosition = Position.Left,
 
                 LineMode = LineMode.Straight,
                 LineSize = 1,
@@ -216,7 +268,7 @@ Set-Content -Path ""Z:\system-stats\data\$((Get-Date).ToString('yyyy-MM-dd_HH-mm
                     },
                 }
             };
-            SaveChart(uptimeChart, "Uptime and Memory", sw);
+            SaveChart(dataDir, uptimeChart, "Uptime and Memory", sw);
 
             // Reset the colors
             colors = new(colorString.Split('-').Select(x => SKColor.Parse(x)));
@@ -224,7 +276,7 @@ Set-Content -Path ""Z:\system-stats\data\$((Get-Date).ToString('yyyy-MM-dd_HH-mm
             // 2. Disk.UsedGiB (where max <= 1TiB)
             LineChart smallDiskChart = new()
             {
-                LabelOrientation = Orientation.Horizontal,
+                LabelOrientation = Orientation.Vertical,
                 LegendOption = SeriesLegendOption.Bottom,
                 IsAnimated = false,
 
@@ -234,6 +286,7 @@ Set-Content -Path ""Z:\system-stats\data\$((Get-Date).ToString('yyyy-MM-dd_HH-mm
 
                 ShowYAxisLines = true,
                 ShowYAxisText = true,
+                YAxisPosition = Position.Left,
 
                 LineMode = LineMode.Straight,
                 LineSize = 1,
@@ -241,7 +294,7 @@ Set-Content -Path ""Z:\system-stats\data\$((Get-Date).ToString('yyyy-MM-dd_HH-mm
 
                 Series = smallDiskEntries.Select(x => new ChartSerie { Name = x.Key, Color = colors.Dequeue(), Entries = x.Value }).ToList()
             };
-            SaveChart(smallDiskChart, "Disks smaller than 1TiB", sw);
+            SaveChart(dataDir, smallDiskChart, "Disks smaller than 1TiB", sw);
 
             // Reset the colors
             colors = new(colorString.Split('-').Select(x => SKColor.Parse(x)));
@@ -259,6 +312,7 @@ Set-Content -Path ""Z:\system-stats\data\$((Get-Date).ToString('yyyy-MM-dd_HH-mm
 
                 ShowYAxisLines = true,
                 ShowYAxisText = true,
+                YAxisPosition = Position.Left,
 
                 LineMode = LineMode.Straight,
                 LineSize = 1,
@@ -266,10 +320,10 @@ Set-Content -Path ""Z:\system-stats\data\$((Get-Date).ToString('yyyy-MM-dd_HH-mm
 
                 Series = largeDiskEntries.Select(x => new ChartSerie { Name = x.Key, Color = colors.Dequeue(), Entries = x.Value }).ToList()
             };
-            SaveChart(largeDiskChart, "Disks larger than 1TiB", sw);
+            SaveChart(dataDir, largeDiskChart, "Disks larger than 1TiB", sw);
         }
 
-        private static void SaveChart(LineChart lineChart, string title, Stopwatch sw)
+        private static void SaveChart(DirectoryInfo dataDir, LineChart lineChart, string title, Stopwatch sw)
         {
             SKBitmap bitmap = new(2560, 1440);
             SKCanvas canvas = new(bitmap);
@@ -285,7 +339,7 @@ Set-Content -Path ""Z:\system-stats\data\$((Get-Date).ToString('yyyy-MM-dd_HH-mm
 
             _ = canvas.Save();
 
-            FileInfo chartFile = new(title + ".png");
+            FileInfo chartFile = new(Path.Combine(dataDir.FullName, title.Replace(' ', '-') + ".png"));
             chartFile.Delete();
 
             using FileStream fs = chartFile.OpenWrite();
