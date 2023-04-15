@@ -12,6 +12,9 @@ namespace Unlimitedinf.Tom.Commands
 {
     internal static class ChartSystemStatsCommand
     {
+        private const long OneGiB = 1024 * 1024 * 1024;
+        private const long OneTiB = OneGiB * 1024;
+
         public static Command Create()
         {
             Command command = new("chart-system-stats", "Given an input of system stat file(s), generate png charts for them.");
@@ -185,10 +188,10 @@ Set-Content -Path ""Z:\system-stats\data\$((Get-Date).ToString('yyyy-MM-dd_HH-mm
             List<ChartEntry> memoryGiBEntries = new();
 
             // 2. Disk.UsedGiB (where max <= 1TiB)
-            var smallDiskEntries = diskMaxSize.Where(x => x.Value <= 1099511627776).ToDictionary(x => x.Key, x => new List<ChartEntry>());
+            var smallDiskEntries = diskMaxSize.Where(x => x.Value <= OneTiB).ToDictionary(x => x.Key, x => new List<ChartEntry>());
 
             // 3. Disk.UsedTiB (where max > 1TiB)
-            var largeDiskEntries = diskMaxSize.Where(x => x.Value > 1099511627776).ToDictionary(x => x.Key, x => new List<ChartEntry>());
+            var largeDiskEntries = diskMaxSize.Where(x => x.Value > OneTiB).ToDictionary(x => x.Key, x => new List<ChartEntry>());
 
             // Actually run through the data
             DateTimeOffset previousRowTimestamp = DateTimeOffset.MinValue;
@@ -207,7 +210,7 @@ Set-Content -Path ""Z:\system-stats\data\$((Get-Date).ToString('yyyy-MM-dd_HH-mm
 
                 // 1. UptimeDays and MemoryUsedGiB
                 uptimeDaysEntries.Add(new ChartEntry(dataRow.UptimeHours / 24) { Label = dataRowLabel });
-                memoryGiBEntries.Add(new ChartEntry(dataRow.MemoryUsedBytes * 1f / 1073741824) { Label = dataRowLabel });
+                memoryGiBEntries.Add(new ChartEntry(dataRow.MemoryUsedBytes * 1f / OneGiB) { Label = dataRowLabel });
 
                 foreach (KeyValuePair<string, SystemStatDataRow.DiskStats> disk in dataRow.Disks)
                 {
@@ -216,13 +219,13 @@ Set-Content -Path ""Z:\system-stats\data\$((Get-Date).ToString('yyyy-MM-dd_HH-mm
                     // 2. Disk.UsedGiB (where max <= 1TiB)
                     if (smallDiskEntries.ContainsKey(disk.Key))
                     {
-                        smallDiskEntries[disk.Key].Add(new ChartEntry(disk.Value.UsedBytes * 1f / 1073741824) { Label = dataRowLabel });
+                        smallDiskEntries[disk.Key].Add(new ChartEntry(disk.Value.UsedBytes * 1f / OneGiB) { Label = dataRowLabel });
                     }
 
                     // 3. Disk.UsedTiB (where max > 1TiB)
                     else
                     {
-                        largeDiskEntries[disk.Key].Add(new ChartEntry(disk.Value.UsedBytes * 1f / 1099511627776) { Label = dataRowLabel });
+                        largeDiskEntries[disk.Key].Add(new ChartEntry(disk.Value.UsedBytes * 1f / OneTiB) { Label = dataRowLabel });
                     }
                 }
             }
@@ -307,7 +310,7 @@ Set-Content -Path ""Z:\system-stats\data\$((Get-Date).ToString('yyyy-MM-dd_HH-mm
                 IsAnimated = false,
 
                 MinValue = 0,
-                MaxValue = diskMaxSize.Values.Max() * 1.1f / 1099511627776,
+                MaxValue = diskMaxSize.Values.Max() * 1.1f / OneTiB,
                 YAxisMaxTicks = 31,
 
                 ShowYAxisLines = true,
