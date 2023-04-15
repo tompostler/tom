@@ -205,7 +205,7 @@ Set-Content -Path ""Z:\system-stats\data\$((Get-Date).ToString('yyyy-MM-dd_HH-mm
                 }
                 previousRowTimestamp = dataRow.Timestamp;
 
-                // If we need to reduce the number of visible labels, then run through all the data sources and clear the lables on every entry between the ones we want to keep
+                // Skip adding a label if we need to reduce the number of visible labels
                 string dataRowLabel = addedRowCount++ % labelsEvery == 0 ? dataRow.Timestamp.ToString(timestampFormat) : default;
 
                 // 1. UptimeDays and MemoryUsedGiB
@@ -228,12 +228,29 @@ Set-Content -Path ""Z:\system-stats\data\$((Get-Date).ToString('yyyy-MM-dd_HH-mm
                         largeDiskEntries[disk.Key].Add(new ChartEntry(disk.Value.UsedBytes * 1f / OneTiB) { Label = dataRowLabel });
                     }
                 }
+
+                // 4. Add empty entries for any disks we didn't see
+                var disksNotSeen = diskMaxSize.Keys.Except(dataRow.Disks.Keys).ToList();
+                foreach (string diskNotSeen in disksNotSeen)
+                {
+                    // 2. Disk.UsedGiB (where max <= 1TiB)
+                    if (smallDiskEntries.ContainsKey(diskNotSeen))
+                    {
+                        smallDiskEntries[diskNotSeen].Add(new ChartEntry(default) { Label = dataRowLabel });
+                    }
+
+                    // 3. Disk.UsedTiB (where max > 1TiB)
+                    else
+                    {
+                        largeDiskEntries[diskNotSeen].Add(new ChartEntry(default) { Label = dataRowLabel });
+                    }
+                }
             }
             Console.WriteLine($"[{sw.Elapsed:mm\\:ss\\.ffff}] Used {uptimeDaysEntries.Count}/{dataRows.Count} data rows for the charts");
 
             // Desired colors (skipping the less desirable ones):
             // https://coolors.co/palette/001219-005f73-0a9396-94d2bd-e9d8a6-ee9b00-ca6702-bb3e03-ae2012-9b2226
-            string colorString = "005f73-0a9396-94d2bd-ee9b00-ca6702-bb3e03-ae2012-9b2226";
+            string colorString = "005f73-0a9396-ee9b00-ca6702-bb3e03-ae2012-9b2226";
             Queue<SKColor> colors = new(colorString.Split('-').Select(x => SKColor.Parse(x)));
 
             // 1. UptimeDays and MemoryUsedGiB
@@ -310,7 +327,7 @@ Set-Content -Path ""Z:\system-stats\data\$((Get-Date).ToString('yyyy-MM-dd_HH-mm
                 IsAnimated = false,
 
                 MinValue = 0,
-                MaxValue = diskMaxSize.Values.Max() * 1.1f / OneTiB,
+                MaxValue = (float)Math.Ceiling(diskMaxSize.Values.Max() / 3.0 / OneTiB) * 3,
                 YAxisMaxTicks = 31,
 
                 ShowYAxisLines = true,
