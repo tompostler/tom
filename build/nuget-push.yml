@@ -44,7 +44,7 @@ steps:
 
 - powershell: |
     $body = @{
-      BuildNumber = '$(Build.BuildNumber)';
+      BuildNumber = '$(resources.pipeline.tci.runName)';
     } | ConvertTo-Json;
     Invoke-WebRequest -Uri '$(logicappuri-unlimitedinf-update-version-file)' -Method POST -ContentType 'application/json' -Body $body -UseBasicParsing;
   displayName: Update Version file
