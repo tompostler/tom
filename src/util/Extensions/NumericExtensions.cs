@@ -1,4 +1,7 @@
-﻿namespace Unlimitedinf.Utilities.Extensions
+﻿using System;
+using System.Text;
+
+namespace Unlimitedinf.Utilities.Extensions
 {
     /// <summary>
     /// Extensions for primitive numeric types.
@@ -50,6 +53,52 @@
             {
                 return $"{bits / 1_000_000_000_000:0.00}Tb";
             }
+        }
+
+        /// <summary>
+        /// Given a source number, convert it to an upper-case base36 representation of that number.
+        /// </summary>
+        /// <param name="this">Source value to convert</param>
+        /// <param name="base">The base-X notation to use. Max of 36.</param>
+        public static string ToBaseX(this long @this, byte @base)
+        {
+            if (@base < 2 || @base > 36)
+            {
+                throw new ArgumentOutOfRangeException(nameof(@base), "Maximum of Base36 and minimum of Base2");
+            }
+            else if (@base == 10)
+            {
+                return @this.ToString();
+            }
+
+            const string sourceChars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            string chars = sourceChars.Substring(0, @base);
+            StringBuilder sb = new();
+
+            if (@this == 0)
+            {
+                return "0";
+            }
+            
+            bool wasNeg = false;
+            if (@this < 0)
+            {
+                wasNeg = true;
+                @this *= -1;
+            }
+
+            while (@this > 0)
+            {
+                _ = sb.Insert(0, chars[(int)(@this % chars.Length)]);
+                @this /= chars.Length;
+            }
+
+            if (wasNeg)
+            {
+                _ = sb.Insert(0, "-");
+            }
+
+            return sb.ToString();
         }
     }
 }

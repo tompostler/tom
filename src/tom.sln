@@ -9,7 +9,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		..\.editorConfig = ..\.editorConfig
 		..\.gitignore = ..\.gitignore
-		..\azure-pipelines.yml = ..\azure-pipelines.yml
 		Directory.Build.props = Directory.Build.props
 		..\GitVersion.yml = ..\GitVersion.yml
 	EndProjectSection
@@ -25,6 +24,12 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microcharts", "..\subs\Microcharts\Sources\Microcharts\Microcharts.csproj", "{BF1BA8A1-8B3D-405A-A4D2-1528CB5BD0A2}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "tests", "tests\tests.csproj", "{FC82C9E0-EE71-4D25-A422-F8B9B049B1AC}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{6E87145D-200F-4F54-98BD-50A5AC13C120}"
+	ProjectSection(SolutionItems) = preProject
+		..\build\ci.yml = ..\build\ci.yml
+		..\build\nuget-push.yml = ..\build\nuget-push.yml
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -48,6 +53,9 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{6E87145D-200F-4F54-98BD-50A5AC13C120} = {67DF424B-EB2A-432A-8F55-56EAFCF07C7C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FD77D399-0655-4137-B9E6-A3AD7D373735}
