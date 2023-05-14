@@ -18,8 +18,16 @@ namespace Unlimitedinf.Tom.WebSocket
         {
             WebApplicationBuilder builder = WebApplication.CreateBuilder();
             builder.Environment.EnvironmentName = Environments.Development;
-            
+
             _ = builder.Services.AddSingleton(options);
+
+            _ = builder.Logging
+                .ClearProviders()
+                .AddSimpleConsole(consoleOptions =>
+                {
+                    consoleOptions.SingleLine = true;
+                    consoleOptions.TimestampFormat = "[yyyy-MM-dd HH:mm:ss.fff] ";
+                });
 
             // Map controllers from this assembly, regardless of where we're started
             builder.Services.AddControllers().PartManager.ApplicationParts.Add(new AssemblyPart(typeof(Controllers.WebSocketController).Assembly));
