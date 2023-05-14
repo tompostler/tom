@@ -1,5 +1,4 @@
 ﻿using System.CommandLine;
-using System.Threading;
 using Unlimitedinf.Utilities.Logging;
 
 namespace Unlimitedinf.Tom.Commands.ZzTest

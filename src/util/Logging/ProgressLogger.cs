@@ -1,6 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
 using Unlimitedinf.Utilities.Extensions;
 
 namespace Unlimitedinf.Utilities.Logging

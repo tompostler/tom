@@ -1,16 +1,8 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using System;
+﻿using Microsoft.AspNetCore.Mvc;
 using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Net.WebSockets;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Unlimitedinf.Tom.WebSocket.Contracts;
 using Unlimitedinf.Tom.WebSocket.Filters;
 using Unlimitedinf.Utilities;

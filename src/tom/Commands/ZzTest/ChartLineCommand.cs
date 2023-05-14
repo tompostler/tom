@@ -1,8 +1,6 @@
 ﻿using Microcharts;
 using SkiaSharp;
-using System;
 using System.CommandLine;
-using System.IO;
 
 namespace Unlimitedinf.Tom.Commands.ZzTest
 {

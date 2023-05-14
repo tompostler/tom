@@ -1,12 +1,5 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.ApplicationParts;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using System;
+﻿using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Unlimitedinf.Tom.WebSocket
 {

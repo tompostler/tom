@@ -1,8 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Threading;
-
-namespace Unlimitedinf.Utilities.IO
+﻿namespace Unlimitedinf.Utilities.IO
 {
     /// <summary>
     /// Class for streaming data with throttling support.

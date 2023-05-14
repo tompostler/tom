@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Unlimitedinf.Utilities
+﻿namespace Unlimitedinf.Utilities
 {
     /// <summary>
     /// Get input from the Console.

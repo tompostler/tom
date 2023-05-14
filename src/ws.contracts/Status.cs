@@ -1,7 +1,6 @@
-﻿using System;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 
-[assembly:InternalsVisibleTo("Unlimitedinf.Tom.WebSocket")]
+[assembly: InternalsVisibleTo("Unlimitedinf.Tom.WebSocket")]
 
 namespace Unlimitedinf.Tom.WebSocket.Contracts
 {

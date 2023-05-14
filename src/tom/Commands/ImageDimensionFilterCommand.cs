@@ -1,12 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.CommandLine;
+﻿using System.CommandLine;
 using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using Unlimitedinf.Utilities;
 using Unlimitedinf.Utilities.Extensions;
 
 namespace Unlimitedinf.Tom.Commands

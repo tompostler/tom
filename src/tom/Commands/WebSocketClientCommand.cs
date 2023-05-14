@@ -1,17 +1,11 @@
 ﻿using Microsoft.Net.Http.Headers;
-using System;
 using System.CommandLine;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
 using System.Net.Security;
 using System.Net.WebSockets;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Unlimitedinf.Tom.WebSocket.Contracts;
 using Unlimitedinf.Utilities;
 using Unlimitedinf.Utilities.Extensions;

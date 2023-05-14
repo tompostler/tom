@@ -4,8 +4,6 @@
 // Originally published at http://damieng.com/blog/2006/08/08/calculating_crc32_in_c_and_net
 // Modified by Tom Postler, 2016-11-27
 
-using System;
-using System.Collections.Generic;
 using System.Security.Cryptography;
 
 namespace Unlimitedinf.Utilities.Hashing

@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.CommandLine;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.CommandLine;
 using Unlimitedinf.Utilities.Hashing;
 
 namespace Unlimitedinf.Tom.Commands
