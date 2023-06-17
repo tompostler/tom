@@ -4,6 +4,7 @@ schedules:
   branches:
     include:
     - main
+  always: false
 
 # Not including the none trigger results in the default of "include *"
 trigger: none
