@@ -26,7 +26,8 @@ namespace Unlimitedinf.Tom.Commands.ZzTest
                     Title = "Partial month of billing (Sept)",
                     Quantity = 1,
                     Price = 15.97,
-                    Total = 15.97
+                    Total = 15.97,
+                    Modified = DateTimeOffset.Parse("2023-07-01")
                 },
                 new()
                 {
@@ -73,7 +74,8 @@ namespace Unlimitedinf.Tom.Commands.ZzTest
                 nameof(InvoiceLineItemData.Quantity),
                 nameof(InvoiceLineItemData.Unit),
                 nameof(InvoiceLineItemData.Price),
-                nameof(InvoiceLineItemData.Total));
+                nameof(InvoiceLineItemData.Total),
+                nameof(InvoiceLineItemData.Modified));
 
             // Based on default terminal sizing for ~100 chars, this should require wrapped text
             data.WriteTable(
@@ -95,6 +97,7 @@ namespace Unlimitedinf.Tom.Commands.ZzTest
             public string Unit { get; set; }
             public double Price { get; set; }
             public double Total { get; set; }
+            public DateTimeOffset Modified { get; set; } = DateTimeOffset.Now;
         }
     }
 }

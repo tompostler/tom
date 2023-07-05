@@ -18,6 +18,7 @@ namespace Unlimitedinf.Utilities
             @this ??= Enumerable.Empty<T>();
             PropertyInfo[] availableProperties = typeof(T).GetProperties();
             var propertyMap = availableProperties.ToDictionary(x => x.Name);
+            int bufferWidth = Console.BufferWidth - 1;
 
             // Validate
             foreach (string propertyName in propertyNames)
@@ -43,7 +44,7 @@ namespace Unlimitedinf.Utilities
                     // Add up the length of the individual columns, and the spaces between them
                     int totalWidth = columnWidths.Sum() + columnWidths.Length;
 
-                    if (totalWidth > Console.BufferWidth)
+                    if (totalWidth > bufferWidth)
                     {
                         // We're already too wide. Do nothing
                     }
@@ -51,7 +52,7 @@ namespace Unlimitedinf.Utilities
                     {
                         // The current column width is less than the new desired max width
 
-                        if (totalWidth - columnWidths[j] + outputData[i, j].Length <= Console.BufferWidth)
+                        if (totalWidth - columnWidths[j] + outputData[i, j].Length <= bufferWidth)
                         {
                             // Adding the new column width will stay within the buffer, so it's fine
                             columnWidths[j] = outputData[i, j].Length;
@@ -60,7 +61,7 @@ namespace Unlimitedinf.Utilities
                         {
                             // Adding the new column width will exceed the buffer
                             // Chop it off at the max, or preserve the current width
-                            columnWidths[j] = Math.Max(columnWidths[j], Console.BufferWidth - totalWidth + columnWidths[j]);
+                            columnWidths[j] = Math.Max(columnWidths[j], bufferWidth - totalWidth + columnWidths[j]);
                         }
                     }
                     else
@@ -152,11 +153,17 @@ namespace Unlimitedinf.Utilities
 
             if (obj is DateTimeOffset objDto)
             {
-                return objDto.ToString("u");
+                // If the date object represents a midnight, then only show the date
+                return objDto.Date == objDto
+                    ? objDto.ToString("yyyy-MM-dd")
+                    : objDto.ToString("u");
             }
             if (obj is DateTime objDt)
             {
-                return objDt.ToString("u");
+                // If the date object represents a midnight, then only show the date
+                return objDt.Date == objDt
+                    ? objDt.ToString("yyyy-MM-dd")
+                    : objDt.ToString("u");
             }
 
             return obj?.ToString() ?? string.Empty;
