@@ -1,5 +1,4 @@
-﻿using Microsoft.Net.Http.Headers;
-using System.CommandLine;
+﻿using System.CommandLine;
 using System.Diagnostics;
 using System.Net.Security;
 using System.Net.WebSockets;
@@ -133,7 +132,7 @@ namespace Unlimitedinf.Tom.Commands
             {
                 wsClient.Options.RemoteCertificateValidationCallback = (_, certificate, chain, sslPolicyErrors) => serverCertificateValidationCallback(certificate, chain, sslPolicyErrors);
             }
-            wsClient.Options.SetRequestHeader(HeaderNames.Authorization, httpClient.DefaultRequestHeaders.Authorization.ToString());
+            wsClient.Options.SetRequestHeader("Authorization", httpClient.DefaultRequestHeaders.Authorization.ToString());
 
             // First attempt a basic ping to make sure the routing, authentication, and ssl validation are all correct
             Uri pingEndpoint = endpoint.Scheme.StartsWith("ws") ? new($"http{endpoint.AbsoluteUri[2..]}") : endpoint;
