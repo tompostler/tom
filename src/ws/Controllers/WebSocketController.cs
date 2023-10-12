@@ -262,7 +262,7 @@ namespace Unlimitedinf.Tom.WebSocket.Controllers
                     {
                         int bytesRead = await ts.ReadAsync(buffer, cancellationToken);
                         _ = sha256.TransformBlock(buffer, inputOffset: 0, bytesRead, outputBuffer: default, outputOffset: 0);
-                        _ = Interlocked.Add(ref Status.Instance.BinaryBytesSent, (ulong)bytesRead);
+                        _ = Interlocked.Add(ref Status.Instance.binaryBytesSent, (ulong)bytesRead);
                         await webSocket.SendAsync(buffer.AsMemory(0, bytesRead), WebSocketMessageType.Binary, endOfMessage: bytesRead != buffer.Length, cancellationToken);
                     }
                 }
@@ -306,7 +306,7 @@ namespace Unlimitedinf.Tom.WebSocket.Controllers
                     {
                         receiveResult = await webSocket.ReceiveAsync(buffer, cancellationToken);
                         _ = sha256.TransformBlock(buffer, inputOffset: 0, receiveResult.Count, outputBuffer: default, outputOffset: default);
-                        _ = Interlocked.Add(ref Status.Instance.BinaryBytesReceived, (ulong)receiveResult.Count);
+                        _ = Interlocked.Add(ref Status.Instance.binaryBytesReceived, (ulong)receiveResult.Count);
                         await ts.WriteAsync(buffer.AsMemory(0, receiveResult.Count), cancellationToken);
                     }
                     while (!receiveResult.EndOfMessage);

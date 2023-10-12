@@ -11,10 +11,12 @@ namespace Unlimitedinf.Tom.WebSocket.Contracts
         public DateTime StartTime { get; set; } = DateTime.Now;
         public TimeSpan UpTime => DateTime.Now.Subtract(this.StartTime);
 
-        public ulong BinaryBytesReceived;
+        internal ulong binaryBytesReceived;
+        public ulong BinaryBytesReceived { get => this.binaryBytesReceived; set => this.binaryBytesReceived = value; }
         public double GigabytesReceived => this.BinaryBytesReceived / 1_000_000_000d;
 
-        public ulong BinaryBytesSent;
+        internal ulong binaryBytesSent;
+        public ulong BinaryBytesSent { get => this.binaryBytesSent; set => this.binaryBytesSent = value; }
         public double GigabytesSent => this.BinaryBytesSent / 1_000_000_000d;
 
         internal ulong textMessagesReceived;
