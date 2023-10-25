@@ -128,7 +128,10 @@ namespace Unlimitedinf.Utilities
                     else
                     {
                         // Whole text fits in the box.
-                        _ = sb.Append(outputData[rowIndex, columnIndex].PadRight(columnWidths[columnIndex]));
+                        // If it's purely numeric, PadLeft instead of PadRight.
+                        _ = double.TryParse(outputData[rowIndex, columnIndex], out _)
+                            ? sb.Append(outputData[rowIndex, columnIndex].PadLeft(columnWidths[columnIndex]))
+                            : sb.Append(outputData[rowIndex, columnIndex].PadRight(columnWidths[columnIndex]));
                         _ = sb.Append(columnDiv);
 
                         // And if there's any stringbuilders, pad them.
@@ -159,6 +162,17 @@ namespace Unlimitedinf.Utilities
                 return string.Empty;
             }
 
+            if (obj is decimal objDecimal)
+            {
+                // Decimals default to 4 digits, so reduce that to the default 2 of a double.
+                return objDecimal.ToString("F2");
+            }
+            if (obj is double objDouble)
+            {
+                // Always ensure doubles have 2 digits.
+                return objDouble.ToString("F2");
+            }
+
             if (obj is DateTimeOffset objDto)
             {
                 // If the date object represents a midnight, then only show the date.
@@ -178,17 +192,26 @@ namespace Unlimitedinf.Utilities
             {
                 // Round time span to hundredths of seconds.
                 // Leave off days or hours unless they have value as most time spans encountered are generally short.
-                if (objTs.TotalDays > 1)
+                // And apparently you have to calculate the negative yourself.
+                if (objTs.TotalDays >= 1)
                 {
                     return objTs.ToString(@"dd\.hh\:mm\:ss\.ff");
                 }
-                else if (objTs.TotalHours > 1)
+                if (objTs.TotalDays <= -1)
+                {
+                    return objTs.ToString(@"\-dd\.hh\:mm\:ss\.ff");
+                }
+                else if (objTs.TotalHours >= 1)
                 {
                     return objTs.ToString(@"hh\:mm\:ss\.ff");
                 }
+                else if (objTs.TotalHours <= -1)
+                {
+                    return objTs.ToString(@"\-hh\:mm\:ss\.ff");
+                }
                 else
                 {
-                    return objTs.ToString(@"mm\:ss\.ff");
+                    return objTs.ToString((objTs < TimeSpan.Zero ? @"\-" : string.Empty) + @"mm\:ss\.ff");
                 }
             }
 
