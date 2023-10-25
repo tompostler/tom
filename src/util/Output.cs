@@ -36,8 +36,9 @@ namespace Unlimitedinf.Utilities
                 }
             }
 
-            // Convert the data into a 2d array while keeping track of the max data length in each column
-            int[] columnWidths = propertyNames.Select(x => x.Length).ToArray();
+            // Convert the data into a 2d array while keeping track of the max data length in each column.
+            // Initial column widths can't be smaller than the property name lengths, or 4 (whichever is larger).
+            int[] columnWidths = propertyNames.Select(x => Math.Max(x.Length, 4)).ToArray();
             string[,] outputData = new string[@this.Count(), propertyNames.Length];
             for (int i = 0; i < @this.Count(); i++)
             {
@@ -46,34 +47,34 @@ namespace Unlimitedinf.Utilities
                 {
                     outputData[i, j] = ToNiceString(propertyMap[propertyNames[j]].GetValue(row));
 
-                    // But if it would push us over the buffer width, then don't increase the size
-                    // By evaluating here, we for the column widths to at least be the width of the property names
-                    // Add up the length of the individual columns, and the spaces between them
+                    // But if it would push us over the buffer width, then don't increase the size.
+                    // By evaluating here, we force the column widths to at least be the width of the property names.
+                    // Add up the length of the individual columns, and the spaces between them.
                     int totalWidth = columnWidths.Sum() + columnWidths.Length;
 
                     if (totalWidth > bufferWidth)
                     {
-                        // We're already too wide. Do nothing
+                        // We're already too wide. Do nothing.
                     }
                     else if (columnWidths[j] < outputData[i, j].Length)
                     {
-                        // The current column width is less than the new desired max width
+                        // The current column width is less than the new desired max width.
 
                         if (totalWidth - columnWidths[j] + outputData[i, j].Length <= bufferWidth)
                         {
-                            // Adding the new column width will stay within the buffer, so it's fine
+                            // Adding the new column width will stay within the buffer, so it's fine.
                             columnWidths[j] = outputData[i, j].Length;
                         }
                         else
                         {
-                            // Adding the new column width will exceed the buffer
-                            // Chop it off at the max, or preserve the current width
+                            // Adding the new column width will exceed the buffer.
+                            // Chop it off at the max, or preserve the current width.
                             columnWidths[j] = Math.Max(columnWidths[j], bufferWidth - totalWidth + columnWidths[j]);
                         }
                     }
                     else
                     {
-                        // The current column width is equal to or larger than the new desired max width. Do nothing
+                        // The current column width is equal to or larger than the new desired max width. Do nothing.
                     }
                 }
             }
@@ -81,7 +82,7 @@ namespace Unlimitedinf.Utilities
             StringBuilder sb = new();
             char columnDiv = ' ';
 
-            // Output the header row
+            // Output the header row.
             for (int columnIndex = 0; columnIndex < propertyNames.Length; columnIndex++)
             {
                 _ = sb.Append(propertyNames[columnIndex].PadRight(columnWidths[columnIndex]));
@@ -89,7 +90,7 @@ namespace Unlimitedinf.Utilities
             }
             _ = sb.AppendLine();
 
-            // Output the dashed line row
+            // Output the dashed line row.
             for (int columnIndex = 0; columnIndex < propertyNames.Length; columnIndex++)
             {
                 _ = sb.Append(new string('-', columnWidths[columnIndex]));
@@ -97,7 +98,7 @@ namespace Unlimitedinf.Utilities
             }
             _ = sb.AppendLine();
 
-            // Output each row of data
+            // Output each row of data.
             for (int rowIndex = 0; rowIndex < @this.Count(); rowIndex++)
             {
                 List<StringBuilder> wrappedText = new();
@@ -105,32 +106,32 @@ namespace Unlimitedinf.Utilities
                 {
                     if (outputData[rowIndex, columnIndex].Length > columnWidths[columnIndex])
                     {
-                        // Need to wrap the text across multiple lines
+                        // Need to wrap the text across multiple lines.
                         string[] chunks = outputData[rowIndex, columnIndex].Chunk(columnWidths[columnIndex]);
                         _ = sb.Append(chunks[0].PadRight(columnWidths[columnIndex]));
                         _ = sb.Append(columnDiv);
 
-                        // Append the extra into additional wrapped text lines
+                        // Append the extra into additional wrapped text lines.
                         for (int wrappedRowIndex = 1; wrappedRowIndex < chunks.Length; wrappedRowIndex++)
                         {
                             if (wrappedText.Count < wrappedRowIndex)
                             {
-                                // We need to add a new stringbuilder and pad it to get to the current column
+                                // We need to add a new stringbuilder and pad it to get to the current column.
                                 wrappedText.Add(new(new string(' ', columnWidths.Take(columnIndex).Sum() + columnIndex)));
                             }
 
-                            // Add the chunk to the stringbuilder, and trim the start to mark sure it looks nicer left-aligned
+                            // Add the chunk to the stringbuilder, and trim the start to mark sure it looks nicer left-aligned.
                             _ = wrappedText[wrappedRowIndex - 1].Append(chunks[wrappedRowIndex].TrimStart().PadRight(columnWidths[columnIndex]));
                             _ = wrappedText[wrappedRowIndex - 1].Append(columnDiv);
                         }
                     }
                     else
                     {
-                        // Whole text fits in the box
+                        // Whole text fits in the box.
                         _ = sb.Append(outputData[rowIndex, columnIndex].PadRight(columnWidths[columnIndex]));
                         _ = sb.Append(columnDiv);
 
-                        // And if there's any stringbuilders, pad them
+                        // And if there's any stringbuilders, pad them.
                         foreach (StringBuilder wrappedTextBuilder in wrappedText)
                         {
                             _ = wrappedTextBuilder.Append(new string(' ', columnWidths[columnIndex]));
@@ -141,7 +142,7 @@ namespace Unlimitedinf.Utilities
                 }
                 _ = sb.AppendLine();
 
-                // And if there's any stringbuilders, append them too
+                // And if there's any stringbuilders, append them too.
                 foreach (StringBuilder wrappedTextBuilder in wrappedText)
                 {
                     _ = sb.AppendLine(wrappedTextBuilder.ToString());
@@ -160,17 +161,35 @@ namespace Unlimitedinf.Utilities
 
             if (obj is DateTimeOffset objDto)
             {
-                // If the date object represents a midnight, then only show the date
+                // If the date object represents a midnight, then only show the date.
                 return objDto.Date == objDto
                     ? objDto.ToString("yyyy-MM-dd")
                     : objDto.ToString("u");
             }
             if (obj is DateTime objDt)
             {
-                // If the date object represents a midnight, then only show the date
+                // If the date object represents a midnight, then only show the date.
                 return objDt.Date == objDt
                     ? objDt.ToString("yyyy-MM-dd")
                     : objDt.ToString("u");
+            }
+
+            if (obj is TimeSpan objTs)
+            {
+                // Round time span to hundredths of seconds.
+                // Leave off days or hours unless they have value as most time spans encountered are generally short.
+                if (objTs.TotalDays > 1)
+                {
+                    return objTs.ToString(@"dd\.hh\:mm\:ss\.ff");
+                }
+                else if (objTs.TotalHours > 1)
+                {
+                    return objTs.ToString(@"hh\:mm\:ss\.ff");
+                }
+                else
+                {
+                    return objTs.ToString(@"mm\:ss\.ff");
+                }
             }
 
             return obj?.ToString() ?? string.Empty;
