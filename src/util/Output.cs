@@ -178,7 +178,7 @@ namespace Unlimitedinf.Utilities
             // Used to compare .Date back to the object, but found that was not always equal.
             if (obj is DateTimeOffset objDto)
             {
-                return objDto.Hour == 0 && objDto.Minute == 0 && objDto.Second == 0 && objDto.Offset == TimeSpan.Zero
+                return objDto.Hour == 0 && objDto.Minute == 0 && objDto.Second == 0
                     ? objDto.ToString("yyyy-MM-dd")
                     : objDto.ToString("u");
             }
