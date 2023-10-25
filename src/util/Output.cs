@@ -5,20 +5,27 @@ using Unlimitedinf.Utilities.Extensions;
 namespace Unlimitedinf.Utilities
 {
     /// <summary>
-    /// Send output to the Console.
+    /// Format output.
     /// </summary>
     public static class Output
     {
+
         /// <summary>
-        /// Given an enumerable of objects and the expected property names, output those objects in a tabular format.
+        /// Given an enumerable of objects and the expected property names, output those objects in a tabular format to the console.
         /// Will inspect the current <see cref="Console.BufferWidth"/> and try to wrap columns where necessary.
         /// </summary>
         public static void WriteTable<T>(this IEnumerable<T> @this, params string[] propertyNames)
+            => Console.WriteLine(@this.WriteTable(Console.BufferWidth - 1, propertyNames));
+
+        /// <summary>
+        /// Given an enumerable of objects and the expected property names, output those objects in a tabular format to a string.
+        /// Will use the <paramref name="bufferWidth"/> to try to wrap columns where necessary.
+        /// </summary>
+        public static string WriteTable<T>(this IEnumerable<T> @this, int bufferWidth, params string[] propertyNames)
         {
             @this ??= Enumerable.Empty<T>();
             PropertyInfo[] availableProperties = typeof(T).GetProperties();
             var propertyMap = availableProperties.ToDictionary(x => x.Name);
-            int bufferWidth = Console.BufferWidth - 1;
 
             // Validate
             foreach (string propertyName in propertyNames)
@@ -141,7 +148,7 @@ namespace Unlimitedinf.Utilities
                 }
             }
 
-            Console.WriteLine(sb.ToString());
+            return sb.ToString();
         }
 
         private static string ToNiceString(object obj)

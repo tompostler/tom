@@ -28,7 +28,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{6E87145D-200F-4F54-98BD-50A5AC13C120}"
 	ProjectSection(SolutionItems) = preProject
 		..\build\ci.yml = ..\build\ci.yml
-		..\build\nuget-push.yml = ..\build\nuget-push.yml
 	EndProjectSection
 EndProject
 Global
