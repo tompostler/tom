@@ -162,37 +162,38 @@ namespace Unlimitedinf.Utilities
                 return string.Empty;
             }
 
+                // Decimals default to 4 digits, so reduce that to the default 2 of a double.
             if (obj is decimal objDecimal)
             {
-                // Decimals default to 4 digits, so reduce that to the default 2 of a double.
                 return objDecimal.ToString("F2");
             }
+
+                // Always ensure doubles have 2 digits.
             if (obj is double objDouble)
             {
-                // Always ensure doubles have 2 digits.
                 return objDouble.ToString("F2");
             }
 
+            // If the date object represents a midnight, then only show the date.
+            // Used to compare .Date back to the object, but found that was not always equal.
             if (obj is DateTimeOffset objDto)
             {
-                // If the date object represents a midnight, then only show the date.
-                return objDto.Date == objDto
+                return objDto.Hour == 0 && objDto.Minute == 0 && objDto.Second == 0 && objDto.Offset == TimeSpan.Zero
                     ? objDto.ToString("yyyy-MM-dd")
                     : objDto.ToString("u");
             }
             if (obj is DateTime objDt)
             {
-                // If the date object represents a midnight, then only show the date.
-                return objDt.Date == objDt
+                return objDt.Hour == 0 && objDt.Minute == 0 && objDt.Second == 0
                     ? objDt.ToString("yyyy-MM-dd")
                     : objDt.ToString("u");
             }
 
+            // Round time span to hundredths of seconds.
+            // Leave off days or hours unless they have value as most time spans encountered are generally short.
+            // And apparently you have to calculate the negative yourself.
             if (obj is TimeSpan objTs)
             {
-                // Round time span to hundredths of seconds.
-                // Leave off days or hours unless they have value as most time spans encountered are generally short.
-                // And apparently you have to calculate the negative yourself.
                 if (objTs.TotalDays >= 1)
                 {
                     return objTs.ToString(@"dd\.hh\:mm\:ss\.ff");
