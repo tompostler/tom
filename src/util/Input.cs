@@ -54,7 +54,7 @@
         /// <summary>
         /// Get a DateOnly.
         /// </summary>
-        public static DateOnly GetDateTime(string prompt, DateOnly defaultVal = default)
+        public static DateOnly GetDateOnly(string prompt, DateOnly defaultVal = default)
         {
             Console.Write(prompt);
             if (defaultVal != default)
