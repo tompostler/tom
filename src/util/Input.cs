@@ -52,6 +52,29 @@
         }
 
         /// <summary>
+        /// Get a DateOnly.
+        /// </summary>
+        public static DateOnly GetDateTime(string prompt, DateOnly defaultVal = default)
+        {
+            Console.Write(prompt);
+            if (defaultVal != default)
+            {
+                Console.Write($" (default {defaultVal:o})");
+            }
+            Console.Write(": ");
+
+            string input = Console.ReadLine();
+            if (string.IsNullOrWhiteSpace(input) && defaultVal != default)
+            {
+                return defaultVal;
+            }
+            else
+            {
+                return DateOnly.Parse(input);
+            }
+        }
+
+        /// <summary>
         /// Get a decimal.
         /// </summary>
         public static decimal GetDecimal(string prompt, bool canDefault = true, decimal defaultVal = 0)
