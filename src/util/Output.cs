@@ -162,13 +162,13 @@ namespace Unlimitedinf.Utilities
                 return string.Empty;
             }
 
-                // Decimals default to 4 digits, so reduce that to the default 2 of a double.
+            // Decimals default to 4 digits, so reduce that to the default 2 of a double.
             if (obj is decimal objDecimal)
             {
                 return objDecimal.ToString("F2");
             }
 
-                // Always ensure doubles have 2 digits.
+            // Always ensure doubles have 2 digits.
             if (obj is double objDouble)
             {
                 return objDouble.ToString("F2");
@@ -187,6 +187,10 @@ namespace Unlimitedinf.Utilities
                 return objDt.Hour == 0 && objDt.Minute == 0 && objDt.Second == 0
                     ? objDt.ToString("yyyy-MM-dd")
                     : objDt.ToString("u");
+            }
+            if (obj is DateOnly objDo)
+            {
+                return objDo.ToString("o");
             }
 
             // Round time span to hundredths of seconds.
