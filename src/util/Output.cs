@@ -37,8 +37,7 @@ namespace Unlimitedinf.Utilities
             }
 
             // Convert the data into a 2d array while keeping track of the max data length in each column.
-            // Initial column widths can't be smaller than the property name lengths, or 4 (whichever is larger).
-            int[] columnWidths = propertyNames.Select(x => Math.Max(x.Length, 4)).ToArray();
+            int[] columnWidths = propertyNames.Select(DetermineColumnWidthFromName).ToArray();
             string[,] outputData = new string[@this.Count(), propertyNames.Length];
             for (int i = 0; i < @this.Count(); i++)
             {
@@ -153,6 +152,22 @@ namespace Unlimitedinf.Utilities
             }
 
             return sb.ToString();
+        }
+
+        private static int DetermineColumnWidthFromName(string columnName)
+        {
+            // Special column names, and minimum column width is 4.
+            int columnWidth = columnName.ToLowerInvariant() switch
+            {
+                "price" => 6,
+                "total" => 8,
+                _ => 4
+            };
+
+            // Then increase it, if necessary, to the column name.
+            columnWidth = Math.Max(columnWidth, columnName.Length);
+
+            return columnWidth;
         }
 
         private static string ToNiceString(object obj)
