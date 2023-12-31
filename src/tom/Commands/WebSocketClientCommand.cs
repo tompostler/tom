@@ -326,10 +326,6 @@ namespace Unlimitedinf.Tom.Commands
                     await wsClient.CloseAsync(WebSocketCloseStatus.InvalidPayloadData, "Did not receive correct data.", cancellationToken);
                     throw new NotImplementedException("Did not receive correct data.");
                 }
-                else
-                {
-                    Console.WriteLine($"Validated {fileInfo.FullName} had expected hash.");
-                }
             }
             progressLogger.MarkComplete();
         }
