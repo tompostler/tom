@@ -36,12 +36,6 @@ steps:
       }
       Write-Host "##vso[build.updatebuildnumber]$($versionInfo.CloudBuildNumber)";
 
-- task: PowerShell@2
-  displayName: Update build number
-  inputs:
-    targetType: inline
-    script: dotnet tool install nbgv --global --version 3.6.*
-
 - task: DotNetCoreCLI@2
   displayName: Restore packages
   inputs:
