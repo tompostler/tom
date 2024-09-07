@@ -15,7 +15,7 @@ namespace Unlimitedinf.Tom
         public static async Task TryReportIfUpdateIsRequiredAsync()
         {
             // Get current version
-            string sourceVersion = Assembly.GetAssembly(typeof(Program))?.GetName()?.Version?.ToString(fieldCount: 3) ?? "0.0.0";
+            string sourceVersion = Version.TryParse(ThisAssembly.AssemblyInformationalVersion?.Split('-', '+')?.FirstOrDefault(), out Version parsed) ? parsed.ToString(fieldCount: 3) : "0.0.0";
 
             // Check to see if the file exists and written within the last day, then use it
             if (versionFile.Exists && DateTime.Now.Subtract(versionFile.LastWriteTime).TotalDays < 1)

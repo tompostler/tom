@@ -10,24 +10,23 @@
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <LangVersion>11.0</LangVersion>
-	<ImplicitUsings>enable</ImplicitUsings>
+    <ImplicitUsings>enable</ImplicitUsings>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
   </PropertyGroup>
 
   <!-- Populate version variables based on NerdBank.GitVersion if available. -->
-  <PropertyGroup Condition=" '$(NBGV_SemVer2)' != '' ">
-    <Version Condition=" '$(Version)' == '' ">$(NBGV_SemVer2)</Version>
-    <PackageVersion Condition=" '$(PackageVersion)' == '' ">$(NBGV_NuGetPackageVersion)</PackageVersion>
-    <InformationalVersion Condition=" '$(InformationalVersion)' == '' ">$(NBGV_AssemblyInformationalVersion)</InformationalVersion>
-    <AssemblyVersion Condition=" '$(AssemblyVersion)' == '' ">$(NBGV_AssemblyVersion)</AssemblyVersion>
-    <FileVersion Condition=" '$(FileVersion)' == '' ">$(NBGV_AssemblyFileVersion)</FileVersion>
-  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Nerdbank.GitVersioning">
+      <PrivateAssets>all</PrivateAssets>
+      <Version>3.6.*</Version>
+    </PackageReference>
+  </ItemGroup>
 
   <!-- Packaging Metadata -->
   <PropertyGroup>
     <Authors>Tom Postler</Authors>
-	<Description>Various tools and utilities that I've needed or found useful.</Description>
+    <Description>Various tools and utilities that I've needed or found useful.</Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <RepositoryUrl>https://github.com/tompostler/tom</RepositoryUrl>
   </PropertyGroup>
