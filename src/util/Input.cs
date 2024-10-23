@@ -6,19 +6,33 @@
     public static class Input
     {
         /// <summary>
-        /// Get a string.
+        /// Get a string. Converts whitespace-only to null.
         /// </summary>
-        public static string GetString(string prompt, string defaultVal = default)
+        public static string GetString(string prompt)
         {
             Console.Write(prompt);
-            if (defaultVal != default)
-            {
-                Console.Write($" (default {defaultVal})");
-            }
             Console.Write(": ");
 
             string input = Console.ReadLine();
-            if (string.IsNullOrWhiteSpace(input) && defaultVal != default)
+            if (string.IsNullOrWhiteSpace(input))
+            {
+                return null;
+            }
+            else
+            {
+                return input;
+            }
+        }
+
+        /// <summary>
+        /// Get a string.
+        /// </summary>
+        public static string GetString(string prompt, string defaultVal)
+        {
+            Console.Write($"{prompt} (default {defaultVal}): ");
+
+            string input = Console.ReadLine();
+            if (string.IsNullOrWhiteSpace(input))
             {
                 return defaultVal;
             }
