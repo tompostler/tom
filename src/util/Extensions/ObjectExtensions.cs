@@ -18,13 +18,15 @@ namespace Unlimitedinf.Utilities.Extensions
             indentedOptions = new JsonSerializerOptions
             {
                 Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                WriteIndented = true
+                ReferenceHandler = ReferenceHandler.Preserve,
+                WriteIndented = true,
             };
             indentedOptions.Converters.Add(new JsonStringEnumConverter());
 
             options = new JsonSerializerOptions
             {
-                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                ReferenceHandler = ReferenceHandler.Preserve,
             };
             options.Converters.Add(new JsonStringEnumConverter());
         }
