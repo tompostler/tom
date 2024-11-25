@@ -30,6 +30,10 @@ steps:
     targetType: inline
     script: nbgv cloud;
 
+- powershell: |
+    Get-ChildItem env: | Where-Object { $_.Name -ne 'SYSTEM_ACCESSTOKEN' } | Format-Table -AutoSize -Wrap;
+  displayName: Display environment variables
+
 - task: DotNetCoreCLI@2
   displayName: Restore packages
   inputs:
