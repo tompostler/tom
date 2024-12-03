@@ -17,8 +17,10 @@ namespace Unlimitedinf.Tom
             rootCommand.AddCommand(Commands.ImageDimensionFilterCommand.Create());
             rootCommand.AddCommand(Commands.ImageDuplicateBlockhashCommand.Create());
             rootCommand.AddCommand(Commands.RandomCommand.Create());
+#if NET8_0_OR_GREATER
             rootCommand.AddCommand(Commands.WebSocketClientCommand.Create());
             rootCommand.AddCommand(Commands.WebSocketServerCommand.Create());
+#endif
 
             rootCommand.AddCommand(Commands.ZzTest.ChartLineCommand.Create());
             rootCommand.AddCommand(Commands.ZzTest.ConsoleColorsCommand.Create());

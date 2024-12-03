@@ -8,8 +8,9 @@
 
   <!-- Shared properties for all projects. -->
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <LangVersion>11.0</LangVersion>
+    <TargetFramework></TargetFramework>
+    <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+    <LangVersion>latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
@@ -19,7 +20,7 @@
   <ItemGroup>
     <PackageReference Include="Nerdbank.GitVersioning">
       <PrivateAssets>all</PrivateAssets>
-      <Version>3.6.*</Version>
+      <Version>3.7.*</Version>
     </PackageReference>
   </ItemGroup>
 

@@ -1,8 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <TargetFrameworks>$(TargetFrameworks);net6.0</TargetFrameworks>
+
     <RootNamespace>Unlimitedinf.Tom</RootNamespace>
-	<AssemblyName>Unlimitedinf.Tom</AssemblyName>
+    <AssemblyName>Unlimitedinf.Tom</AssemblyName>
     <OutputType>Exe</OutputType>
 
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
@@ -20,7 +22,16 @@
   <ItemGroup>
     <ProjectReference Include="..\..\subs\Microcharts\Sources\Microcharts\Microcharts.csproj" />
     <ProjectReference Include="..\util\util.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' != 'net6.0' ">
     <ProjectReference Include="..\ws\ws.csproj" />
   </ItemGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
+    <Compile Remove="**\WebSocket*Command.cs" />
+  </ItemGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
+    <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
+  </PropertyGroup>
 
 </Project>

@@ -65,7 +65,11 @@ namespace Unlimitedinf.Tom.Commands
             X509Certificate2 httpsCert = default;
             if (httpsPfxPath != default)
             {
+#if NET9_0
+                httpsCert = X509CertificateLoader.LoadPkcs12FromFile(httpsPfxPath.FullName, password: default);
+#else
                 httpsCert = new X509Certificate2(httpsPfxPath.FullName);
+#endif
             }
             else if (httpsCertPemPath != default && httpsKeyPemPath != default)
             {
