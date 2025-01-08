@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Globalization;
+using System.Text;
 
 namespace Unlimitedinf.Utilities.Extensions
 {
@@ -55,36 +56,42 @@ namespace Unlimitedinf.Utilities.Extensions
         }
 
         /// <summary>
-        /// Given a source number, convert it to an upper-case base36 representation of that number.
+        /// Given a source number, convert it to a baseX representation of that number.
+        /// Primary goal is shortened counting values that are still "double-click safe" in browsers.
+        /// Implementation details:<br/>
+        ///     - Base2-Base63 conversions are custom implementation, but stable.<br/>
+        ///     - Base2-Base10 is numeric.<br/>
+        ///     - Base11-Base36 is uppercase alphabet.<br/>
+        ///     - Base37-Base62 is lowercase alphabet.<br/>
+        ///     - Base63 adds underscore (to maintain double-click to copy behavior).<br/>
         /// </summary>
         /// <param name="this">Source value to convert</param>
-        /// <param name="base">The base-X notation to use. Max of 36.</param>
+        /// <param name="base">The base-X notation to use. Max of 63.</param>
         public static string ToBaseX(this long @this, byte @base)
         {
-            if (@base < 2 || @base > 36)
+            if (@base < 2 || @base > 63)
             {
-                throw new ArgumentOutOfRangeException(nameof(@base), "Maximum of Base36 and minimum of Base2");
+                throw new ArgumentOutOfRangeException(nameof(@base), "Maximum of Base63 and minimum of Base2");
             }
-            else if (@base == 10)
-            {
-                return @this.ToString();
-            }
-
-            const string sourceChars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-            string chars = sourceChars.Substring(0, @base);
-            StringBuilder sb = new();
-
-            if (@this == 0)
+            else if (@this == 0)
             {
                 return "0";
             }
-            
+            else if (@base == 10)
+            {
+                return @this.ToString(CultureInfo.InvariantCulture);
+            }
+
             bool wasNeg = false;
             if (@this < 0)
             {
                 wasNeg = true;
                 @this *= -1;
             }
+
+            const string sourceChars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_";
+            string chars = sourceChars.Substring(0, @base);
+            StringBuilder sb = new();
 
             while (@this > 0)
             {
