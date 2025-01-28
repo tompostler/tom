@@ -83,8 +83,8 @@ Set-Content -Path ""Z:\system-stats\data\$((Get-Date).ToString('yyyy-MM-dd_HH-mm
 
             // Build up all the rows of all the files in memory while keeping track of the disk max size
             // Unless we're merging, then instead write them to the merged file
-            List<SystemStatDataRow> dataRows = new();
-            Dictionary<string, long> diskMaxSize = new();
+            List<SystemStatDataRow> dataRows = [];
+            Dictionary<string, long> diskMaxSize = [];
             foreach (FileInfo dataFile in dataFiles)
             {
                 using StreamReader sr = new(dataFile.OpenRead());
@@ -116,9 +116,9 @@ Set-Content -Path ""Z:\system-stats\data\$((Get-Date).ToString('yyyy-MM-dd_HH-mm
                         dataRows.Add(dataRow);
                         foreach (KeyValuePair<string, SystemStatDataRow.DiskStats> disk in dataRow.Disks)
                         {
-                            if (diskMaxSize.ContainsKey(disk.Key))
+                            if (diskMaxSize.TryGetValue(disk.Key, out long value))
                             {
-                                diskMaxSize[disk.Key] = Math.Max(diskMaxSize[disk.Key], disk.Value.UsedBytes);
+                                diskMaxSize[disk.Key] = Math.Max(value, disk.Value.UsedBytes);
                             }
                             else
                             {
@@ -180,8 +180,8 @@ Set-Content -Path ""Z:\system-stats\data\$((Get-Date).ToString('yyyy-MM-dd_HH-mm
             // Run through the data and create three charts:
 
             // 1. UptimeDays and MemoryUsedGiB
-            List<ChartEntry> uptimeDaysEntries = new();
-            List<ChartEntry> memoryGiBEntries = new();
+            List<ChartEntry> uptimeDaysEntries = [];
+            List<ChartEntry> memoryGiBEntries = [];
 
             // 2. Disk.UsedGiB (where max <= 1TiB)
             var smallDiskEntries = diskMaxSize.Where(x => x.Value <= OneTiB).ToDictionary(x => x.Key, x => new List<ChartEntry>());
@@ -213,9 +213,9 @@ Set-Content -Path ""Z:\system-stats\data\$((Get-Date).ToString('yyyy-MM-dd_HH-mm
                     // TODO: Need to figure out how to handle series that don't have the same number of x-values
 
                     // 2. Disk.UsedGiB (where max <= 1TiB)
-                    if (smallDiskEntries.ContainsKey(disk.Key))
+                    if (smallDiskEntries.TryGetValue(disk.Key, out List<ChartEntry> value))
                     {
-                        smallDiskEntries[disk.Key].Add(new ChartEntry(disk.Value.UsedBytes * 1f / OneGiB) { Label = dataRowLabel });
+                        value.Add(new ChartEntry(disk.Value.UsedBytes * 1f / OneGiB) { Label = dataRowLabel });
                     }
 
                     // 3. Disk.UsedTiB (where max > 1TiB)
@@ -230,9 +230,9 @@ Set-Content -Path ""Z:\system-stats\data\$((Get-Date).ToString('yyyy-MM-dd_HH-mm
                 foreach (string diskNotSeen in disksNotSeen)
                 {
                     // 2. Disk.UsedGiB (where max <= 1TiB)
-                    if (smallDiskEntries.ContainsKey(diskNotSeen))
+                    if (smallDiskEntries.TryGetValue(diskNotSeen, out List<ChartEntry> value))
                     {
-                        smallDiskEntries[diskNotSeen].Add(new ChartEntry(default) { Label = dataRowLabel });
+                        value.Add(new ChartEntry(default) { Label = dataRowLabel });
                     }
 
                     // 3. Disk.UsedTiB (where max > 1TiB)
@@ -268,8 +268,8 @@ Set-Content -Path ""Z:\system-stats\data\$((Get-Date).ToString('yyyy-MM-dd_HH-mm
                 LineSize = 1,
                 PointSize = 3,
 
-                Series = new[]
-                {
+                Series =
+                [
                     new ChartSerie
                     {
                         Name = "UptimeDays",
@@ -282,7 +282,7 @@ Set-Content -Path ""Z:\system-stats\data\$((Get-Date).ToString('yyyy-MM-dd_HH-mm
                         Color = colors.Dequeue(),
                         Entries = memoryGiBEntries
                     },
-                }
+                ]
             };
             SaveChart(dataDir, uptimeChart, "Uptime and Memory", sw);
 
