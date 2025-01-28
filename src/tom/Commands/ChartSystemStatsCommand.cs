@@ -246,7 +246,7 @@ Set-Content -Path ""Z:\system-stats\data\$((Get-Date).ToString('yyyy-MM-dd_HH-mm
 
             // Desired colors (skipping the less desirable ones):
             // https://coolors.co/palette/001219-005f73-0a9396-94d2bd-e9d8a6-ee9b00-ca6702-bb3e03-ae2012-9b2226
-            string colorString = "005f73-0a9396-ee9b00-ca6702-bb3e03-ae2012-9b2226";
+            string colorString = "005f73-0a9396-94d2bd-e9d8a6-ee9b00-ca6702-bb3e03-ae2012-9b2226";
             Queue<SKColor> colors = new(colorString.Split('-').Select(x => SKColor.Parse(x)));
 
             // 1. UptimeDays and MemoryUsedGiB
