@@ -150,21 +150,26 @@ Set-Content -Path ""Z:\system-stats\data\$((Get-Date).ToString('yyyy-MM-dd_HH-mm
 
             // While running through the data, only sample one value every so often based on the total range of data:
             //  Data range  Sampling size
+            //  > 3 year    Weekly, labels every 4w
             //  > 3 month   Daily, but labels every 7d
             //  > 1 month   Daily
             //  > 1 week    Hourly
             //  > 1 day     Minutely
             //  *           Every data point
-            // If there are more than 1k data points, throw. This may change in the future based on how well it is deemed to handle larger data.
-            TimeSpan sampleSize = TimeSpan.Zero;
-            string timestampFormat = "yyyy-MM-dd HH:mm:ss";
+            var sampleSize = TimeSpan.FromDays(1);
+            string timestampFormat = "yyyy-MM-dd";
+            int labelsEvery = 1;
             TimeSpan dataRange = dataRows.Last().Timestamp.Subtract(dataRows.First().Timestamp);
-            int labelsEvery = dataRange.TotalDays > 90 ? 7 : 1;
             switch (dataRange.TotalDays)
             {
+                case > 1_000:
+                    sampleSize = TimeSpan.FromDays(7);
+                    labelsEvery = 4;
+                    break;
+                case > 90:
+                    labelsEvery = 7;
+                    break;
                 case > 30:
-                    sampleSize = TimeSpan.FromDays(1);
-                    timestampFormat = "yyyy-MM-dd";
                     break;
                 case > 7:
                     sampleSize = TimeSpan.FromHours(1);
@@ -173,6 +178,10 @@ Set-Content -Path ""Z:\system-stats\data\$((Get-Date).ToString('yyyy-MM-dd_HH-mm
                 case > 1:
                     sampleSize = TimeSpan.FromMinutes(1);
                     timestampFormat = "yyyy-MM-dd HH:mm";
+                    break;
+                default:
+                    sampleSize = TimeSpan.Zero;
+                    timestampFormat = "yyyy-MM-dd HH:mm:ss";
                     break;
             }
             Console.WriteLine($"[{sw.Elapsed:mm\\:ss\\.ffff}] Using a sampling interval of {sampleSize}");
