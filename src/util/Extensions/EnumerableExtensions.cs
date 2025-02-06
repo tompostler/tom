@@ -19,7 +19,11 @@ namespace Unlimitedinf.Utilities.Extensions
         /// <remarks>
         /// BitConverter averages 50% faster than using a StringBuilder with every byte.ToString("x2")
         /// </remarks>
+#if NET9_0_OR_GREATER
+        public static string ToLowercaseHash(this byte[] @this) => Convert.ToHexStringLower(@this);
+#else
         public static string ToLowercaseHash(this byte[] @this) => BitConverter.ToString(@this).Replace("-", "").ToLowerInvariant();
+#endif
 
         /// <summary>
         /// Calculate the medain of an enumerable. Attempts to convert to doubles.

@@ -66,8 +66,8 @@ namespace Unlimitedinf.Utilities
         }
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
-        private static readonly ulong[] bitmaps = new ulong[]
-        {
+        private static readonly ulong[] bitmaps =
+        [
             0x0000000000000000,
             0x0000000000000001, 0x0000000000000003, 0x0000000000000007, 0x000000000000000F,
             0x000000000000001F, 0x000000000000003F, 0x000000000000007F, 0x00000000000000FF,
@@ -85,7 +85,7 @@ namespace Unlimitedinf.Utilities
             0x001FFFFFFFFFFFFF, 0x003FFFFFFFFFFFFF, 0x007FFFFFFFFFFFFF, 0x00FFFFFFFFFFFFFF,
             0x01FFFFFFFFFFFFFF, 0x03FFFFFFFFFFFFFF, 0x07FFFFFFFFFFFFFF, 0x0FFFFFFFFFFFFFFF,
             0x1FFFFFFFFFFFFFFF, 0x3FFFFFFFFFFFFFFF, 0x7FFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF
-        };
+        ];
 
         private static ulong Generate(byte bits)
         {
@@ -99,22 +99,22 @@ namespace Unlimitedinf.Utilities
             return val & bitmaps[bits];
         }
 
-        private static readonly string[] EightBallResponses = new[]
-        {
+        private static readonly string[] EightBallResponses =
+        [
             // A standard Magic 8 Ball is capable of 10 affirmative answers (Y), 5 non-committal answers (~), and 5 negative answers (X).
             "[Y] It is certain.",         "[Y] As I see it, yes.",      "[~] Reply hazy, try again.",         "[X] Don't count on it.",
             "[Y] It is decidedly so.",    "[Y] Most likely.",           "[~] Ask again later.",               "[X] My reply is no.",
             "[Y] Without a doubt.",       "[Y] Outlook good.",          "[~] Better not tell you now.",       "[X] My sources say no.",
             "[Y] Yes - definitely.",      "[Y] Yes.",                   "[~] Cannot predict now.",            "[X] Outlook not so good.",
             "[Y] You may rely on it.",    "[Y] Signs point to yes.",    "[~] Concentrate and ask again.",     "[X] Very doubtful.",
-        };
+        ];
 
 
         // Fetched 2021-06-03 from https://github.com/moby/moby/blob/master/pkg/namesgenerator/names-generator.go
         #region Name constants
 
-        private static readonly string[] nameAdjectives = new string[]
-        {
+        private static readonly string[] nameAdjectives =
+        [
             "admiring",
             "adoring",
             "affectionate",
@@ -223,10 +223,10 @@ namespace Unlimitedinf.Utilities
             "youthful",
             "zealous",
             "zen",
-        };
+        ];
 
-        private static readonly string[] nameNames = new string[]
-        {
+        private static readonly string[] nameNames =
+        [
             // Muhammad ibn Jābir al-Ḥarrānī al-Battānī was a founding father of astronomy. https://en.wikipedia.org/wiki/Mu%E1%B8%A5ammad_ibn_J%C4%81bir_al-%E1%B8%A4arr%C4%81n%C4%AB_al-Batt%C4%81n%C4%AB
 			"albattani",
 
@@ -939,7 +939,7 @@ namespace Unlimitedinf.Utilities
 
 			// Nikolay Yegorovich Zhukovsky (Russian: Никола́й Его́рович Жуко́вский, January 17 1847 – March 17, 1921) was a Russian scientist, mathematician and engineer, and a founding father of modern aero- and hydrodynamics. Whereas contemporary scientists scoffed at the idea of human flight, Zhukovsky was the first to undertake the study of airflow. He is often called the Father of Russian Aviation. https://en.wikipedia.org/wiki/Nikolay_Yegorovich_Zhukovsky
 			"zhukovsky",
-        };
+        ];
 
         #endregion Name constants
     }

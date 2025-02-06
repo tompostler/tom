@@ -2,7 +2,8 @@
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. 
 // You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
 // Originally published at http://damieng.com/blog/2006/08/08/calculating_crc32_in_c_and_net
-// Modified by Tom Postler, 2016-11-27
+// Modified by Tom Postler, 2016-11-27.
+// Reformatted by Tom Postler, 2025-02-06.
 
 using System.Security.Cryptography;
 
@@ -48,41 +49,35 @@ namespace Unlimitedinf.Utilities.Hashing
         /// </summary>
         public Crc32(uint polynomial, uint seed)
         {
-            table = InitializeTable(polynomial);
-            this.seed = hash = seed;
+            this.table = InitializeTable(polynomial);
+            this.seed = this.hash = seed;
         }
 
         /// <summary>
         /// See <see cref="HashAlgorithm.Initialize"/>.
         /// </summary>
         public override void Initialize()
-        {
-            hash = seed;
-        }
+            => this.hash = this.seed;
 
         /// <summary>
         /// See <see cref="HashAlgorithm.Create()"/>.
         /// </summary>
         public new static Crc32 Create()
-        {
-            return new Crc32();
-        }
+            => new();
 
         /// <summary>
         /// See <see cref="HashAlgorithm.HashCore(byte[], int, int)"/>.
         /// </summary>
         protected override void HashCore(byte[] buffer, int start, int length)
-        {
-            hash = CalculateHash(table, hash, buffer, start, length);
-        }
+            => this.hash = CalculateHash(this.table, this.hash, buffer, start, length);
 
         /// <summary>
         /// See <see cref="HashAlgorithm.HashFinal"/>.
         /// </summary>
         protected override byte[] HashFinal()
         {
-            var hashBuffer = UInt32ToBigEndianBytes(~hash);
-            HashValue = hashBuffer;
+            byte[] hashBuffer = UInt32ToBigEndianBytes(~this.hash);
+            this.HashValue = hashBuffer;
             return hashBuffer;
         }
 
@@ -94,40 +89,56 @@ namespace Unlimitedinf.Utilities.Hashing
         private static uint[] InitializeTable(uint polynomial)
         {
             if (polynomial == DefaultPolynomial && defaultTable != null)
-                return defaultTable;
-
-            var createTable = new uint[256];
-            for (var i = 0; i < 256; i++)
             {
-                var entry = (uint)i;
-                for (var j = 0; j < 8; j++)
+                return defaultTable;
+            }
+
+            uint[] createTable = new uint[256];
+            for (int i = 0; i < 256; i++)
+            {
+                uint entry = (uint)i;
+                for (int j = 0; j < 8; j++)
+                {
                     if ((entry & 1) == 1)
+                    {
                         entry = (entry >> 1) ^ polynomial;
+                    }
                     else
+                    {
                         entry >>= 1;
+                    }
+                }
+
                 createTable[i] = entry;
             }
 
             if (polynomial == DefaultPolynomial)
+            {
                 defaultTable = createTable;
+            }
 
             return createTable;
         }
 
-        private static uint CalculateHash(uint[] table, uint seed, IList<byte> buffer, int start, int size)
+        private static uint CalculateHash(uint[] table, uint seed, byte[] buffer, int start, int size)
         {
-            var crc = seed;
-            for (var i = start; i < size - start; i++)
-                crc = (crc >> 8) ^ table[buffer[i] ^ crc & 0xff];
+            uint crc = seed;
+            for (int i = start; i < size - start; i++)
+            {
+                crc = (crc >> 8) ^ table[buffer[i] ^ (crc & 0xff)];
+            }
+
             return crc;
         }
 
         private static byte[] UInt32ToBigEndianBytes(uint uint32)
         {
-            var result = BitConverter.GetBytes(uint32);
+            byte[] result = BitConverter.GetBytes(uint32);
 
             if (BitConverter.IsLittleEndian)
+            {
                 Array.Reverse(result);
+            }
 
             return result;
         }

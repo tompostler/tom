@@ -22,8 +22,7 @@ namespace Unlimitedinf.Utilities.Extensions
         /// </summary>
         public static string ComputeSHA256(this string value)
         {
-            using var sha256 = SHA256.Create();
-            byte[] hash = sha256.ComputeHash(Encoding.UTF8.GetBytes(value));
+            byte[] hash = SHA256.HashData(Encoding.UTF8.GetBytes(value));
             return hash.ToLowercaseHash();
         }
 
@@ -49,11 +48,11 @@ namespace Unlimitedinf.Utilities.Extensions
             }
             else if (string.IsNullOrEmpty(value))
             {
-                return Array.Empty<string>();
+                return [];
             }
             else if (chunkSize >= value.Length)
             {
-                return new[] { value };
+                return [value];
             }
             else
             {
@@ -61,7 +60,7 @@ namespace Unlimitedinf.Utilities.Extensions
                 string[] result = new string[(int)Math.Ceiling((double)value.Length / chunkSize)];
                 for (int chunk = 0; chunk * chunkSize < value.Length; chunk++)
                 {
-                    result[chunk] = value.Substring(chunk * chunkSize, Math.Min(chunkSize, value.Length - chunk * chunkSize));
+                    result[chunk] = value.Substring(chunk * chunkSize, Math.Min(chunkSize, value.Length - (chunk * chunkSize)));
                 }
                 return result;
             }

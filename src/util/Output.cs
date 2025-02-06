@@ -9,7 +9,6 @@ namespace Unlimitedinf.Utilities
     /// </summary>
     public static class Output
     {
-
         /// <summary>
         /// Given an enumerable of objects and the expected property names, output those objects in a tabular format to the console.
         /// Will inspect the current <see cref="Console.BufferWidth"/> and try to wrap columns where necessary.
@@ -23,7 +22,7 @@ namespace Unlimitedinf.Utilities
         /// </summary>
         public static string WriteTable<T>(this IEnumerable<T> @this, int bufferWidth, params string[] propertyNames)
         {
-            @this ??= Enumerable.Empty<T>();
+            @this ??= [];
             PropertyInfo[] availableProperties = typeof(T).GetProperties();
             var propertyMap = availableProperties.ToDictionary(x => x.Name);
 
@@ -100,7 +99,7 @@ namespace Unlimitedinf.Utilities
             // Output each row of data.
             for (int rowIndex = 0; rowIndex < @this.Count(); rowIndex++)
             {
-                List<StringBuilder> wrappedText = new();
+                List<StringBuilder> wrappedText = [];
                 for (int columnIndex = 0; columnIndex < propertyNames.Length; columnIndex++)
                 {
                     if (outputData[rowIndex, columnIndex].Length > columnWidths[columnIndex])

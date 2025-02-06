@@ -4,8 +4,9 @@
  * Copyright 2014 Commons Machinery http://commonsmachinery.se/
  * Distributed under an MIT license, please see LICENSE in the top dir.
  */
-// Source drawn from https://github.com/commonsmachinery/blockhash/blob/master/blockhash.c on 2022-05-25
-// Modified under the MIT license by Tom Postler to work with C#
+// Source drawn from https://github.com/commonsmachinery/blockhash/blob/master/blockhash.c on 2022-05-25.
+// Modified under the MIT license by Tom Postler to work with C#.
+// Reformatted by Tom Postler, 2025-02-06.
 
 using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
@@ -31,25 +32,25 @@ namespace Unlimitedinf.Utilities.Hashing
         [SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "Project is only built for windows.")]
         private static byte[] ImageToRGBA(Image image)
         {
-            Bitmap bitmap = image as Bitmap;
+            var bitmap = image as Bitmap;
             BitmapData data = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
             byte[] rgba = new byte[bitmap.Width * bitmap.Height * 4];
             int width = data.Width;
 
             try
             {
-                Parallel.For(0, data.Height, (scanline) =>
+                _ = Parallel.For(0, data.Height, (scanline) =>
                 {
                     byte[] pixelData = new byte[data.Stride];
                     Marshal.Copy(data.Scan0 + (scanline * data.Stride), pixelData, 0, data.Stride);
                     for (int pixeloffset = 0; pixeloffset < width; pixeloffset++)
                     {
                         // PixelFormat.Format32bppArgb means the data is stored in memory as BGRA. But we want RGBA.
-                        int pixel = (scanline * width + pixeloffset) * 4;
-                        rgba[pixel + 0] = pixelData[pixeloffset * 4 + 2];
-                        rgba[pixel + 1] = pixelData[pixeloffset * 4 + 1];
-                        rgba[pixel + 2] = pixelData[pixeloffset * 4 + 0];
-                        rgba[pixel + 3] = pixelData[pixeloffset * 4 + 3];
+                        int pixel = ((scanline * width) + pixeloffset) * 4;
+                        rgba[pixel + 0] = pixelData[(pixeloffset * 4) + 2];
+                        rgba[pixel + 1] = pixelData[(pixeloffset * 4) + 1];
+                        rgba[pixel + 2] = pixelData[(pixeloffset * 4) + 0];
+                        rgba[pixel + 3] = pixelData[(pixeloffset * 4) + 3];
                     }
                 });
             }
@@ -65,6 +66,7 @@ namespace Unlimitedinf.Utilities.Hashing
         {
             byte[] result = new byte[bits.Length / 8];
             for (int i = 0; i < bits.Length; i += 8)
+            {
                 result[i / 8] = (byte)(
                     (bits[i] << 7)
                     + (bits[i + 1] << 6)
@@ -73,7 +75,9 @@ namespace Unlimitedinf.Utilities.Hashing
                     + (bits[i + 4] << 3)
                     + (bits[i + 5] << 2)
                     + (bits[i + 6] << 1)
-                    + (bits[i + 7]));
+                    + bits[i + 7]);
+            }
+
             return result;
         }
 
@@ -99,7 +103,7 @@ namespace Unlimitedinf.Utilities.Hashing
                     {
                         for (ix = 0; ix < block_width; ix++)
                         {
-                            ii = ((y * block_height + iy) * width + (x * block_width + ix)) * 4;
+                            ii = ((((y * block_height) + iy) * width) + (x * block_width) + ix) * 4;
 
                             alpha = data[ii + 3];
                             if (alpha == 0)
@@ -113,7 +117,7 @@ namespace Unlimitedinf.Utilities.Hashing
                         }
                     }
 
-                    blocks[y * bits + x] = value;
+                    blocks[(y * bits) + x] = value;
                 }
             }
 
@@ -155,12 +159,12 @@ namespace Unlimitedinf.Utilities.Hashing
                 // y_int will be 0 on bottom/right borders and on block boundaries
                 if (y_int > 0 || (y + 1) == height)
                 {
-                    block_top = block_bottom = (int)Math.Floor((float)y / block_height);
+                    block_top = block_bottom = (int)Math.Floor(y / block_height);
                 }
                 else
                 {
-                    block_top = (int)Math.Floor((float)y / block_height);
-                    block_bottom = (int)Math.Ceiling((float)y / block_height);
+                    block_top = (int)Math.Floor(y / block_height);
+                    block_bottom = (int)Math.Ceiling(y / block_height);
                 }
 
                 for (x = 0; x < width; x++)
@@ -175,31 +179,24 @@ namespace Unlimitedinf.Utilities.Hashing
                     // x_int will be 0 on bottom/right borders and on block boundaries
                     if (x_int > 0 || (x + 1) == width)
                     {
-                        block_left = block_right = (int)Math.Floor((float)x / block_width);
+                        block_left = block_right = (int)Math.Floor(x / block_width);
                     }
                     else
                     {
-                        block_left = (int)Math.Floor((float)x / block_width);
-                        block_right = (int)Math.Ceiling((float)x / block_width);
+                        block_left = (int)Math.Floor(x / block_width);
+                        block_right = (int)Math.Ceiling(x / block_width);
                     }
 
-                    ii = (y * width + x) * 4;
+                    ii = ((y * width) + x) * 4;
 
                     alpha = data[ii + 3];
-                    if (alpha == 0)
-                    {
-                        value = 765;
-                    }
-                    else
-                    {
-                        value = data[ii] + data[ii + 1] + data[ii + 2];
-                    }
+                    value = alpha == 0 ? 765 : data[ii] + data[ii + 1] + data[ii + 2];
 
                     // add weighted pixel value to relevant blocks
-                    blocks[block_top * bits + block_left] += value * weight_top * weight_left;
-                    blocks[block_top * bits + block_right] += value * weight_top * weight_right;
-                    blocks[block_bottom * bits + block_left] += value * weight_bottom * weight_left;
-                    blocks[block_bottom * bits + block_right] += value * weight_bottom * weight_right;
+                    blocks[(block_top * bits) + block_left] += value * weight_top * weight_left;
+                    blocks[(block_top * bits) + block_right] += value * weight_top * weight_right;
+                    blocks[(block_bottom * bits) + block_left] += value * weight_bottom * weight_left;
+                    blocks[(block_bottom * bits) + block_right] += value * weight_bottom * weight_right;
                 }
             }
 
@@ -258,18 +255,14 @@ namespace Unlimitedinf.Utilities.Hashing
         /// </summary>
         [SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "Project is only built for windows.")]
         public static byte[] ProcessImage(string fileName, int bits = 16, bool quick = false)
-        {
-            return ProcessImage(Image.FromFile(fileName), bits, quick);
-        }
+            => ProcessImage(Image.FromFile(fileName), bits, quick);
 
         /// <summary>
         /// Given a steam containing an image, return the blockhash.
         /// </summary>
         [SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "Project is only built for windows.")]
         public static byte[] ProcessImage(Stream stream, int bits = 16, bool quick = false)
-        {
-            return ProcessImage(Image.FromStream(stream), bits, quick);
-        }
+            => ProcessImage(Image.FromStream(stream), bits, quick);
 
         /// <summary>
         /// Given an image, return the blockhash.
@@ -277,25 +270,16 @@ namespace Unlimitedinf.Utilities.Hashing
         [SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "Project is only built for windows.")]
         public static byte[] ProcessImage(Image image, int bits = 16, bool quick = false)
         {
-            if (image is null)
-                throw new ArgumentNullException(nameof(image));
+            ArgumentNullException.ThrowIfNull(image);
 
             byte[] image_data = ImageToRGBA(image);
             int width = image.Width;
             int height = image.Height;
             image.Dispose();
 
-            int[] hash;
-
-            if (quick)
-            {
-                hash = Blockhash_quick(bits, image_data, width, height);
-            }
-            else
-            {
-                hash = Blockhash_full(bits, image_data, width, height);
-            }
-
+            int[] hash = quick
+                        ? Blockhash_quick(bits, image_data, width, height)
+                        : Blockhash_full(bits, image_data, width, height);
             return Bits_to_bytes(hash);
         }
 
@@ -304,12 +288,13 @@ namespace Unlimitedinf.Utilities.Hashing
         /// </summary>
         public static int HammingDistance(byte[] left, byte[] right)
         {
-            if (left is null)
-                throw new ArgumentNullException(nameof(left));
-            if (right is null)
-                throw new ArgumentNullException(nameof(right));
+            ArgumentNullException.ThrowIfNull(left);
+            ArgumentNullException.ThrowIfNull(right);
+
             if (left.Length != right.Length)
+            {
                 throw new ArgumentException("Should only compare equal-length arrays");
+            }
 
             int count = 0;
             for (int i = 0; i < left.Length; i++)
@@ -353,16 +338,14 @@ namespace Unlimitedinf.Utilities.Hashing
         /// See <see cref="HashAlgorithm.HashCore(byte[], int, int)"/>.
         /// </summary>
         protected override void HashCore(byte[] array, int ibStart, int cbSize)
-        {
-            this.haImageData.Write(array, ibStart, cbSize);
-        }
+            => this.haImageData.Write(array, ibStart, cbSize);
 
         /// <summary>
         /// See <see cref="HashAlgorithm.HashFinal"/>.
         /// </summary>
         protected override byte[] HashFinal()
         {
-            this.haImageData.Seek(0, SeekOrigin.Begin);
+            _ = this.haImageData.Seek(0, SeekOrigin.Begin);
             return ComputeHash(this.haImageData);
         }
 
@@ -370,17 +353,13 @@ namespace Unlimitedinf.Utilities.Hashing
         /// See <see cref="HashAlgorithm.Create()"/>.
         /// </summary>
         new public static HashAlgorithm Create()
-        {
-            return new Blockhash();
-        }
+            => new Blockhash();
 
         /// <summary>
         /// See <see cref="HashAlgorithm.ComputeHash(Stream)"/>.
         /// </summary>
         new public static byte[] ComputeHash(Stream inputStream)
-        {
-            return ProcessImage(inputStream);
-        }
+            => ProcessImage(inputStream);
 
         /// <summary>
         /// See <see cref="HashAlgorithm.HashSize"/>.

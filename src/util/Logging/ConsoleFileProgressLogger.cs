@@ -22,7 +22,11 @@ namespace Unlimitedinf.Utilities.Logging
         private long currentFileBytes = 0;
         private long currentFileNumber = 0;
         private long totalFileBytes = 0;
+#if NET9_0_OR_GREATER
+        private readonly Lock consoleOutputLock = new();
+#else
         private readonly object consoleOutputLock = new();
+#endif
 
         private readonly long totalFileCount;
         private readonly long totalFileExpectedLength;
