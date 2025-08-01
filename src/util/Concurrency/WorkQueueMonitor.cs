@@ -54,7 +54,10 @@ namespace Unlimitedinf.Utilities.Concurrency
                     double perSec = Math.Max(Math.Abs(avgSlice) / sleepTime.TotalSeconds, 0.00001);
 
                     this.logger.LogInformation(
-                        "---> {workRemainingCount,5} ({workRemainingPercent,6:p}) work items remaining. Estimated {timeRemaining:hh\\:mm\\:ss} remaining ({timeElapsed:hh\\:mm\\:ss} elapsed, {rateCompletion,5:0.00} items/sec for last {previousItemCount} items).",
+                        "---> {itemCompleteCount,5} ({itemCompletePercent,6:p}) work items complete ({itemRemainingCount,5} ({itemRemainingPercent,6:p}) work items remaining). " +
+                        "Estimated {timeRemaining:hh\\:mm\\:ss} remaining ({timeElapsed:hh\\:mm\\:ss} elapsed, {rateCompletion,5:0.00} items/sec for last {historyCheckpointCount} checkpoints).",
+                        workItemOriginalCount - workItems.Count,
+                        (workItemOriginalCount - workItems.Count) / workItemOriginalCount,
                         workItems.Count,
                         workItems.Count / workItemOriginalCount,
                         TimeSpan.FromSeconds(workItems.Count / perSec),
@@ -68,7 +71,7 @@ namespace Unlimitedinf.Utilities.Concurrency
                         "---> {workRemainingCount,5} ({workRemainingPercent,6:p}) work items remaining ({pollsToHistory} polls until there is enough history for estimation).",
                         workItems.Count,
                         workItems.Count / workItemOriginalCount,
-                        threshold - historyBuffer.Count);
+                        threshold - historyBuffer.Count + 1);
                 }
             }
             this.logger.LogInformation("Scanning all workers....");
