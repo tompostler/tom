@@ -18,6 +18,46 @@ namespace Unlimitedinf.Utilities.Concurrency
         private readonly ILogger logger = logger;
 
         /// <summary>
+        /// An optimization on <see cref="MonitorAsync{T}(Task[], ConcurrentQueue{T}, double, CancellationToken, int)"/> so you don't have to set up workers yourself.
+        /// </summary>
+        /// <typeparam name="T">A typed unit of work.</typeparam>
+        /// <param name="workItems">The work to complete.</param>
+        /// <param name="workItemHandler">Takes as input a single work item and the originally provided cancellation token, the output is expected to be a single line summary of the completed work.</param>
+        /// <param name="workerCount">Number of worker tasks to spin up in parallel. Generally assumed to be less than 100.</param>
+        /// <param name="cancellationToken"></param>
+        /// <param name="reportingIntervalSeconds">How often to report the progress.</param>
+        public async Task WorkAndMonitorAsync<T>(
+            ConcurrentQueue<T> workItems,
+            Func<T, CancellationToken, Task<string>> workItemHandler,
+            int workerCount,
+            CancellationToken cancellationToken,
+            int reportingIntervalSeconds = 7)
+        {
+            int workItemOriginalCount = workItems.Count;
+
+            async Task worker(int id)
+            {
+                while (workItems.TryDequeue(out T workItem))
+                {
+                    this.logger.LogInformation($"[{id:D2}] {await workItemHandler(workItem, cancellationToken)}");
+                }
+            }
+
+            var workers = new Task[workerCount];
+            for (int i = 0; i < workers.Length; i++)
+            {
+                workers[i] = worker(i);
+            }
+
+            await this.MonitorAsync(
+                workers,
+                workItems,
+                workItemOriginalCount,
+                cancellationToken,
+                reportingIntervalSeconds);
+        }
+
+        /// <summary>
         /// Given an array of worker tasks, a queue of work items, and the original count of work items, monitor the progress of the workers and the queue with time estimates based on recently completed work.
         /// </summary>
         public async Task MonitorAsync<T>(
