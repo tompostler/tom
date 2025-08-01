@@ -1,12 +1,11 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Unlimitedinf.Utilities.Extensions;
+﻿using Unlimitedinf.Utilities.Extensions;
 
 namespace tests.UtilTests
 {
     [TestClass]
     public sealed class NumericExtensionTests
     {
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(-1, 2, "-1")]
         [DataRow(-1, 10, "-1")]
         [DataRow(-1, 16, "-1")]

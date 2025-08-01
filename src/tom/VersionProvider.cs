@@ -1,6 +1,4 @@
-﻿using System.Reflection;
-
-namespace Unlimitedinf.Tom
+﻿namespace Unlimitedinf.Tom
 {
     internal static class VersionProvider
     {
