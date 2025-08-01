@@ -5,7 +5,7 @@ namespace tests.UtilTests
     [TestClass]
     public sealed class StringExtensionTests
     {
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(null, 1, new string[0])]
         [DataRow("", 1, new string[0])]
         [DataRow("123412341234", 4, new string[] { "1234", "1234", "1234" })]
