@@ -112,6 +112,29 @@
         }
 
         /// <summary>
+        /// Get a nullable decimal.
+        /// </summary>
+        public static decimal? GetDecimal(string prompt, bool canDefault = true, decimal? defaultVal = null)
+        {
+            Console.Write(prompt);
+            if (canDefault)
+            {
+                Console.Write($" (default {(defaultVal.HasValue ? defaultVal.ToString() : "null")})");
+            }
+            Console.Write(": ");
+
+            string input = Console.ReadLine();
+            if (string.IsNullOrWhiteSpace(input) && canDefault)
+            {
+                return defaultVal;
+            }
+            else
+            {
+                return decimal.Parse(input);
+            }
+        }
+
+        /// <summary>
         /// Get a long.
         /// </summary>
         public static long GetLong(string prompt, bool canDefault = true, long defaultVal = 0)
