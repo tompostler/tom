@@ -114,7 +114,7 @@
         /// <summary>
         /// Get a nullable decimal.
         /// </summary>
-        public static decimal? GetDecimal(string prompt, bool canDefault = true, decimal? defaultVal = null)
+        public static decimal? GetDecimalNullable(string prompt, bool canDefault = true, decimal? defaultVal = null)
         {
             Console.Write(prompt);
             if (canDefault)
