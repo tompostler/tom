@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Text;
+﻿using System.Text;
 
 namespace Unlimitedinf.Utilities.Extensions
 {
@@ -49,10 +48,11 @@ namespace Unlimitedinf.Utilities.Extensions
             }
         }
 
+#if NET8_0
         /// <summary>
         /// Shuffle a list in place.
         /// </summary>
-        public static void Shuffle(this IList @this)
+        public static void Shuffle(this System.Collections.IList @this)
         {
             int currentIndex = @this.Count;
             while (currentIndex > 1)
@@ -62,5 +62,6 @@ namespace Unlimitedinf.Utilities.Extensions
                 (@this[currentIndex], @this[targetIndex]) = (@this[targetIndex], @this[currentIndex]);
             }
         }
+#endif
     }
 }
