@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!-- Parallelize tests at the method level to improve test execution time, but only do it in projects that are actually using MSTest (determined by a PackageReference to the meta package). -->
+  <ItemGroup Condition="'@(PackageReference->AnyHaveMetadataValue('Identity','MSTest'))' == 'true'">
+    <AssemblyAttribute Include="Microsoft.VisualStudio.TestTools.UnitTesting.ParallelizeAttribute">
+      <_Parameter1>Scope = Microsoft.VisualStudio.TestTools.UnitTesting.ExecutionScope.MethodLevel</_Parameter1>
+      <_Parameter1_IsLiteral>true</_Parameter1_IsLiteral>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+</Project>

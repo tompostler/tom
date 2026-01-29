@@ -4,10 +4,12 @@ trigger:
 name: '$(Date:%y).$(DayOfYear).$(Rev:r)'
 
 pool:
-  vmImage: windows-2022
+  vmImage: windows-latest
 
 variables:
 - group: tompostler
+- name: NUGET_PACKAGES
+  value: $(Pipeline.Workspace)/.nuget/packages
 
 steps:
 - checkout: self
@@ -18,33 +20,31 @@ steps:
   inputs:
     version: 10.x
 
-- task: PowerShell@2
-  displayName: dotnet tool install nbgv
-  inputs:
-    targetType: inline
-    script: dotnet tool install nbgv --global --version 3.9.*
-
-- task: PowerShell@2
-  displayName: nbgv cloud
-  inputs:
-    targetType: inline
-    script: nbgv cloud;
-
 - powershell: |
-    Get-ChildItem env: | Where-Object { $_.Name -ne 'SYSTEM_ACCESSTOKEN' } | Format-Table -AutoSize -Wrap;
-  displayName: Display environment variables
+    dotnet tool install nbgv --global --version 3.9.*;
+    nbgv cloud --all-vars;
+  displayName: nbgv
+
+- task: Cache@2
+  displayName: NuGet package caching
+  inputs:
+    # Use major and minor version to poison the cache.
+    key: '$(NBGV_VersionMajor) | $(NBGV_VersionMinor) | $(Build.SourcesDirectory)/src/Directory.Packages.props'
+    restoreKeys: |
+      $(NBGV_VersionMajor) | $(NBGV_VersionMinor)
+    path: $(NUGET_PACKAGES)
 
 - task: DotNetCoreCLI@2
   displayName: Restore packages
   inputs:
     command: restore
-    projects: src/tom.sln
+    projects: src/tom.slnx
 
 - task: DotNetCoreCLI@2
   displayName: Build solution
   inputs:
     command: build
-    projects: src/tom.sln
+    projects: src/tom.slnx
     arguments: '--no-restore --configuration Debug --property:PackageOutputPath=$(Build.ArtifactStagingDirectory)'
 
 - task: DotNetCoreCLI@2

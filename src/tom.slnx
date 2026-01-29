@@ -1,0 +1,13 @@
+<Solution>
+  <Configurations>
+    <BuildType Name="Debug" />
+  </Configurations>
+  <Project Path="../subs/Microcharts/Sources/Microcharts/Microcharts.csproj" />
+  <Project Path="tests/tests.csproj" />
+  <Project Path="tom.exe/tom.exe.csproj" />
+  <Project Path="tom/tom.csproj" />
+  <Project Path="util/util.csproj" />
+  <Project Path="ws.contracts/ws.contracts.csproj" />
+  <Project Path="ws/ws.csproj" />
+  <Project Path="_repo/_repo.csproj" />
+</Solution>
