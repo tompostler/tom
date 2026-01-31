@@ -179,5 +179,29 @@
                 return ulong.Parse(input);
             }
         }
+
+        /// <summary>
+        /// Get a bool. Accepts y/yes/true/1 for true and n/no/false/0 for false.
+        /// </summary>
+        public static bool GetBool(string prompt, bool defaultVal = false)
+        {
+            Console.Write(prompt);
+            Console.Write($" ({(defaultVal ? "Y/n" : "y/N")}): ");
+
+            string input = Console.ReadLine();
+            if (string.IsNullOrWhiteSpace(input))
+            {
+                return defaultVal;
+            }
+            else
+            {
+                return input.Trim().ToLowerInvariant() switch
+                {
+                    "y" or "yes" or "true" or "1" => true,
+                    "n" or "no" or "false" or "0" => false,
+                    _ => defaultVal,
+                };
+            }
+        }
     }
 }
