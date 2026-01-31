@@ -7,56 +7,51 @@ namespace Unlimitedinf.Tom.Commands
     {
         public static Command Create()
         {
-            Command command = new("blockhash", "Uses blockhash to compute the hamming distance between image files.");
-
-            Argument<int> confidenceArg = new(
-                "confidence",
-                () => 25,
-                "Confidence interval for blockhash similarity computed by hamming distance.");
-            command.AddArgument(confidenceArg);
-
-            Argument<string[]> pathsToHashArg = new(
-                "paths",
-                () => new[] { Environment.CurrentDirectory },
-                "The file(s) or directory path(s) to hash. The default is Environment.CurrentDirectory.");
-            command.AddArgument(pathsToHashArg);
-
-            Option<bool> quietOpt = new("--quiet", "Do not display any extra information beyond the file hashes.");
-            quietOpt.AddAlias("-q");
-            command.AddOption(quietOpt);
-
-            command.SetHandler(Handle, confidenceArg, pathsToHashArg, quietOpt);
+            Argument<int> confidenceArgument = new("confidence")
+            {
+                Description = "The confidence interval for blockhash similarity computed by hamming distance.",
+                DefaultValueFactory = _ => 25,
+            };
+            Argument<DirectoryInfo[]> pathsToHashArgument = new Argument<DirectoryInfo[]>("paths")
+            {
+                Description = "The directory path(s) to hash. The default is Environment.CurrentDirectory.",
+                DefaultValueFactory = _ => [new DirectoryInfo(Environment.CurrentDirectory)],
+            }.AcceptExistingOnly();
+            Option<bool> quietOption = new("--quiet", "-q")
+            {
+                Description = "Do not display any extra information beyond the file hashes."
+            };
+            Command command = new("blockhash", "Uses blockhash to compute the hamming distance between image files.")
+            {
+                confidenceArgument,
+                pathsToHashArgument,
+                quietOption,
+            };
+            command.SetAction(parseResult =>
+            {
+                int confidence = parseResult.GetRequiredValue(confidenceArgument);
+                DirectoryInfo[] pathsToHash = parseResult.GetRequiredValue(pathsToHashArgument);
+                bool quiet = parseResult.GetValue(quietOption);
+                Handle(confidence, pathsToHash, quiet);
+            });
             return command;
         }
 
-        private static void Handle(int confidence, string[] pathsToHash, bool quiet)
+        private static void Handle(int confidence, DirectoryInfo[] pathsToHash, bool quiet)
         {
-            pathsToHash = pathsToHash.Select(x => Path.GetFullPath(x)).ToArray();
             if (!quiet)
             {
                 Console.WriteLine("ARGS:");
                 Console.WriteLine($" Confidence:  {confidence}");
-                Console.WriteLine($" PathsToHash: {string.Join(", ", pathsToHash)}");
+                Console.WriteLine($" PathsToHash: {string.Join(", ", pathsToHash.Select(x => x.FullName))}");
                 Console.WriteLine();
             }
 
             // Build up the list of what to hash, so that we can first display some summary information
             List<FileInfo> fileInfos = new();
-            foreach (string pathToHash in pathsToHash)
+            foreach (DirectoryInfo pathToHash in pathsToHash)
             {
-                if (File.GetAttributes(pathToHash).HasFlag(FileAttributes.Directory))
-                {
-                    // Need to walk child directories
-                    foreach (string filePath in Directory.EnumerateFiles(pathToHash, "*", new EnumerationOptions { RecurseSubdirectories = true }))
-                    {
-                        fileInfos.Add(new(filePath));
-                    }
-                }
-                else
-                {
-                    // It's just one file, so do that
-                    fileInfos.Add(new(pathToHash));
-                }
+                fileInfos.AddRange(pathToHash.GetFiles("*", SearchOption.AllDirectories));
             }
 
             // Let know how much to do

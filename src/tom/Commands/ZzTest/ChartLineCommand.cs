@@ -10,10 +10,9 @@ namespace Unlimitedinf.Tom.Commands.ZzTest
         {
             Command command = new("zz-test-chart-line", "Test generating a Microcharts line chart and saving it as an image headlessly.")
             {
-                IsHidden = true
+                Hidden = true
             };
-
-            command.SetHandler(Handle);
+            command.SetAction(_ => Handle());
             return command;
         }
 

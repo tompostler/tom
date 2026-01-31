@@ -6,18 +6,24 @@ namespace Unlimitedinf.Tom.Commands.ZzTest
     {
         public static Command Create()
         {
-            Command command = new("zz-test-console-colors", "Test the output of the ConsoleColor enum to see what the terminal supports.")
+            Option<ConsoleColor> backgroundColorOption = new("--background-color")
             {
-                IsHidden = true
+                Description = "The background color to display against.",
+                DefaultValueFactory = _ => Console.BackgroundColor
             };
 
-            Option<ConsoleColor> backgroundColorOpt = new(
-                "--background-color",
-                () => Console.BackgroundColor,
-                "The background color to display against.");
-            command.AddOption(backgroundColorOpt);
+            Command command = new("zz-test-console-colors", "Test the output of the ConsoleColor enum to see what the terminal supports.")
+            {
+                backgroundColorOption,
+            };
+            command.Hidden = true;
 
-            command.SetHandler(Handle, backgroundColorOpt);
+            command.SetAction(parseResult =>
+            {
+                ConsoleColor backgroundColor = parseResult.GetValue(backgroundColorOption);
+                Handle(backgroundColor);
+            });
+
             return command;
         }
 

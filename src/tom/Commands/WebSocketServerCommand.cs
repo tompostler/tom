@@ -9,54 +9,65 @@ namespace Unlimitedinf.Tom.Commands
     {
         public static Command Create()
         {
-            Command command = new("wss", "Creates a web socket server to be used for p2p communication.");
-
-            Option<DirectoryInfo> workingDirOpt = new(
-                "--working-dir",
-                () => new(Environment.CurrentDirectory),
-                "The working directory to be used for serving files. Only files that are a children of this directory can be copied.");
-            command.AddOption(workingDirOpt);
-
-            Option<double> mbpsLimitOpt = new(
-                "--mbps",
-                () => 0,
-                "Rate-limit the sending and receiving of files to this megabits per second.");
-            command.AddOption(mbpsLimitOpt);
-
-            Option<string> hostOpt = new(
-                "--host",
-                () => "+",
-                "The hostname to run on. By default accepts any hostname.");
-            command.AddOption(hostOpt);
-
-            Option<int> portOpt = new(
-                "--port",
-                () => Random.Shared.Next(49152, 65536),
-                "The port to listen on for connections.");
-            portOpt.AddAlias("-p");
-            command.AddOption(portOpt);
-
-            Option<FileInfo> httpsPfxPathOpt = new(
-                "--https-pfx-path",
-                "If provided, will use this certificate for HTTPS instead of the built-in ASP.NET Core certificate.");
-            command.AddOption(httpsPfxPathOpt);
-
-            Option<FileInfo> httpsCertPemPathOpt = new(
-                "--https-certpem-path",
-                "If provided, will use this certificate for HTTPS instead of the built-in ASP.NET Core certificate. Needs to be paired with --https-keypem-path to work.");
-            command.AddOption(httpsCertPemPathOpt);
-
-            Option<FileInfo> httpsKeyPemPathOpt = new(
-                "--https-keypem-path",
-                "If provided, will use this certificate for HTTPS instead of the built-in ASP.NET Core certificate. Needs to be paired with --https-certpem-path to work.");
-            command.AddOption(httpsKeyPemPathOpt);
-
-            Option<bool> httpsGenerateCertOpt = new(
-                "--https-generate-cert",
-                "If provided, will generate an https certificate with a nonsense subject name to be used for manual validation.");
-            command.AddOption(httpsGenerateCertOpt);
-
-            command.SetHandler(HandleAsync, workingDirOpt, mbpsLimitOpt, hostOpt, portOpt, httpsPfxPathOpt, httpsCertPemPathOpt, httpsKeyPemPathOpt, httpsGenerateCertOpt);
+            Option<DirectoryInfo> workingDirOption = new Option<DirectoryInfo>("--working-dir")
+            {
+                Description = "The working directory to be used for serving files. Only files that are a children of this directory can be copied.",
+                DefaultValueFactory = _ => new(Environment.CurrentDirectory),
+            }.AcceptExistingOnly();
+            Option<double> mbpsLimitOption = new("--mbps")
+            {
+                Description = "Rate-limit the sending and receiving of files to this megabits per second.",
+                DefaultValueFactory = _ => 0,
+            };
+            Option<string> hostOption = new("--host")
+            {
+                Description = "The hostname to run on. By default accepts any hostname.",
+                DefaultValueFactory = _ => "+",
+            };
+            Option<int> portOption = new("--port", "-p")
+            {
+                Description = "The port to listen on for connections.",
+                DefaultValueFactory = _ => Random.Shared.Next(49152, 65536),
+            };
+            Option<FileInfo> httpsPfxPathOption = new Option<FileInfo>("--https-pfx-path")
+            {
+                Description = "If provided, will use this certificate for HTTPS instead of the built-in ASP.NET Core certificate.",
+            }.AcceptLegalFilePathsOnly();
+            Option<FileInfo> httpsCrtPemPathOption = new Option<FileInfo>("--https-crtpem-path")
+            {
+                Description = "If provided, will use this certificate for HTTPS instead of the built-in ASP.NET Core certificate. Needs to be paired with --https-keypem-path to work.",
+            }.AcceptLegalFilePathsOnly();
+            Option<FileInfo> httpsKeyPemPathOption = new Option<FileInfo>("--https-keypem-path")
+            {
+                Description = "If provided, will use this certificate for HTTPS instead of the built-in ASP.NET Core certificate. Needs to be paired with --https-crtpem-path to work.",
+            }.AcceptLegalFilePathsOnly();
+            Option<bool> httpsGenerateCertOption = new("--https-generate-cert")
+            {
+                Description = "If provided, will generate an https certificate with a nonsense subject name to be used for manual validation.",
+            };
+            Command command = new("wss", "Creates a web socket server to be used for p2p communication.")
+            {
+                workingDirOption,
+                mbpsLimitOption,
+                hostOption,
+                portOption,
+                httpsPfxPathOption,
+                httpsCrtPemPathOption,
+                httpsKeyPemPathOption,
+                httpsGenerateCertOption,
+            };
+            command.SetAction(parseResult =>
+            {
+                DirectoryInfo workingDir = parseResult.GetRequiredValue(workingDirOption);
+                double mbpsLimit = parseResult.GetRequiredValue(mbpsLimitOption);
+                string host = parseResult.GetRequiredValue(hostOption);
+                int port = parseResult.GetRequiredValue(portOption);
+                FileInfo httpsPfxPath = parseResult.GetValue(httpsPfxPathOption);
+                FileInfo httpsCertPemPath = parseResult.GetValue(httpsCrtPemPathOption);
+                FileInfo httpsKeyPemPath = parseResult.GetValue(httpsKeyPemPathOption);
+                bool httpsGenerateCert = parseResult.GetValue(httpsGenerateCertOption);
+                return HandleAsync(workingDir, mbpsLimit, host, port, httpsPfxPath, httpsCertPemPath, httpsKeyPemPath, httpsGenerateCert);
+            });
             return command;
         }
 
@@ -77,7 +88,7 @@ namespace Unlimitedinf.Tom.Commands
             }
             else if (httpsGenerateCert)
             {
-                string subjectName = $"CN={Rando.GetString(Rando.RandomType.Name).Replace('_','-')}.{port}.tomwssself";
+                string subjectName = $"CN={Rando.GetString(Rando.RandomType.Name).Replace('_', '-')}.{port}.tomwssself";
                 httpsCert = new CertificateRequest(subjectName, ECDsa.Create(), HashAlgorithmName.SHA256).CreateSelfSigned(DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddDays(7));
             }
 

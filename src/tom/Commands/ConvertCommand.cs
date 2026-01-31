@@ -9,23 +9,27 @@ namespace Unlimitedinf.Tom.Commands
         {
             Command rootCommand = new("convert", "Convert one thing to another.");
 
-            Argument<long> sourceLongArg = new(
-                "source",
-                "The source value.");
+            Argument<long> sourceLongArgument = new("source")
+            {
+                Description = "The source value."
+            };
+            Argument<byte> targetBaseArgument = new("base")
+            {
+                Description = "BaseX, where X is [2,36]."
+            };
+            Command baseCommand = new("base", "Convert from base10 to baseX.")
+            {
+                sourceLongArgument,
+                targetBaseArgument,
+            };
+            baseCommand.SetAction(parseResult =>
+            {
+                long source = parseResult.GetRequiredValue(sourceLongArgument);
+                byte targetBase = parseResult.GetRequiredValue(targetBaseArgument);
+                HandleBase(source, targetBase);
+            });
 
-
-            Command baseCommand = new("base", "Convert from base10 to baseX.");
-            baseCommand.AddArgument(sourceLongArg);
-
-            Argument<byte> targetBaseArg = new(
-                "base",
-                "BaseX, where X is [2,36].");
-            baseCommand.AddArgument(targetBaseArg);
-
-            baseCommand.SetHandler(HandleBase, sourceLongArg, targetBaseArg);
-
-
-            rootCommand.AddCommand(baseCommand);
+            rootCommand.Subcommands.Add(baseCommand);
             return rootCommand;
         }
 

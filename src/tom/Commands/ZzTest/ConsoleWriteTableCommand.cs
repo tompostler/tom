@@ -9,9 +9,9 @@ namespace Unlimitedinf.Tom.Commands.ZzTest
         {
             Command command = new("zz-test-console-write-table", "Test the ConsoleFileProgressLogger to validate functionality.")
             {
-                IsHidden = true
+                Hidden = true
             };
-            command.SetHandler(Handle);
+            command.SetAction(_ => Handle());
             return command;
         }
 

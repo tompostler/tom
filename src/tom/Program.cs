@@ -8,26 +8,25 @@ namespace Unlimitedinf.Tom
         {
             await VersionProvider.TryReportIfUpdateIsRequiredAsync();
 
-            RootCommand rootCommand = new("Various tools and utilities that I've needed or found useful.");
+            RootCommand rootCommand = new("Various tools and utilities that I've needed or found useful.")
+            {
+                Commands.ChartSystemStatsCommand.Create(),
+                Commands.ConvertCommand.Create(),
+                Commands.HashCommand.Create(),
+                Commands.HashRenameCommand.Create(),
+                Commands.ImageDimensionFilterCommand.Create(),
+                Commands.ImageDuplicateBlockhashCommand.Create(),
+                Commands.RandomCommand.Create(),
+                Commands.WebSocketClientCommand.Create(),
+                Commands.WebSocketServerCommand.Create(),
 
-            rootCommand.AddCommand(Commands.ChartSystemStatsCommand.Create());
-            rootCommand.AddCommand(Commands.ConvertCommand.Create());
-            rootCommand.AddCommand(Commands.HashCommand.Create());
-            rootCommand.AddCommand(Commands.HashRenameCommand.Create());
-            rootCommand.AddCommand(Commands.ImageDimensionFilterCommand.Create());
-            rootCommand.AddCommand(Commands.ImageDuplicateBlockhashCommand.Create());
-            rootCommand.AddCommand(Commands.RandomCommand.Create());
-#if NET8_0_OR_GREATER
-            rootCommand.AddCommand(Commands.WebSocketClientCommand.Create());
-            rootCommand.AddCommand(Commands.WebSocketServerCommand.Create());
-#endif
+                Commands.ZzTest.ChartLineCommand.Create(),
+                Commands.ZzTest.ConsoleColorsCommand.Create(),
+                Commands.ZzTest.ConsoleProgressLoggerCommand.Create(),
+                Commands.ZzTest.ConsoleWriteTableCommand.Create(),
+            };
 
-            rootCommand.AddCommand(Commands.ZzTest.ChartLineCommand.Create());
-            rootCommand.AddCommand(Commands.ZzTest.ConsoleColorsCommand.Create());
-            rootCommand.AddCommand(Commands.ZzTest.ConsoleProgressLoggerCommand.Create());
-            rootCommand.AddCommand(Commands.ZzTest.ConsoleWriteTableCommand.Create());
-
-            return await rootCommand.InvokeAsync(args);
+            return await rootCommand.Parse(args).InvokeAsync();
         }
     }
 }

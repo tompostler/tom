@@ -18,7 +18,7 @@ namespace tests.UtilTests
             string[] result = source.Chunk(chunkSize);
 
             // Assert
-            Assert.AreEqual(target.Length, result.Length);
+            Assert.HasCount(target.Length, result);
             for (int i = 0; i < target.Length; i++)
             {
                 Assert.AreEqual(target[i], result[i]);

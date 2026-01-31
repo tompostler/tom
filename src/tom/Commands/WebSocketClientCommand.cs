@@ -16,36 +16,45 @@ namespace Unlimitedinf.Tom.Commands
     {
         public static Command Create()
         {
-            Command command = new("wsc", "Establish a web socket client connection to another instance of 'tom wss' for p2p communication.");
-
-            Argument<Uri> endpointArg = new(
-                "endpoint",
-                "The hostname and port to establish the websocket connection to. E.g wss://localhost:45678");
-            command.AddArgument(endpointArg);
-
-            Option<DirectoryInfo> workingDirOpt = new(
-                "--working-dir",
-                () => new(Environment.CurrentDirectory),
-                "The working directory to be used for serving files. Only files that are a children of this directory can be copied.");
-            command.AddOption(workingDirOpt);
-
-            Option<string> sslCertSubjectNameOpt = new(
-                "--ssl-cert-subject",
-                "Used in scenarios where the HTTPS certificate is a valid and trusted SSL certificate but the remote name used to reach the destination won't match the presented certificate.");
-            command.AddOption(sslCertSubjectNameOpt);
-
-            Option<string> sslCertThumbprintOpt = new(
-                "--ssl-cert-thumbprint",
-                "Used in scenarios where the HTTPS certificate is a self-signed certificate and the only validation possible is by thumbprint.");
-            command.AddOption(sslCertThumbprintOpt);
-
-            Option<TimeSpan> maxSessionDurationOpt = new(
-                "--max-session-duration",
-                () => TimeSpan.FromDays(3),
-                "After this amount of time, the session will be aborted with the server.");
-            command.AddOption(maxSessionDurationOpt);
-
-            command.SetHandler(HandleAsync, endpointArg, workingDirOpt, sslCertSubjectNameOpt, sslCertThumbprintOpt, maxSessionDurationOpt);
+            Argument<Uri> endpointArgument = new("endpoint")
+            {
+                Description = "The hostname and port to establish the websocket connection to. E.g wss://localhost:45678",
+            };
+            Option<DirectoryInfo> workingDirOption = new Option<DirectoryInfo>("--working-dir")
+            {
+                Description = "The working directory to be used for serving files. Only files that are a children of this directory can be copied.",
+                DefaultValueFactory = _ => new(Environment.CurrentDirectory),
+            }.AcceptExistingOnly();
+            Option<string> sslCertSubjectNameOption = new("--ssl-cert-subject")
+            {
+                Description = "Used in scenarios where the HTTPS certificate is a valid and trusted SSL certificate but the remote name used to reach the destination won't match the presented certificate.",
+            };
+            Option<string> sslCertThumbprintOption = new("--ssl-cert-thumbprint")
+            {
+                Description = "Used in scenarios where the HTTPS certificate is a self-signed certificate and the only validation possible is by thumbprint.",
+            };
+            Option<TimeSpan> maxSessionDurationOption = new("--max-session-duration")
+            {
+                Description = "After this amount of time, the session will be aborted with the server.",
+                DefaultValueFactory = _ => TimeSpan.FromDays(3),
+            };
+            Command command = new("wsc", "Establish a web socket client connection to another instance of 'tom wss' for p2p communication.")
+            {
+                endpointArgument,
+                workingDirOption,
+                sslCertSubjectNameOption,
+                sslCertThumbprintOption,
+                maxSessionDurationOption,
+            };
+            command.SetAction(parseResult =>
+            {
+                Uri endpoint = parseResult.GetRequiredValue(endpointArgument);
+                DirectoryInfo workingDir = parseResult.GetRequiredValue(workingDirOption);
+                string sslCertSubjectName = parseResult.GetValue(sslCertSubjectNameOption);
+                string sslCertThumbprint = parseResult.GetValue(sslCertThumbprintOption);
+                TimeSpan maxSessionDuration = parseResult.GetRequiredValue(maxSessionDurationOption);
+                return HandleAsync(endpoint, workingDir, sslCertSubjectName, sslCertThumbprint, maxSessionDuration);
+            });
             return command;
         }
 

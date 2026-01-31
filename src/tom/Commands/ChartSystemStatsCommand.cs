@@ -13,24 +13,32 @@ namespace Unlimitedinf.Tom.Commands
 
         public static Command Create()
         {
-            Command command = new("chart-system-stats", "Given an input of system stat file(s), generate png charts for them.");
+            Argument<DirectoryInfo> dataDirArgument = new Argument<DirectoryInfo>("data-dir")
+            {
+                Description = "The directory containing one or many files of data to use for generating the charts."
+            }.AcceptExistingOnly();
+            Option<bool> displayScriptOption = new("--script")
+            {
+                Description = "Instead of generating charts, display the script that should be installed to generate the data files."
+            };
+            Option<bool> mergeOption = new("--merge")
+            {
+                Description = "Instead of generating charts, merge any single line files into a single file."
+            };
+            Command command = new("chart-system-stats", "Given an input of system stat file(s), generate png charts for them.")
+            {
+                dataDirArgument,
+                displayScriptOption,
+                mergeOption,
+            };
+            command.SetAction(parseResult =>
+            {
+                DirectoryInfo dataDir = parseResult.GetRequiredValue(dataDirArgument);
+                bool displayScript = parseResult.GetValue(displayScriptOption);
+                bool merge = parseResult.GetValue(mergeOption);
 
-            Argument<DirectoryInfo> dataDirArg = new(
-                "data-dir",
-                "The directory containing one or many files of data to use for generating the charts.");
-            command.AddArgument(dataDirArg);
-
-            Option<bool> displayScriptOpt = new(
-                "--script",
-                "Instead of generating charts, display the script that should be installed to generate the data files.");
-            command.AddOption(displayScriptOpt);
-
-            Option<bool> mergeOpt = new(
-                "--merge",
-                "Instead of generating charts, merge any single line files into a single file.");
-            command.AddOption(mergeOpt);
-
-            command.SetHandler(Handle, dataDirArg, displayScriptOpt, mergeOpt);
+                Handle(dataDir, displayScript, merge);
+            });
             return command;
         }
 

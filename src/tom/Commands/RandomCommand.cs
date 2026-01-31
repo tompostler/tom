@@ -10,14 +10,19 @@ namespace Unlimitedinf.Tom.Commands
     {
         public static Command Create()
         {
-            Command command = new("random", "Get random data.");
-
-            Argument<Rando.RandomType> randomTypeArg = new(
-                "type",
-                "The type of random to get. Pick from the supported values.");
-            command.AddArgument(randomTypeArg);
-
-            command.SetHandler(Handle, randomTypeArg);
+            Argument<Rando.RandomType> randomTypeArgument = new("type")
+            {
+                Description = "The type of random to get. Pick from the supported values."
+            };
+            Command command = new("random", "Get random data.")
+            {
+                randomTypeArgument,
+            };
+            command.SetAction(parseResult =>
+            {
+                Rando.RandomType type = parseResult.GetRequiredValue(randomTypeArgument);
+                Handle(type);
+            });
             return command;
         }
 

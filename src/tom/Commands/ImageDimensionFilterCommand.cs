@@ -8,77 +8,71 @@ namespace Unlimitedinf.Tom.Commands
     {
         public static Command Create()
         {
+            Option<int> widthOption = new("--width", "-w")
+            {
+                Description = "The width of the image.",
+                DefaultValueFactory = _ => 0,
+            };
+            Option<int> heightOption = new("--height", "-h")
+            {
+                Description = "The height of the image.",
+                DefaultValueFactory = _ => 0,
+            };
+            Option<double> megapixelOption = new("--megapixels", "-m")
+            {
+                Description = "The area of the image. Default of 0.5mp is equivalent to an approx 700x700 square image.",
+                DefaultValueFactory = _ => 0.5,
+            };
+            Argument<DirectoryInfo[]> pathsToHashArgument = new Argument<DirectoryInfo[]>("paths")
+            {
+                Description = "The directory path(s) to hash. The default is Environment.CurrentDirectory.",
+                DefaultValueFactory = _ => [new DirectoryInfo(Environment.CurrentDirectory)],
+            }.AcceptExistingOnly();
+            Option<bool> quietOption = new("--quiet", "-q")
+            {
+                Description = "Do not display any extra information beyond the file hashes."
+            };
             Command command = new(
                 "img-dimension",
                 "Uses image dimensions to filter low-quality images into a separate folder."
                 + "\nFiltered images will be placed in a 'toss' directory in the directy of the item(s) to inspect."
-                + "\nIf width and height are requested, then megapixels is ignored. Otherwise each filter will apply individually.");
-
-            Option<int> widthOpt = new(
-                "--width",
-                () => 0,
-                "The width of the image.");
-            widthOpt.AddAlias("-w");
-            command.AddOption(widthOpt);
-
-            Option<int> heightOpt = new(
-                "--height",
-                () => 0,
-                "The height of the image.");
-            heightOpt.AddAlias("-h");
-            command.AddOption(heightOpt);
-
-            Option<double> megapixelOpt = new(
-                "--megapixels",
-                () => 0.5,
-                "The area of the image. Default of 0.5mp is equivalent to an approx 700x700 square image.");
-            megapixelOpt.AddAlias("-m");
-            command.AddOption(megapixelOpt);
-
-            Argument<string[]> pathsToHashArg = new(
-                "paths",
-                () => new[] { Environment.CurrentDirectory },
-                "The file(s) or directory path(s) to measure. The default is Environment.CurrentDirectory.");
-            command.AddArgument(pathsToHashArg);
-
-            Option<bool> quietOpt = new("--quiet", "Do not display any extra information beyond the moved files.");
-            quietOpt.AddAlias("-q");
-            command.AddOption(quietOpt);
-
-            command.SetHandler(Handle, widthOpt, heightOpt, megapixelOpt, pathsToHashArg, quietOpt);
+                + "\nIf width and height are requested, then megapixels is ignored. Otherwise each filter will apply individually.")
+            {
+                widthOption,
+                heightOption,
+                megapixelOption,
+                pathsToHashArgument,
+                quietOption,
+            };
+            command.SetAction(parseResult =>
+            {
+                int width = parseResult.GetRequiredValue(widthOption);
+                int height = parseResult.GetRequiredValue(heightOption);
+                double megapixels = parseResult.GetRequiredValue(megapixelOption);
+                DirectoryInfo[] pathsToHash = parseResult.GetRequiredValue(pathsToHashArgument);
+                bool quiet = parseResult.GetValue(quietOption);
+                Handle(width, height, megapixels, pathsToHash, quiet);
+            });
             return command;
         }
 
-        private static void Handle(int width, int height, double megapixels, string[] pathsToHash, bool quiet)
+        private static void Handle(int width, int height, double megapixels, DirectoryInfo[] pathsToHash, bool quiet)
         {
-            pathsToHash = pathsToHash.Select(x => Path.GetFullPath(x)).ToArray();
             if (!quiet)
             {
                 Console.WriteLine("ARGS:");
                 Console.WriteLine($" Width:       {width}");
                 Console.WriteLine($" Height:      {height}");
                 Console.WriteLine($" Megapixels:  {megapixels}");
-                Console.WriteLine($" PathsToHash: {string.Join(", ", pathsToHash)}");
+                Console.WriteLine($" PathsToHash: {string.Join(", ", pathsToHash.Select(x => x.FullName))}");
                 Console.WriteLine();
             }
 
             // Build up the list of what to hash, so that we can first display some summary information
             List<FileInfo> fileInfos = new();
-            foreach (string pathToHash in pathsToHash)
+            foreach (DirectoryInfo pathToHash in pathsToHash)
             {
-                if (File.GetAttributes(pathToHash).HasFlag(FileAttributes.Directory))
-                {
-                    // Need to walk child directories
-                    foreach (string filePath in Directory.EnumerateFiles(pathToHash, "*", new EnumerationOptions { RecurseSubdirectories = true }))
-                    {
-                        fileInfos.Add(new(filePath));
-                    }
-                }
-                else
-                {
-                    // It's just one file, so do that
-                    fileInfos.Add(new(pathToHash));
-                }
+                fileInfos.AddRange(pathToHash.GetFiles("*", SearchOption.AllDirectories));
             }
 
             int maxFileNameLength = fileInfos.Max(x => x.FullName.Length);
