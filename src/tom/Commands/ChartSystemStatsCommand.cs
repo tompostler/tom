@@ -246,6 +246,10 @@ Set-Content -Path ""Z:\system-stats\data\$((Get-Date).ToString('yyyy-MM-dd_HH-mm
             }
             Console.WriteLine($"[{sw.Elapsed:mm\\:ss\\.ffff}] Used {xValues.Count}/{dataRows.Count} data rows for the charts");
 
+            // Add a summation series for any groups of disks sharing a common prefix with a numeric suffix (e.g. jbod1, jbod2 -> jbod#)
+            AddGroupSummationSeries(smallDiskValues);
+            AddGroupSummationSeries(largeDiskValues);
+
             // 1. UptimeDays and MemoryUsedGiB
             SaveChart(
                 dataDir,
@@ -294,12 +298,31 @@ Set-Content -Path ""Z:\system-stats\data\$((Get-Date).ToString('yyyy-MM-dd_HH-mm
         private static void SaveChart(DirectoryInfo dataDir, Plot plot, string title, Stopwatch sw)
         {
             plot.Title(title);
-            _ = plot.Add.Annotation($"Generated {DateTime.Now:yyyy-MM-dd HH:mm:ss}", Alignment.UpperRight);
+            _ = plot.Add.Annotation($"Generated {DateTime.Now:yyyy-MM-dd HH:mm:ss}", Alignment.UpperLeft);
 
             FileInfo chartFile = new(Path.Combine(dataDir.FullName, title.Replace(' ', '-') + ".png"));
             chartFile.Delete();
             _ = plot.SavePng(chartFile.FullName, 2560, 1440);
             Console.WriteLine($"[{sw.Elapsed:mm\\:ss\\.ffff}] Wrote {chartFile.FullName}");
+        }
+
+        private static void AddGroupSummationSeries(Dictionary<string, List<double>> diskValues)
+        {
+            IEnumerable<IGrouping<string, string>> groups = diskValues.Keys
+                .Where(name => name.Length > 0 && char.IsDigit(name[^1]))
+                .GroupBy(name => name.TrimEnd('0', '1', '2', '3', '4', '5', '6', '7', '8', '9'))
+                .Where(g => g.Count() > 1);
+
+            foreach (IGrouping<string, string> group in groups)
+            {
+                var seriesInGroup = group.Select(name => diskValues[name]).ToList();
+                int length = seriesInGroup[0].Count;
+                diskValues[group.Key + "#"] = Enumerable.Range(0, length)
+                    .Select(i => seriesInGroup.All(s => double.IsNaN(s[i]))
+                        ? double.NaN
+                        : seriesInGroup.Sum(s => double.IsNaN(s[i]) ? 0 : s[i]))
+                    .ToList();
+            }
         }
 
         private sealed class SystemStatDataRow

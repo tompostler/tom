@@ -37,7 +37,7 @@ namespace Unlimitedinf.Tom.Commands.ZzTest
             plot.Title("Sample chart title");
             _ = plot.ShowLegend(Edge.Bottom);
             plot.Axes.TightMargins();
-            _ = plot.Add.Annotation($"Generated {DateTime.Now:yyyy-MM-dd HH:mm:ss}", Alignment.UpperRight);
+            _ = plot.Add.Annotation($"Generated {DateTime.Now:yyyy-MM-dd HH:mm:ss}", Alignment.UpperLeft);
 
             File.Delete("t.png");
             _ = plot.SavePng("t.png", 1920, 1080);
