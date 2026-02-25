@@ -156,28 +156,35 @@ Set-Content -Path ""Z:\system-stats\data\$((Get-Date).ToString('yyyy-MM-dd_HH-mm
             dataRows.Sort((l, r) => l.Timestamp.CompareTo(r.Timestamp));
             Console.WriteLine($"[{sw.Elapsed:mm\\:ss\\.ffff}] Finished sorting data");
 
-            // While running through the data, only sample one value every so often based on the total range of data
-            // to keep the number of plotted points manageable. ScottPlot handles tick label density automatically.
-            //  Data range  Sampling size
-            //  > 5 year    Monthly
-            //  > 3 year    Bi-weekly
-            //  > 1 year    Weekly
-            //  > 1 month   Daily
-            //  > 1 week    Hourly
-            //  > 1 day     Minutely
-            //  *           Every data point
-            var sampleSize = TimeSpan.FromDays(1);
+            // While running through the data, only sample one value every so often to keep the number of plotted
+            // points to 1 every ~5 pixels per series. Pick the smallest "decent" interval that achieves this; if the
+            // dataset is already small enough, use every point. ScottPlot handles tick label density automatically.
+            const int targetMaxPoints = 500;
             TimeSpan dataRange = dataRows.Last().Timestamp.Subtract(dataRows.First().Timestamp);
-            sampleSize = dataRange.TotalDays switch
-            {
-                > 2_000 => TimeSpan.FromDays(30),
-                > 1_000 => TimeSpan.FromDays(14),
-                > 360 => TimeSpan.FromDays(7),
-                > 30 => TimeSpan.FromDays(1),
-                > 7 => TimeSpan.FromHours(1),
-                > 1 => TimeSpan.FromMinutes(1),
-                _ => TimeSpan.Zero,
-            };
+            TimeSpan[] candidateIntervals =
+            [
+                TimeSpan.FromMinutes(1),
+                TimeSpan.FromMinutes(2),
+                TimeSpan.FromMinutes(5),
+                TimeSpan.FromMinutes(10),
+                TimeSpan.FromMinutes(15),
+                TimeSpan.FromMinutes(30),
+                TimeSpan.FromHours(1),
+                TimeSpan.FromHours(2),
+                TimeSpan.FromHours(4),
+                TimeSpan.FromHours(6),
+                TimeSpan.FromHours(12),
+                TimeSpan.FromDays(1),
+                TimeSpan.FromDays(2),
+                TimeSpan.FromDays(3),
+                TimeSpan.FromDays(7),
+                TimeSpan.FromDays(14),
+                TimeSpan.FromDays(30),
+            ];
+            TimeSpan minimumInterval = dataRange / targetMaxPoints;
+            TimeSpan sampleSize = dataRows.Count <= targetMaxPoints
+                ? TimeSpan.Zero
+                : candidateIntervals.FirstOrDefault(interval => interval >= minimumInterval, candidateIntervals[^1]);
             Console.WriteLine($"[{sw.Elapsed:mm\\:ss\\.ffff}] Using a sampling interval of {sampleSize}");
 
             // Run through the data and create three charts:
