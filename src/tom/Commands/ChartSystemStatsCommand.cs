@@ -1,5 +1,5 @@
-﻿using Microcharts;
-using SkiaSharp;
+using ScottPlot;
+using ScottPlot.Plottables;
 using System.CommandLine;
 using System.Diagnostics;
 using System.Text.Json;
@@ -156,59 +156,45 @@ Set-Content -Path ""Z:\system-stats\data\$((Get-Date).ToString('yyyy-MM-dd_HH-mm
             dataRows.Sort((l, r) => l.Timestamp.CompareTo(r.Timestamp));
             Console.WriteLine($"[{sw.Elapsed:mm\\:ss\\.ffff}] Finished sorting data");
 
-            // While running through the data, only sample one value every so often based on the total range of data:
+            // While running through the data, only sample one value every so often based on the total range of data
+            // to keep the number of plotted points manageable. ScottPlot handles tick label density automatically.
             //  Data range  Sampling size
-            //  > 3 year    Weekly, labels every 4w
-            //  > 3 month   Daily, but labels every 7d
+            //  > 5 year    Monthly
+            //  > 3 year    Bi-weekly
+            //  > 1 year    Weekly
             //  > 1 month   Daily
             //  > 1 week    Hourly
             //  > 1 day     Minutely
             //  *           Every data point
             var sampleSize = TimeSpan.FromDays(1);
-            string timestampFormat = "yyyy-MM-dd";
-            int labelsEvery = 1;
             TimeSpan dataRange = dataRows.Last().Timestamp.Subtract(dataRows.First().Timestamp);
-            switch (dataRange.TotalDays)
+            sampleSize = dataRange.TotalDays switch
             {
-                case > 1_000:
-                    sampleSize = TimeSpan.FromDays(7);
-                    labelsEvery = 4;
-                    break;
-                case > 90:
-                    labelsEvery = 7;
-                    break;
-                case > 30:
-                    break;
-                case > 7:
-                    sampleSize = TimeSpan.FromHours(1);
-                    timestampFormat = "yyyy-MM-dd HH";
-                    break;
-                case > 1:
-                    sampleSize = TimeSpan.FromMinutes(1);
-                    timestampFormat = "yyyy-MM-dd HH:mm";
-                    break;
-                default:
-                    sampleSize = TimeSpan.Zero;
-                    timestampFormat = "yyyy-MM-dd HH:mm:ss";
-                    break;
-            }
+                > 2_000 => TimeSpan.FromDays(30),
+                > 1_000 => TimeSpan.FromDays(14),
+                > 360 => TimeSpan.FromDays(7),
+                > 30 => TimeSpan.FromDays(1),
+                > 7 => TimeSpan.FromHours(1),
+                > 1 => TimeSpan.FromMinutes(1),
+                _ => TimeSpan.Zero,
+            };
             Console.WriteLine($"[{sw.Elapsed:mm\\:ss\\.ffff}] Using a sampling interval of {sampleSize}");
 
             // Run through the data and create three charts:
 
             // 1. UptimeDays and MemoryUsedGiB
-            List<ChartEntry> uptimeDaysEntries = [];
-            List<ChartEntry> memoryGiBEntries = [];
+            List<DateTime> xValues = [];
+            List<double> uptimeDaysValues = [];
+            List<double> memoryGiBValues = [];
 
             // 2. Disk.UsedGiB (where max <= 1TiB)
-            var smallDiskEntries = diskMaxSize.Where(x => x.Value <= OneTiB).ToDictionary(x => x.Key, x => new List<ChartEntry>());
+            var smallDiskValues = diskMaxSize.Where(x => x.Value <= OneTiB).ToDictionary(x => x.Key, x => new List<double>());
 
             // 3. Disk.UsedTiB (where max > 1TiB)
-            var largeDiskEntries = diskMaxSize.Where(x => x.Value > OneTiB).ToDictionary(x => x.Key, x => new List<ChartEntry>());
+            var largeDiskValues = diskMaxSize.Where(x => x.Value > OneTiB).ToDictionary(x => x.Key, x => new List<double>());
 
             // Actually run through the data
             DateTimeOffset previousRowTimestamp = DateTimeOffset.MinValue;
-            int addedRowCount = 0;
             foreach (SystemStatDataRow dataRow in dataRows)
             {
                 // If it's too many data points, then skip to the next one
@@ -218,27 +204,26 @@ Set-Content -Path ""Z:\system-stats\data\$((Get-Date).ToString('yyyy-MM-dd_HH-mm
                 }
                 previousRowTimestamp = dataRow.Timestamp;
 
-                // Skip adding a label if we need to reduce the number of visible labels
-                string dataRowLabel = addedRowCount++ % labelsEvery == 0 ? dataRow.Timestamp.ToString(timestampFormat) : default;
+                xValues.Add(dataRow.Timestamp.LocalDateTime);
 
                 // 1. UptimeDays and MemoryUsedGiB
-                uptimeDaysEntries.Add(new ChartEntry(dataRow.UptimeHours / 24) { Label = dataRowLabel });
-                memoryGiBEntries.Add(new ChartEntry(dataRow.MemoryUsedBytes * 1f / OneGiB) { Label = dataRowLabel });
+                uptimeDaysValues.Add(dataRow.UptimeHours / 24.0);
+                memoryGiBValues.Add(dataRow.MemoryUsedBytes * 1.0 / OneGiB);
 
                 foreach (KeyValuePair<string, SystemStatDataRow.DiskStats> disk in dataRow.Disks)
                 {
                     // TODO: Need to figure out how to handle series that don't have the same number of x-values
 
                     // 2. Disk.UsedGiB (where max <= 1TiB)
-                    if (smallDiskEntries.TryGetValue(disk.Key, out List<ChartEntry> value))
+                    if (smallDiskValues.TryGetValue(disk.Key, out List<double> value))
                     {
-                        value.Add(new ChartEntry(disk.Value.UsedBytes * 1f / OneGiB) { Label = dataRowLabel });
+                        value.Add(disk.Value.UsedBytes * 1.0 / OneGiB);
                     }
 
                     // 3. Disk.UsedTiB (where max > 1TiB)
                     else
                     {
-                        largeDiskEntries[disk.Key].Add(new ChartEntry(disk.Value.UsedBytes * 1f / OneTiB) { Label = dataRowLabel });
+                        largeDiskValues[disk.Key].Add(disk.Value.UsedBytes * 1.0 / OneTiB);
                     }
                 }
 
@@ -247,138 +232,73 @@ Set-Content -Path ""Z:\system-stats\data\$((Get-Date).ToString('yyyy-MM-dd_HH-mm
                 foreach (string diskNotSeen in disksNotSeen)
                 {
                     // 2. Disk.UsedGiB (where max <= 1TiB)
-                    if (smallDiskEntries.TryGetValue(diskNotSeen, out List<ChartEntry> value))
+                    if (smallDiskValues.TryGetValue(diskNotSeen, out List<double> value))
                     {
-                        value.Add(new ChartEntry(default) { Label = dataRowLabel });
+                        value.Add(double.NaN);
                     }
 
                     // 3. Disk.UsedTiB (where max > 1TiB)
                     else
                     {
-                        largeDiskEntries[diskNotSeen].Add(new ChartEntry(default) { Label = dataRowLabel });
+                        largeDiskValues[diskNotSeen].Add(double.NaN);
                     }
                 }
             }
-            Console.WriteLine($"[{sw.Elapsed:mm\\:ss\\.ffff}] Used {uptimeDaysEntries.Count}/{dataRows.Count} data rows for the charts");
-
-            // Desired colors (skipping the less desirable ones):
-            // https://coolors.co/palette/001219-005f73-0a9396-94d2bd-e9d8a6-ee9b00-ca6702-bb3e03-ae2012-9b2226
-            string colorString = "005f73-0a9396-94d2bd-e9d8a6-ee9b00-ca6702-bb3e03-ae2012-9b2226";
-            Queue<SKColor> colors = new(colorString.Split('-').Select(x => SKColor.Parse(x)));
+            Console.WriteLine($"[{sw.Elapsed:mm\\:ss\\.ffff}] Used {xValues.Count}/{dataRows.Count} data rows for the charts");
 
             // 1. UptimeDays and MemoryUsedGiB
-            LineChart uptimeChart = new()
-            {
-                LabelOrientation = Orientation.Vertical,
-                LegendOption = SeriesLegendOption.Bottom,
-                IsAnimated = false,
-
-                MinValue = 0,
-                MaxValue = 60,
-                YAxisMaxTicks = 31,
-
-                ShowYAxisLines = true,
-                ShowYAxisText = true,
-                YAxisPosition = Position.Left,
-
-                LineMode = LineMode.Straight,
-                LineSize = 1,
-                PointSize = 3,
-
-                Series =
+            SaveChart(
+                dataDir,
+                BuildChart(xValues,
                 [
-                    new ChartSerie
-                    {
-                        Name = "UptimeDays",
-                        Color = colors.Dequeue(),
-                        Entries = uptimeDaysEntries
-                    },
-                    new ChartSerie
-                    {
-                        Name = "MemoryUsedGiB",
-                        Color = colors.Dequeue(),
-                        Entries = memoryGiBEntries
-                    },
-                ]
-            };
-            SaveChart(dataDir, uptimeChart, "Uptime and Memory", sw);
-
-            // Reset the colors
-            colors = new(colorString.Split('-').Select(x => SKColor.Parse(x)));
+                    ("UptimeDays", uptimeDaysValues),
+                    ("MemoryUsedGiB", memoryGiBValues),
+                ]),
+                "Uptime and Memory",
+                sw);
 
             // 2. Disk.UsedGiB (where max <= 1TiB)
-            LineChart smallDiskChart = new()
-            {
-                LabelOrientation = Orientation.Vertical,
-                LegendOption = SeriesLegendOption.Bottom,
-                IsAnimated = false,
-
-                MinValue = 0,
-                MaxValue = 1024,
-                YAxisMaxTicks = 33,
-
-                ShowYAxisLines = true,
-                ShowYAxisText = true,
-                YAxisPosition = Position.Left,
-
-                LineMode = LineMode.Straight,
-                LineSize = 1,
-                PointSize = 3,
-
-                Series = smallDiskEntries.Select(x => new ChartSerie { Name = x.Key, Color = colors.Dequeue(), Entries = x.Value }).ToList()
-            };
-            SaveChart(dataDir, smallDiskChart, "Disks smaller than 1TiB", sw);
-
-            // Reset the colors
-            colors = new(colorString.Split('-').Select(x => SKColor.Parse(x)));
+            SaveChart(
+                dataDir,
+                BuildChart(xValues,
+                smallDiskValues.Select(x => (x.Key, x.Value))),
+                "Disks smaller than 1TiB",
+                sw);
 
             // 3. Disk.UsedTiB (where max > 1TiB)
-            LineChart largeDiskChart = new()
-            {
-                LabelOrientation = Orientation.Vertical,
-                LegendOption = SeriesLegendOption.Bottom,
-                IsAnimated = false,
-
-                MinValue = 0,
-                MaxValue = (float)Math.Ceiling(diskMaxSize.Values.Max() / 3.0 / OneTiB) * 3,
-                YAxisMaxTicks = 31,
-
-                ShowYAxisLines = true,
-                ShowYAxisText = true,
-                YAxisPosition = Position.Left,
-
-                LineMode = LineMode.Straight,
-                LineSize = 1,
-                PointSize = 3,
-
-                Series = largeDiskEntries.Select(x => new ChartSerie { Name = x.Key, Color = colors.Dequeue(), Entries = x.Value }).ToList()
-            };
-            SaveChart(dataDir, largeDiskChart, "Disks larger than 1TiB", sw);
+            SaveChart(
+                dataDir,
+                BuildChart(xValues,
+                largeDiskValues.Select(x => (x.Key, x.Value))),
+                "Disks larger than 1TiB",
+                sw);
         }
 
-        private static void SaveChart(DirectoryInfo dataDir, LineChart lineChart, string title, Stopwatch sw)
+        private static Plot BuildChart(List<DateTime> xs, IEnumerable<(string name, List<double> values)> series)
         {
-            SKBitmap bitmap = new(2560, 1440);
-            SKCanvas canvas = new(bitmap);
-            lineChart.Draw(canvas, bitmap.Width, bitmap.Height);
+            Plot plot = new();
 
-            // Add a chart title
-            var titleText = SKTextBlob.Create(title, new SKFont());
-            canvas.DrawText(titleText, (bitmap.Width / 2) - (titleText.Bounds.Width / 2), titleText.Bounds.Height * .75f, new SKPaint());
+            foreach ((string name, List<double> values) in series)
+            {
+                Scatter scatter = plot.Add.Scatter(xs, values);
+                scatter.LegendText = name;
+            }
 
-            // Add a generated footer
-            var genText = SKTextBlob.Create($"Generated {DateTime.Now:yyyy-MM-dd HH:mm:ss}", new SKFont());
-            canvas.DrawText(genText, bitmap.Width - genText.Bounds.Width, bitmap.Height - genText.Bounds.Height, new SKPaint());
+            _ = plot.Axes.DateTimeTicksBottom();
+            _ = plot.ShowLegend(Edge.Bottom);
+            plot.Axes.TightMargins();
 
-            _ = canvas.Save();
+            return plot;
+        }
+
+        private static void SaveChart(DirectoryInfo dataDir, Plot plot, string title, Stopwatch sw)
+        {
+            plot.Title(title);
+            _ = plot.Add.Annotation($"Generated {DateTime.Now:yyyy-MM-dd HH:mm:ss}", Alignment.UpperRight);
 
             FileInfo chartFile = new(Path.Combine(dataDir.FullName, title.Replace(' ', '-') + ".png"));
             chartFile.Delete();
-
-            using FileStream fs = chartFile.OpenWrite();
-            using var image = SKImage.FromPixels(bitmap.PeekPixels());
-            using SKData data = image.Encode(SKEncodedImageFormat.Png, 100);
-            data.SaveTo(fs);
+            _ = plot.SavePng(chartFile.FullName, 2560, 1440);
             Console.WriteLine($"[{sw.Elapsed:mm\\:ss\\.ffff}] Wrote {chartFile.FullName}");
         }
 

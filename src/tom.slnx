@@ -2,7 +2,6 @@
   <Configurations>
     <BuildType Name="Debug" />
   </Configurations>
-  <Project Path="../subs/Microcharts/Sources/Microcharts/Microcharts.csproj" />
   <Project Path="tests/tests.csproj" />
   <Project Path="tom.exe/tom.exe.csproj" />
   <Project Path="tom/tom.csproj" />

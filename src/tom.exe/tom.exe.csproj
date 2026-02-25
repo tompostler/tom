@@ -28,11 +28,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="ScottPlot" />
     <PackageReference Include="System.CommandLine" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\subs\Microcharts\Sources\Microcharts\Microcharts.csproj" />
     <ProjectReference Include="..\util\util.csproj" />
     <ProjectReference Include="..\ws.contracts\ws.contracts.csproj" />
   </ItemGroup>
