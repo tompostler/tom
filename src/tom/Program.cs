@@ -14,6 +14,7 @@ namespace Unlimitedinf.Tom
                 Commands.ConvertCommand.Create(),
                 Commands.HashCommand.Create(),
                 Commands.HashRenameCommand.Create(),
+                Commands.IdenticonCommand.Create(),
                 Commands.ImageDimensionFilterCommand.Create(),
                 Commands.ImageDuplicateBlockhashCommand.Create(),
                 Commands.RandomCommand.Create(),

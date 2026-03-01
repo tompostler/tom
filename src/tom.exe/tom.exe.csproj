@@ -15,6 +15,7 @@
     <Compile Include="..\tom\Commands\ChartSystemStatsCommand.cs" Link="Commands\ChartSystemStatsCommand.cs" />
     <Compile Include="..\tom\Commands\ConvertCommand.cs" Link="Commands\ConvertCommand.cs" />
     <Compile Include="..\tom\Commands\HashCommand.cs" Link="Commands\HashCommand.cs" />
+    <Compile Include="..\tom\Commands\IdenticonCommand.cs" Link="Commands\IdenticonCommand.cs" />
     <Compile Include="..\tom\Commands\HashRenameCommand.cs" Link="Commands\HashRenameCommand.cs" />
     <Compile Include="..\tom\Commands\ImageDimensionFilterCommand.cs" Link="Commands\ImageDimensionFilterCommand.cs" />
     <Compile Include="..\tom\Commands\ImageDuplicateBlockhashCommand.cs" Link="Commands\ImageDuplicateBlockhashCommand.cs" />
