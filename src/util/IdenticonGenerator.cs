@@ -111,14 +111,18 @@ public class IdenticonGenerator
     /// </summary>
     /// <param name="seed">Input string (e.g. email address) that determines the identicon.</param>
     /// <param name="outputSize">Output image size in pixels (square). Default: 64.</param>
+    /// <param name="quality">Encoded image quality. Default: 100.</param>
     /// <returns>PNG image data as a byte array.</returns>
-    public byte[] GeneratePng(string seed, int outputSize = 64)
+    public byte[] GeneratePng(string seed, int outputSize = 64, int quality = 100)
     {
         RenderState state = this.BuildRenderState(seed);
         int size = this.BlockCount * BlockSize;
         double[][] square = state.Shapes[1][0];
 
-        using var bmp = new SKBitmap(new SKImageInfo(size, size, SKColorType.Rgba8888, SKAlphaType.Premul));
+        bool useGray8 = this.Grayscale && !state.Transparent;
+        SKColorType colorType = useGray8 ? SKColorType.Gray8 : SKColorType.Rgba8888;
+        SKAlphaType alphaType = useGray8 ? SKAlphaType.Opaque : SKAlphaType.Premul;
+        using var bmp = new SKBitmap(new SKImageInfo(size, size, colorType, alphaType));
         using (var canvas = new SKCanvas(bmp))
         {
             canvas.Clear(ToSkColor(state.BackColor));
@@ -152,9 +156,9 @@ public class IdenticonGenerator
         }
 
         // Scale to requested output size (matching PHP imagecopyresampled)
-        using SKBitmap scaled = bmp.Resize(new SKImageInfo(outputSize, outputSize), new SKSamplingOptions(SKCubicResampler.Mitchell));
+        using SKBitmap scaled = bmp.Resize(new SKImageInfo(outputSize, outputSize, colorType, alphaType), new SKSamplingOptions(SKCubicResampler.Mitchell));
         using var image = SKImage.FromBitmap(scaled);
-        using SKData data = image.Encode(SKEncodedImageFormat.Png, 100);
+        using SKData data = image.Encode(SKEncodedImageFormat.Png, quality);
         return data.ToArray();
     }
 
@@ -235,11 +239,10 @@ public class IdenticonGenerator
                 : twister.ArrayRand(shapes.Length);
         }
 
-        // Foreground color (always 3 PRNG calls regardless of transparent/grayscale)
+        // Foreground color
         int fr = twister.Rand(this.ForegroundRedRange.Min, this.ForegroundRedRange.Max);
-        int fg = twister.Rand(this.ForegroundGreenRange.Min, this.ForegroundGreenRange.Max);
-        int fb = twister.Rand(this.ForegroundBlueRange.Min, this.ForegroundBlueRange.Max);
-        if (this.Grayscale) { fg = fr; fb = fr; }
+        int fg = this.Grayscale ? fr : twister.Rand(this.ForegroundGreenRange.Min, this.ForegroundGreenRange.Max);
+        int fb = this.Grayscale ? fr : twister.Rand(this.ForegroundBlueRange.Min, this.ForegroundBlueRange.Max);
 
         // Background: transparent when all back ranges are [0,0]; otherwise 3 more PRNG calls
         bool transparent = this.BackgroundRedRange.Min + this.BackgroundRedRange.Max + this.BackgroundGreenRange.Min + this.BackgroundGreenRange.Max + this.BackgroundBlueRange.Min + this.BackgroundBlueRange.Max == 0;
@@ -251,9 +254,8 @@ public class IdenticonGenerator
         else
         {
             int br = twister.Rand(this.BackgroundRedRange.Min, this.BackgroundRedRange.Max);
-            int bg = twister.Rand(this.BackgroundGreenRange.Min, this.BackgroundGreenRange.Max);
-            int bb = twister.Rand(this.BackgroundBlueRange.Min, this.BackgroundBlueRange.Max);
-            if (this.Grayscale) { bg = br; bb = br; }
+            int bg = this.Grayscale ? br : twister.Rand(this.BackgroundGreenRange.Min, this.BackgroundGreenRange.Max);
+            int bb = this.Grayscale ? br : twister.Rand(this.BackgroundBlueRange.Min, this.BackgroundBlueRange.Max);
             backColor = Color.FromArgb(br, bg, bb);
         }
 
