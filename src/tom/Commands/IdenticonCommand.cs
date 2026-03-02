@@ -1,5 +1,4 @@
 using System.CommandLine;
-using System.Runtime.Versioning;
 using Unlimitedinf.Utilities;
 
 namespace Unlimitedinf.Tom.Commands
@@ -14,7 +13,7 @@ namespace Unlimitedinf.Tom.Commands
             };
             Argument<FileInfo> outputArgument = new("output")
             {
-                Description = "The output file path. Extension determines format: .svg (all platforms) or .png (Windows only).",
+                Description = "The output file path. Extension determines format: .svg or .png.",
             };
             Option<int> sizeOption = new("--size", "-s")
             {
@@ -60,11 +59,7 @@ namespace Unlimitedinf.Tom.Commands
 
             if (output.Extension.Equals(".png", StringComparison.OrdinalIgnoreCase))
             {
-                if (!OperatingSystem.IsWindows())
-                {
-                    throw new PlatformNotSupportedException("PNG generation requires Windows (GDI+).");
-                }
-                WritePng(generator, seed, output, size);
+                File.WriteAllBytes(output.FullName, generator.GeneratePng(seed, size));
             }
             else
             {
@@ -72,12 +67,6 @@ namespace Unlimitedinf.Tom.Commands
             }
 
             Console.WriteLine(output.FullName);
-        }
-
-        [SupportedOSPlatform("windows")]
-        private static void WritePng(IdenticonGenerator generator, string seed, FileInfo output, int size)
-        {
-            File.WriteAllBytes(output.FullName, generator.GeneratePng(seed, size));
         }
     }
 }

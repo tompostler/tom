@@ -1,9 +1,7 @@
 ﻿using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
-using System.Runtime.Versioning;
 using System.Security.Cryptography;
 using System.Text;
+using SkiaSharp;
 
 namespace Unlimitedinf.Utilities;
 
@@ -109,27 +107,26 @@ public class IdenticonGenerator
 
     /// <summary>
     /// Generates a PNG identicon image from the given seed string.
-    /// Requires Windows (uses System.Drawing/GDI+).
+    /// Works on all platforms.
     /// </summary>
     /// <param name="seed">Input string (e.g. email address) that determines the identicon.</param>
     /// <param name="outputSize">Output image size in pixels (square). Default: 64.</param>
     /// <returns>PNG image data as a byte array.</returns>
-    [SupportedOSPlatform("windows")]
     public byte[] GeneratePng(string seed, int outputSize = 64)
     {
         RenderState state = this.BuildRenderState(seed);
         int size = this.BlockCount * BlockSize;
         double[][] square = state.Shapes[1][0];
 
-        using var bmp = new Bitmap(size, size, PixelFormat.Format32bppArgb);
-        using (var g = Graphics.FromImage(bmp))
+        using var bmp = new SKBitmap(new SKImageInfo(size, size, SKColorType.Rgba8888, SKAlphaType.Premul));
+        using (var canvas = new SKCanvas(bmp))
         {
-            // SourceCopy so a transparent brush writes alpha=0, matching PHP GD behavior
-            g.CompositingMode = CompositingMode.SourceCopy;
-            g.Clear(state.BackColor);
+            canvas.Clear(ToSkColor(state.BackColor));
 
-            using var foreBrush = new SolidBrush(state.ForeColor);
-            using var backBrush = new SolidBrush(state.BackColor);
+            // SKBlendMode.Src matches GDI+'s CompositingMode.SourceCopy: source replaces
+            // the destination entirely (including alpha), so transparent paint writes alpha=0.
+            using var forePaint = new SKPaint { Color = ToSkColor(state.ForeColor), Style = SKPaintStyle.Fill, BlendMode = SKBlendMode.Src };
+            using var backPaint = new SKPaint { Color = ToSkColor(state.BackColor), Style = SKPaintStyle.Fill, BlendMode = SKBlendMode.Src };
 
             for (int i = 0; i < this.BlockCount; i++)
             {
@@ -142,30 +139,40 @@ public class IdenticonGenerator
                     var center = new PointF((float)(s_half + (BlockSize * j)), (float)(s_half + (BlockSize * i)));
 
                     // colors[1-invert] fills the background square; colors[invert] fills the shape
-                    SolidBrush squareBrush = invert == 0 ? foreBrush : backBrush;
-                    SolidBrush shapeBrush = invert == 0 ? backBrush : foreBrush;
+                    SKPaint squarePaint = invert == 0 ? forePaint : backPaint;
+                    SKPaint shapePaint = invert == 0 ? backPaint : forePaint;
 
-                    g.FillPolygon(squareBrush, CalcXY(square, center, 0));
+                    DrawPolygon(canvas, squarePaint, CalcXY(square, center, 0));
                     foreach (double[][] subshape in shape)
                     {
-                        g.FillPolygon(shapeBrush, CalcXY(subshape, center, rotation));
+                        DrawPolygon(canvas, shapePaint, CalcXY(subshape, center, rotation));
                     }
                 }
             }
         }
 
         // Scale to requested output size (matching PHP imagecopyresampled)
-        using var scaled = new Bitmap(outputSize, outputSize, PixelFormat.Format32bppArgb);
-        using (var gs = Graphics.FromImage(scaled))
-        {
-            gs.InterpolationMode = InterpolationMode.HighQualityBicubic;
-            gs.DrawImage(bmp, 0, 0, outputSize, outputSize);
-        }
-
-        using var ms = new MemoryStream();
-        scaled.Save(ms, ImageFormat.Png);
-        return ms.ToArray();
+        using SKBitmap scaled = bmp.Resize(new SKImageInfo(outputSize, outputSize), new SKSamplingOptions(SKCubicResampler.Mitchell));
+        using var image = SKImage.FromBitmap(scaled);
+        using SKData data = image.Encode(SKEncodedImageFormat.Png, 100);
+        return data.ToArray();
     }
+
+    // Draws a filled polygon using EvenOdd fill to match GDI+'s default Alternate fill mode,
+    // which correctly handles self-intersecting shapes (31: diamond C, 34: donut).
+    private static void DrawPolygon(SKCanvas canvas, SKPaint paint, PointF[] pts)
+    {
+        using var path = new SKPath { FillType = SKPathFillType.EvenOdd };
+        path.MoveTo(pts[0].X, pts[0].Y);
+        for (int i = 1; i < pts.Length; i++)
+        {
+            path.LineTo(pts[i].X, pts[i].Y);
+        }
+        path.Close();
+        canvas.DrawPath(path, paint);
+    }
+
+    private static SKColor ToSkColor(Color c) => new(c.R, c.G, c.B, c.A);
 
     // Runs the PRNG and builds all per-cell lookup tables shared by both rendering methods.
     private RenderState BuildRenderState(string seed)

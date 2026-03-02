@@ -13,6 +13,7 @@
     <!-- Everything else -->
     <PackageVersion Include="Nerdbank.GitVersioning" Version="3.9.50" />
     <PackageVersion Include="ScottPlot" Version="5.1.57" />
+    <PackageVersion Include="SkiaSharp" Version="3.119.2" />
     <PackageVersion Include="System.CommandLine" Version="2.0.3" />
   </ItemGroup>
 </Project>
