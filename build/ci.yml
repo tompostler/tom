@@ -143,3 +143,22 @@ steps:
     } | ConvertTo-Json;
     Invoke-WebRequest -Uri '$(logicappuri-unlimitedinf-update-version-file)' -Method POST -ContentType 'application/json' -Body $body -UseBasicParsing;
   displayName: Update Version file
+
+- powershell: |
+    $shortSha = '$(Build.SourceVersion)'.Substring(0, 7);
+    $body = @{
+      Title = "Deployment of $(Build.DefinitionName) $(Build.BuildNumber)+$shortSha was successful";
+      Description = "``$(Build.SourceVersionMessage)``";
+    } | ConvertTo-Json -Compress;
+    Invoke-RestMethod -Method Post -Uri https://po.tcp.wtf/randommessage -Headers @{ 'x-api-key' = '$(pobot-api-key)' } -ContentType 'application/json' -Body $body;
+  displayName: Post deployment message (success)
+
+- powershell: |
+    $shortSha = '$(Build.SourceVersion)'.Substring(0, 7);
+    $body = @{
+      Title = "Deployment of $(Build.DefinitionName) $(Build.BuildNumber)+$shortSha was successful";
+      Description = "``$(Build.SourceVersionMessage)``";
+    } | ConvertTo-Json -Compress;
+    Invoke-RestMethod -Method Post -Uri https://po.tcp.wtf/randommessage -Headers @{ 'x-api-key' = '$(pobot-api-key)' } -ContentType 'application/json' -Body $body;
+  condition: failed()
+  displayName: Post deployment message (failure)
