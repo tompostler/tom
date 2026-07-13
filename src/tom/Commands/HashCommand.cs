@@ -75,8 +75,7 @@ namespace Unlimitedinf.Tom.Commands
                 // Emit progress as we go
                 if (!quiet)
                 {
-                    Console.Write(seenBytes * 100 / totalBytes);
-                    Console.Write('%');
+                    Console.Write((1.0 * seenBytes / totalBytes).ToString("P2"));
                     Console.SetCursorPosition(0, Console.CursorTop);
                 }
             }
